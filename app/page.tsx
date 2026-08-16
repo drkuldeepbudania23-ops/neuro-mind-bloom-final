@@ -53,10 +53,14 @@ export default function Home() {
             <span><strong>Neuro Mind Bloom</strong><small>Psychiatry • Psychology • Wellness</small></span>
           </a>
           <button className="menuBtn" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu">☰</button>
+          
           <nav className={menuOpen ? "nav open" : "nav"}>
-            <a href="#about">About</a><a href="#services">Services</a><a href="#consultations">Consultations</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
-            <a className="navCta" href="#booking">Book Appointment</a>
-          </nav>
+  <a href="#about">About</a>
+  <a href="#services">Services</a>
+  <a href="#consultations">Consultations</a>
+  <a href="/doctor">Doctor Login</a>
+  <a className="navCta" href="#booking">Book Appointment</a>
+</nav>
         </div>
       </header>
 
