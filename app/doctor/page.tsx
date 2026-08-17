@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Medicine = {
   name: string;
@@ -10,6 +11,15 @@ type Medicine = {
 };
 
 export default function DoctorPage() {
+    const router = useRouter();
+
+  useEffect(() => {
+    const loggedIn = sessionStorage.getItem("doctorLoggedIn");
+
+    if (loggedIn !== "true") {
+      router.replace("/doctor/login");
+    }
+  }, [router]);
   const [patientName, setPatientName] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
