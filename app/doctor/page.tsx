@@ -5,411 +5,497 @@ import { useRouter } from "next/navigation";
 
 type Medicine = {
   generic: string;
-  brand?: string;
-  strength?: string;
-  company?: string;
+  brands: string[];
+  strengths: string[];
+  form: string;
   category: string;
 };
 
-type RxMedicine = {
-  medicine: string;
+type RxItem = {
+  id: number;
+  generic: string;
+  brand: string;
+  strength: string;
+  form: string;
   dose: string;
   frequency: string;
   duration: string;
   instruction: string;
 };
 
-const medicineDatabase: Medicine[] = [
-  // =========================
+const medicines: Medicine[] = [
   // ANTIDEPRESSANTS
-  // =========================
-  { generic: "Escitalopram", brand: "Feliz S", strength: "5 / 10 / 20 mg", company: "Torrent Pharma", category: "Antidepressant" },
-  { generic: "Escitalopram + Clonazepam", brand: "Feliz S Plus", strength: "Various strengths", company: "Torrent Pharma", category: "Antidepressant / Anxiolytic" },
-  { generic: "Escitalopram + Clonazepam", brand: "Clonotril Plus", strength: "Various strengths", company: "Torrent Pharma", category: "Antidepressant / Anxiolytic" },
-  { generic: "Escitalopram", brand: "C-Pram S", strength: "Various strengths", company: "Torrent Pharma", category: "Antidepressant" },
+  {
+    generic: "Escitalopram",
+    brands: ["Nexito", "Feliz-S", "Cipralex"],
+    strengths: ["5 mg", "10 mg", "20 mg"],
+    form: "Tablet",
+    category: "Antidepressant",
+  },
+  {
+    generic: "Sertraline",
+    brands: ["Daxid", "Serta", "Serlift"],
+    strengths: ["25 mg", "50 mg", "100 mg"],
+    form: "Tablet",
+    category: "Antidepressant",
+  },
+  {
+    generic: "Fluoxetine",
+    brands: ["Fludac", "Prodep"],
+    strengths: ["10 mg", "20 mg", "40 mg", "60 mg"],
+    form: "Capsule/Tablet",
+    category: "Antidepressant",
+  },
+  {
+    generic: "Paroxetine",
+    brands: ["Pexep", "Pari"],
+    strengths: ["12.5 mg CR", "25 mg CR", "37.5 mg CR"],
+    form: "Tablet",
+    category: "Antidepressant",
+  },
+  {
+    generic: "Fluvoxamine",
+    brands: ["Fluvoxin", "Faverin"],
+    strengths: ["50 mg", "100 mg"],
+    form: "Tablet",
+    category: "Antidepressant",
+  },
+  {
+    generic: "Venlafaxine",
+    brands: ["Veniz XR", "Ventab"],
+    strengths: ["37.5 mg", "75 mg", "150 mg"],
+    form: "Tablet/Capsule",
+    category: "Antidepressant",
+  },
+  {
+    generic: "Desvenlafaxine",
+    brands: ["Desveniz", "D-Veniz"],
+    strengths: ["25 mg", "50 mg", "100 mg"],
+    form: "Tablet",
+    category: "Antidepressant",
+  },
+  {
+    generic: "Duloxetine",
+    brands: ["Duzela", "Dulane"],
+    strengths: ["20 mg", "30 mg", "40 mg", "60 mg"],
+    form: "Capsule",
+    category: "Antidepressant",
+  },
+  {
+    generic: "Mirtazapine",
+    brands: ["Mirtaz", "Mirnite"],
+    strengths: ["7.5 mg", "15 mg", "30 mg", "45 mg"],
+    form: "Tablet",
+    category: "Antidepressant",
+  },
+  {
+    generic: "Bupropion",
+    brands: ["Bupron", "Zupion"],
+    strengths: ["150 mg", "300 mg"],
+    form: "Tablet",
+    category: "Antidepressant",
+  },
+  {
+    generic: "Vortioxetine",
+    brands: ["Brintellix", "Vortidift"],
+    strengths: ["5 mg", "10 mg", "20 mg"],
+    form: "Tablet",
+    category: "Antidepressant",
+  },
+  {
+    generic: "Amitriptyline",
+    brands: ["Tryptomer", "Amitone"],
+    strengths: ["10 mg", "25 mg", "50 mg", "75 mg"],
+    form: "Tablet",
+    category: "Antidepressant",
+  },
+  {
+    generic: "Clomipramine",
+    brands: ["Anafranil", "Clonil"],
+    strengths: ["10 mg", "25 mg", "50 mg", "75 mg SR"],
+    form: "Tablet",
+    category: "Antidepressant",
+  },
 
-  { generic: "Fluoxetine", brand: "Prodep", strength: "10 / 20 / 40 / 60 mg", company: "Sun Pharma", category: "Antidepressant" },
-  { generic: "Fluoxetine", strength: "10 / 20 / 40 / 60 mg", category: "Antidepressant" },
-
-  { generic: "Sertraline", strength: "25 / 50 / 100 mg", category: "Antidepressant" },
-  { generic: "Paroxetine", strength: "12.5 / 25 / 37.5 mg CR", category: "Antidepressant" },
-  { generic: "Paroxetine + Clonazepam", brand: "Clonotril P", company: "Torrent Pharma", category: "Antidepressant / Anxiolytic" },
-
-  { generic: "Fluvoxamine", brand: "Fluvator", strength: "50 / 100 mg", company: "Torrent Pharma", category: "Antidepressant / OCD" },
-  { generic: "Fluvoxamine", strength: "50 / 100 mg", category: "Antidepressant / OCD" },
-
-  { generic: "Desvenlafaxine", strength: "25 / 50 / 100 mg", category: "Antidepressant" },
-  { generic: "Venlafaxine", strength: "37.5 / 75 / 150 mg", category: "Antidepressant" },
-  { generic: "Duloxetine", strength: "20 / 30 / 40 / 60 mg", category: "Antidepressant" },
-
-  { generic: "Vortioxetine", strength: "5 / 10 / 20 mg", category: "Antidepressant" },
-  { generic: "Vilazodone", strength: "10 / 20 / 40 mg", category: "Antidepressant" },
-  { generic: "Bupropion", strength: "150 / 300 mg", category: "Antidepressant" },
-
-  { generic: "Mirtazapine", strength: "7.5 / 15 / 30 / 45 mg", category: "Antidepressant" },
-  { generic: "Agomelatine", strength: "25 mg", category: "Antidepressant" },
-
-  { generic: "Amitriptyline", strength: "10 / 25 / 50 / 75 mg", category: "TCA" },
-  { generic: "Nortriptyline", strength: "10 / 25 / 50 mg", category: "TCA" },
-  { generic: "Clomipramine", strength: "10 / 25 / 50 / 75 mg", category: "TCA / OCD" },
-  { generic: "Imipramine", strength: "25 / 75 mg", category: "TCA" },
-  { generic: "Doxepin", strength: "10 / 25 / 75 mg", category: "TCA" },
-
-  // =========================
-  // BENZODIAZEPINES / ANXIETY
-  // =========================
-  { generic: "Clonazepam", brand: "Clonotril", strength: "0.25 / 0.5 / 1 / 2 mg", company: "Torrent Pharma", category: "Benzodiazepine" },
-  { generic: "Clonazepam", brand: "Lonazep", strength: "0.25 / 0.5 / 1 / 2 mg", company: "Sun Pharma", category: "Benzodiazepine" },
-  { generic: "Clonazepam", strength: "0.25 / 0.5 / 1 / 2 mg", category: "Benzodiazepine" },
-
-  { generic: "Lorazepam", strength: "1 / 2 mg", category: "Benzodiazepine" },
-  { generic: "Alprazolam", strength: "0.25 / 0.5 / 1 mg", category: "Benzodiazepine" },
-  { generic: "Diazepam", strength: "2 / 5 / 10 mg", category: "Benzodiazepine" },
-  { generic: "Etizolam", strength: "0.25 / 0.5 / 1 mg", category: "Anxiolytic" },
-  { generic: "Clobazam", brand: "Lobazam", strength: "5 / 10 / 20 mg", company: "Sun Pharma", category: "Benzodiazepine" },
-
-  { generic: "Buspirone", strength: "5 / 10 mg", category: "Anxiolytic" },
-  { generic: "Propranolol", strength: "10 / 20 / 40 mg", category: "Anxiety / Tremor" },
-  { generic: "Hydroxyzine", strength: "10 / 25 mg", category: "Anxiety / Allergy" },
-
-  // =========================
   // ANTIPSYCHOTICS
-  // =========================
-  { generic: "Olanzapine", brand: "Oleanz", strength: "2.5 / 5 / 7.5 / 10 / 15 / 20 mg", company: "Sun Pharma", category: "Antipsychotic" },
-  { generic: "Olanzapine", strength: "2.5 / 5 / 10 / 15 / 20 mg", category: "Antipsychotic" },
+  {
+    generic: "Olanzapine",
+    brands: ["Oleanz", "Olanex"],
+    strengths: ["2.5 mg", "5 mg", "7.5 mg", "10 mg", "15 mg", "20 mg"],
+    form: "Tablet",
+    category: "Antipsychotic",
+  },
+  {
+    generic: "Risperidone",
+    brands: ["Risperdal", "Sizodon", "Risdone"],
+    strengths: ["0.5 mg", "1 mg", "2 mg", "3 mg", "4 mg"],
+    form: "Tablet",
+    category: "Antipsychotic",
+  },
+  {
+    generic: "Quetiapine",
+    brands: ["Qutan", "Seroquel"],
+    strengths: ["25 mg", "50 mg", "100 mg", "200 mg", "300 mg"],
+    form: "Tablet",
+    category: "Antipsychotic",
+  },
+  {
+    generic: "Aripiprazole",
+    brands: ["Arip MT", "Abilify"],
+    strengths: ["2 mg", "5 mg", "10 mg", "15 mg", "20 mg", "30 mg"],
+    form: "Tablet",
+    category: "Antipsychotic",
+  },
+  {
+    generic: "Amisulpride",
+    brands: ["Solian", "Sulpitac"],
+    strengths: ["50 mg", "100 mg", "200 mg", "400 mg"],
+    form: "Tablet",
+    category: "Antipsychotic",
+  },
+  {
+    generic: "Lurasidone",
+    brands: ["Luramax", "Lurasid"],
+    strengths: ["20 mg", "40 mg", "80 mg"],
+    form: "Tablet",
+    category: "Antipsychotic",
+  },
+  {
+    generic: "Haloperidol",
+    brands: ["Serenace"],
+    strengths: ["0.25 mg", "1.5 mg", "5 mg", "10 mg"],
+    form: "Tablet",
+    category: "Antipsychotic",
+  },
+  {
+    generic: "Clozapine",
+    brands: ["Clozaril", "Sizopin"],
+    strengths: ["25 mg", "50 mg", "100 mg", "200 mg"],
+    form: "Tablet",
+    category: "Antipsychotic",
+  },
 
-  { generic: "Quetiapine", brand: "Qutipin", strength: "25 / 50 / 100 / 200 / 300 mg", company: "Sun Pharma", category: "Antipsychotic" },
-  { generic: "Quetiapine SR", brand: "Qutipin SR", strength: "50 / 100 / 200 / 300 / 400 mg", company: "Sun Pharma", category: "Antipsychotic" },
+  // MOOD STABILIZERS / ANTICONVULSANTS
+  {
+    generic: "Lithium Carbonate",
+    brands: ["Lithosun", "Licab"],
+    strengths: ["300 mg", "400 mg CR", "450 mg CR"],
+    form: "Tablet",
+    category: "Mood Stabilizer",
+  },
+  {
+    generic: "Sodium Valproate",
+    brands: ["Valparin", "Encorate"],
+    strengths: ["200 mg", "300 mg", "500 mg"],
+    form: "Tablet",
+    category: "Mood Stabilizer",
+  },
+  {
+    generic: "Divalproex Sodium",
+    brands: ["Dicorate ER", "Depakote"],
+    strengths: ["250 mg", "500 mg", "750 mg", "1000 mg"],
+    form: "Tablet",
+    category: "Mood Stabilizer",
+  },
+  {
+    generic: "Lamotrigine",
+    brands: ["Lamitor", "Lametec"],
+    strengths: ["25 mg", "50 mg", "100 mg", "200 mg"],
+    form: "Tablet",
+    category: "Mood Stabilizer",
+  },
+  {
+    generic: "Carbamazepine",
+    brands: ["Tegretol", "Zeptol"],
+    strengths: ["100 mg", "200 mg", "400 mg"],
+    form: "Tablet",
+    category: "Mood Stabilizer",
+  },
+  {
+    generic: "Oxcarbazepine",
+    brands: ["Oxetol", "Trileptal"],
+    strengths: ["150 mg", "300 mg", "450 mg", "600 mg"],
+    form: "Tablet",
+    category: "Mood Stabilizer",
+  },
 
-  { generic: "Risperidone", strength: "0.5 / 1 / 2 / 3 / 4 mg", category: "Antipsychotic" },
-  { generic: "Risperidone + Trihexyphenidyl", strength: "Various strengths", category: "Antipsychotic" },
+  // ANXIETY / SLEEP
+  {
+    generic: "Clonazepam",
+    brands: ["Clonotril", "Rivotril"],
+    strengths: ["0.25 mg", "0.5 mg", "1 mg", "2 mg"],
+    form: "Tablet",
+    category: "Anxiolytic",
+  },
+  {
+    generic: "Lorazepam",
+    brands: ["Ativan", "Larpose"],
+    strengths: ["1 mg", "2 mg"],
+    form: "Tablet",
+    category: "Anxiolytic",
+  },
+  {
+    generic: "Alprazolam",
+    brands: ["Alprax", "Restyl"],
+    strengths: ["0.25 mg", "0.5 mg", "1 mg"],
+    form: "Tablet",
+    category: "Anxiolytic",
+  },
+  {
+    generic: "Etizolam",
+    brands: ["Etizola", "Etilaam"],
+    strengths: ["0.25 mg", "0.5 mg", "1 mg"],
+    form: "Tablet",
+    category: "Anxiolytic",
+  },
+  {
+    generic: "Zolpidem",
+    brands: ["Zolfresh", "Stilnoct"],
+    strengths: ["5 mg", "10 mg"],
+    form: "Tablet",
+    category: "Sleep",
+  },
+  {
+    generic: "Buspirone",
+    brands: ["Buspin"],
+    strengths: ["5 mg", "10 mg"],
+    form: "Tablet",
+    category: "Anxiolytic",
+  },
+  {
+    generic: "Pregabalin",
+    brands: ["Maxgal", "Pregaba"],
+    strengths: ["25 mg", "50 mg", "75 mg", "150 mg"],
+    form: "Capsule",
+    category: "Anxiety/Neuropathic Pain",
+  },
 
-  { generic: "Aripiprazole", strength: "2 / 5 / 10 / 15 / 20 / 30 mg", category: "Antipsychotic" },
-  { generic: "Aripiprazole", brand: "ARIP MT", strength: "5 / 10 / 15 / 20 / 30 mg", company: "Torrent Pharma", category: "Antipsychotic" },
-
-  { generic: "Amisulpride", brand: "Amazeo", strength: "50 / 100 / 200 mg", company: "Torrent Pharma", category: "Antipsychotic" },
-  { generic: "Amisulpride", strength: "50 / 100 / 200 / 400 mg", category: "Antipsychotic" },
-
-  { generic: "Clozapine", brand: "Lozapin", strength: "25 / 50 / 100 mg", company: "Torrent Pharma", category: "Antipsychotic" },
-  { generic: "Clozapine", strength: "25 / 50 / 100 mg", category: "Antipsychotic" },
-
-  { generic: "Lurasidone", strength: "20 / 40 / 80 mg", category: "Antipsychotic" },
-  { generic: "Ziprasidone", strength: "20 / 40 / 80 mg", category: "Antipsychotic" },
-  { generic: "Paliperidone", strength: "3 / 6 / 9 mg", category: "Antipsychotic" },
-  { generic: "Brexpiprazole", strength: "0.5 / 1 / 2 / 3 / 4 mg", category: "Antipsychotic" },
-  { generic: "Cariprazine", strength: "1.5 / 3 / 4.5 / 6 mg", category: "Antipsychotic" },
-  { generic: "Lumateperone", brand: "Lumavibe", strength: "42 mg", company: "Torrent Pharma", category: "Antipsychotic" },
-
-  { generic: "Haloperidol", strength: "0.25 / 0.5 / 1.5 / 5 / 10 mg", category: "Antipsychotic" },
-  { generic: "Trifluoperazine", strength: "1 / 5 / 10 mg", category: "Antipsychotic" },
-  { generic: "Chlorpromazine", strength: "25 / 50 / 100 mg", category: "Antipsychotic" },
-  { generic: "Flupentixol", strength: "0.5 / 1 / 3 mg", category: "Antipsychotic" },
-
-  // =========================
-  // MOOD STABILIZERS
-  // =========================
-  { generic: "Lithium Carbonate", brand: "Lithosun", strength: "300 / 400 mg", company: "Sun Pharma", category: "Mood Stabilizer" },
-  { generic: "Lithium Carbonate", strength: "300 / 400 / 450 mg", category: "Mood Stabilizer" },
-
-  { generic: "Sodium Valproate", strength: "200 / 300 / 500 mg", category: "Mood Stabilizer" },
-  { generic: "Divalproex Sodium", strength: "250 / 500 mg", category: "Mood Stabilizer" },
-
-  { generic: "Lamotrigine", brand: "Lamitor DT", strength: "25 / 50 / 100 mg", company: "Torrent Pharma", category: "Mood Stabilizer" },
-  { generic: "Lamotrigine", brand: "Lamitor OD", strength: "Various strengths", company: "Torrent Pharma", category: "Mood Stabilizer" },
-  { generic: "Lamotrigine", strength: "25 / 50 / 100 / 200 mg", category: "Mood Stabilizer" },
-
-  { generic: "Carbamazepine", strength: "100 / 200 / 400 mg", category: "Mood Stabilizer" },
-  { generic: "Oxcarbazepine", strength: "150 / 300 / 450 / 600 mg", category: "Mood Stabilizer" },
-
-  // =========================
-  // EPS / ADJUNCTS
-  // =========================
-  { generic: "Trihexyphenidyl", strength: "1 / 2 / 5 mg", category: "EPS" },
-  { generic: "Procyclidine", strength: "5 mg", category: "EPS" },
-  { generic: "Promethazine", strength: "10 / 25 mg", category: "Sedative / Allergy" },
-
-  // =========================
-  // SLEEP
-  // =========================
-  { generic: "Zolpidem", strength: "5 / 10 mg", category: "Hypnotic" },
-  { generic: "Eszopiclone", strength: "1 / 2 / 3 mg", category: "Hypnotic" },
-  { generic: "Melatonin", strength: "3 / 5 / 10 mg", category: "Sleep" },
-  { generic: "Ramelteon", strength: "8 mg", category: "Sleep" },
-
-  // =========================
   // ADHD
-  // =========================
-  { generic: "Atomoxetine", strength: "10 / 18 / 25 / 40 / 60 mg", category: "ADHD" },
-  { generic: "Methylphenidate", strength: "5 / 10 / 18 / 20 / 27 / 36 mg", category: "ADHD" },
-  { generic: "Methylphenidate", brand: "Addwize", strength: "Various strengths", company: "Sun Pharma", category: "ADHD" },
-  { generic: "Clonidine", strength: "0.1 mg", category: "ADHD / BP" },
+  {
+    generic: "Atomoxetine",
+    brands: ["Attera", "Axepta"],
+    strengths: ["10 mg", "18 mg", "25 mg", "40 mg", "60 mg"],
+    form: "Capsule",
+    category: "ADHD",
+  },
 
-  // =========================
-  // DEMENTIA
-  // =========================
-  { generic: "Donepezil", strength: "5 / 10 mg", category: "Dementia" },
-  { generic: "Memantine", strength: "5 / 10 mg", category: "Dementia" },
-  { generic: "Rivastigmine", brand: "Rivamer", strength: "1.5 / 3 / 4.5 / 6 mg", company: "Sun Pharma", category: "Dementia" },
-  { generic: "Galantamine", strength: "4 / 8 / 12 mg", category: "Dementia" },
-
-  // =========================
   // DE-ADDICTION
-  // =========================
-  { generic: "Acamprosate", brand: "Acamprol", strength: "333 mg", company: "Sun Pharma", category: "Alcohol Dependence" },
-  { generic: "Acamprosate", strength: "333 mg", category: "Alcohol Dependence" },
+  {
+    generic: "Naltrexone",
+    brands: ["Nodict", "Naltima"],
+    strengths: ["50 mg"],
+    form: "Tablet",
+    category: "De-addiction",
+  },
+  {
+    generic: "Acamprosate",
+    brands: ["Acamptas"],
+    strengths: ["333 mg"],
+    form: "Tablet",
+    category: "De-addiction",
+  },
+  {
+    generic: "Disulfiram",
+    brands: ["Esperal"],
+    strengths: ["250 mg"],
+    form: "Tablet",
+    category: "De-addiction",
+  },
+  {
+    generic: "Baclofen",
+    brands: ["Baclof", "Liofen"],
+    strengths: ["5 mg", "10 mg", "20 mg"],
+    form: "Tablet",
+    category: "De-addiction/Muscle Relaxant",
+  },
 
-  { generic: "Disulfiram", brand: "Esperal", strength: "250 mg", company: "Torrent Pharma", category: "Alcohol Dependence" },
-  { generic: "Disulfiram", strength: "250 mg", category: "Alcohol Dependence" },
+  // PPI / GASTRIC
+  {
+    generic: "Pantoprazole",
+    brands: ["Pantocid", "Pan"],
+    strengths: ["20 mg", "40 mg"],
+    form: "Tablet",
+    category: "Gastric/PPI",
+  },
+  {
+    generic: "Rabeprazole",
+    brands: ["Razo", "Rablet"],
+    strengths: ["20 mg"],
+    form: "Tablet",
+    category: "Gastric/PPI",
+  },
+  {
+    generic: "Esomeprazole",
+    brands: ["Nexpro"],
+    strengths: ["20 mg", "40 mg"],
+    form: "Tablet",
+    category: "Gastric/PPI",
+  },
 
-  { generic: "Naltrexone", strength: "50 mg", category: "Alcohol / Opioid Dependence" },
-  { generic: "Baclofen", strength: "5 / 10 / 20 mg", category: "Alcohol Dependence / Muscle Relaxant" },
-
-  { generic: "Buprenorphine + Naloxone", brand: "Qudict", strength: "2/0.5 mg", company: "Sun Pharma", category: "Opioid Dependence" },
-  { generic: "Buprenorphine", strength: "0.2 / 2 / 8 mg", category: "Opioid Dependence" },
-  { generic: "Buprenorphine + Naloxone", strength: "2/0.5 / 8/2 mg", category: "Opioid Dependence" },
-
-  { generic: "Nicotine Gum", strength: "2 / 4 mg", category: "Tobacco Dependence" },
-  { generic: "Varenicline", strength: "0.5 / 1 mg", category: "Tobacco Dependence" },
-  { generic: "Bupropion SR", strength: "150 mg", category: "Tobacco Dependence" },
-
-  // =========================
-  // NEURO / PAIN ADJUNCTS
-  // =========================
-  { generic: "Gabapentin", brand: "Gabator", strength: "100 / 300 mg", company: "Torrent Pharma", category: "Neuropathic Pain" },
-  { generic: "Gabapentin", strength: "100 / 300 / 400 mg", category: "Neuropathic Pain" },
-  { generic: "Pregabalin", strength: "50 / 75 / 150 mg", category: "Neuropathic Pain" },
-  { generic: "Pregabalin + Methylcobalamin", strength: "Various strengths", category: "Neuropathic Pain / Vitamin" },
-
-  // =========================
-  // PPI / GI
-  // =========================
-  { generic: "Pantoprazole", strength: "20 / 40 mg", category: "PPI / Acidity" },
-  { generic: "Pantoprazole + Domperidone", strength: "40/30 mg SR", category: "PPI / Acidity" },
-  { generic: "Rabeprazole", strength: "20 mg", category: "PPI / Acidity" },
-  { generic: "Rabeprazole + Domperidone", strength: "20/30 mg SR", category: "PPI / Acidity" },
-  { generic: "Omeprazole", strength: "20 / 40 mg", category: "PPI / Acidity" },
-  { generic: "Esomeprazole", strength: "20 / 40 mg", category: "PPI / Acidity" },
-  { generic: "Vonoprazan", brand: "Kabvie", strength: "10 / 20 mg", company: "Torrent Pharma", category: "Acid Suppression" },
-
-  { generic: "Ondansetron", strength: "4 / 8 mg", category: "Antiemetic" },
-  { generic: "Domperidone", strength: "10 mg", category: "Antiemetic / Prokinetic" },
-  { generic: "Levosulpiride", brand: "Levazeo", strength: "25 / 75 mg", company: "Torrent Pharma", category: "Prokinetic" },
-
-  // =========================
-  // VITAMINS
-  // =========================
-  { generic: "Methylcobalamin", strength: "500 / 750 / 1500 mcg", category: "Vitamin B12" },
-  { generic: "Vitamin B Complex", category: "Vitamin" },
-  { generic: "Calcium + Vitamin D3", category: "Vitamin / Mineral" },
-  { generic: "Cholecalciferol Vitamin D3", brand: "D360", strength: "60000 IU", company: "Torrent Pharma", category: "Vitamin D" },
-  { generic: "Vitamin D3", strength: "60000 IU", category: "Vitamin D" },
-  { generic: "Folic Acid", strength: "5 mg", category: "Vitamin" },
-  { generic: "Iron + Folic Acid", category: "Vitamin / Mineral" },
-  { generic: "Multivitamin + Multimineral", category: "Vitamin" },
-  { generic: "Thiamine Vitamin B1", strength: "100 mg", category: "Vitamin / Alcohol Use" },
-
-  // =========================
   // FEVER / PAIN
-  // =========================
-  { generic: "Paracetamol", strength: "500 / 650 mg", category: "Fever / Pain" },
-  { generic: "Ibuprofen", strength: "200 / 400 mg", category: "Pain / Fever" },
-  { generic: "Ibuprofen + Paracetamol", category: "Pain / Fever" },
-  { generic: "Aceclofenac", strength: "100 mg", category: "Pain" },
-  { generic: "Aceclofenac + Paracetamol", category: "Pain" },
-  { generic: "Diclofenac", strength: "50 / 75 mg", category: "Pain" },
-  { generic: "Etoricoxib", brand: "Etoxib", strength: "60 / 90 / 120 mg", company: "Torrent Pharma", category: "Pain" },
-  { generic: "Etoricoxib", strength: "60 / 90 / 120 mg", category: "Pain" },
+  {
+    generic: "Paracetamol",
+    brands: ["Dolo", "Calpol"],
+    strengths: ["500 mg", "650 mg"],
+    form: "Tablet",
+    category: "Pain/Fever",
+  },
+  {
+    generic: "Ibuprofen",
+    brands: ["Brufen"],
+    strengths: ["200 mg", "400 mg", "600 mg"],
+    form: "Tablet",
+    category: "Pain/Fever",
+  },
 
-  // =========================
-  // COLD / ALLERGY
-  // =========================
-  { generic: "Cetirizine", strength: "10 mg", category: "Allergy" },
-  { generic: "Levocetirizine", brand: "Lezyncet", strength: "5 mg", company: "Torrent Pharma", category: "Allergy" },
-  { generic: "Levocetirizine", strength: "5 mg", category: "Allergy" },
-  { generic: "Levocetirizine + Montelukast", brand: "Lezyncet M", company: "Torrent Pharma", category: "Allergy" },
-  { generic: "Montelukast", strength: "10 mg", category: "Allergy" },
+  // VITAMINS
+  {
+    generic: "Methylcobalamin",
+    brands: ["Methycobal", "Nurokind"],
+    strengths: ["500 mcg", "1500 mcg"],
+    form: "Tablet",
+    category: "Vitamin",
+  },
+  {
+    generic: "Vitamin D3 (Cholecalciferol)",
+    brands: ["Uprise-D3", "D-Rise"],
+    strengths: ["1000 IU", "2000 IU", "60000 IU"],
+    form: "Tablet/Capsule/Sachet",
+    category: "Vitamin",
+  },
+  {
+    generic: "Calcium + Vitamin D3",
+    brands: ["Shelcal", "Cipcal"],
+    strengths: ["500 mg + D3"],
+    form: "Tablet",
+    category: "Supplement",
+  },
 
-  // =========================
-  // HYPERTENSION
-  // =========================
-  { generic: "Amlodipine", brand: "Corvadil", strength: "2.5 / 5 / 10 mg", company: "Torrent Pharma", category: "Hypertension" },
-  { generic: "Amlodipine", strength: "2.5 / 5 / 10 mg", category: "Hypertension" },
-
-  { generic: "Telmisartan", strength: "20 / 40 / 80 mg", category: "Hypertension" },
-  { generic: "Telmisartan + Amlodipine", category: "Hypertension" },
-  { generic: "Telmisartan + Hydrochlorothiazide", category: "Hypertension" },
-
-  { generic: "Losartan", brand: "Losar", strength: "25 / 50 mg", company: "Torrent Pharma", category: "Hypertension" },
-  { generic: "Losartan", strength: "25 / 50 / 100 mg", category: "Hypertension" },
-
-  { generic: "Lisinopril", brand: "Listril", strength: "2.5 / 5 / 10 mg", company: "Torrent Pharma", category: "Hypertension" },
-  { generic: "Ramipril", strength: "1.25 / 2.5 / 5 / 10 mg", category: "Hypertension" },
-
-  { generic: "Bisoprolol", brand: "Corbis", strength: "2.5 / 5 / 10 mg", company: "Torrent Pharma", category: "Hypertension" },
-  { generic: "Metoprolol", strength: "25 / 50 / 100 mg", category: "Hypertension" },
-
-  { generic: "Chlorthalidone", strength: "6.25 / 12.5 mg", category: "Hypertension" },
-  { generic: "Hydrochlorothiazide", strength: "12.5 / 25 mg", category: "Hypertension" },
-
-  // =========================
   // DIABETES
-  // =========================
-  { generic: "Metformin", brand: "Dibeta SR", strength: "Various strengths", company: "Torrent Pharma", category: "Diabetes" },
-  { generic: "Metformin", strength: "500 / 850 / 1000 mg", category: "Diabetes" },
+  {
+    generic: "Metformin",
+    brands: ["Glycomet", "Obimet"],
+    strengths: ["500 mg", "850 mg", "1000 mg"],
+    form: "Tablet",
+    category: "Diabetes",
+  },
+  {
+    generic: "Glimepiride",
+    brands: ["Amaryl", "Glimisave"],
+    strengths: ["1 mg", "2 mg", "3 mg", "4 mg"],
+    form: "Tablet",
+    category: "Diabetes",
+  },
+  {
+    generic: "Teneligliptin",
+    brands: ["Tenepure", "Teneza"],
+    strengths: ["20 mg"],
+    form: "Tablet",
+    category: "Diabetes",
+  },
 
-  { generic: "Glimepiride", strength: "1 / 2 / 3 / 4 mg", category: "Diabetes" },
-  { generic: "Glimepiride + Metformin", brand: "Azulix MF", company: "Torrent Pharma", category: "Diabetes" },
-
-  { generic: "Dapagliflozin", brand: "Glucreta", company: "Torrent Pharma", category: "Diabetes" },
-  { generic: "Dapagliflozin", strength: "5 / 10 mg", category: "Diabetes" },
-
-  { generic: "Empagliflozin", brand: "Cospiaq", strength: "10 / 25 mg", company: "Torrent Pharma", category: "Diabetes" },
-  { generic: "Empagliflozin", strength: "10 / 25 mg", category: "Diabetes" },
-
-  { generic: "Linagliptin", strength: "5 mg", category: "Diabetes" },
-  { generic: "Linagliptin + Metformin", brand: "Linaxa M", company: "Torrent Pharma", category: "Diabetes" },
-
-  { generic: "Sitagliptin", strength: "50 / 100 mg", category: "Diabetes" },
-  { generic: "Vildagliptin", strength: "50 mg", category: "Diabetes" },
-
-  { generic: "Repaglinide", brand: "Eurepa", strength: "0.5 / 1 / 2 mg", company: "Torrent Pharma", category: "Diabetes" },
-
-  // =========================
-  // THYROID
-  // =========================
-  { generic: "Levothyroxine", strength: "25 / 50 / 75 / 100 mcg", category: "Thyroid" },
-];
-
-const frequencyOptions = [
-  "OD",
-  "BD",
-  "TDS",
-  "QID",
-  "HS",
-  "SOS",
-  "Morning",
-  "Afternoon",
-  "Night",
-  "Morning + Night",
-  "1-0-0",
-  "0-1-0",
-  "0-0-1",
-  "1-0-1",
-  "1-1-1",
-  "1/2-0-1",
-  "1-0-1/2",
-];
-
-const durationOptions = [
-  "3 days",
-  "5 days",
-  "7 days",
-  "10 days",
-  "14 days",
-  "21 days",
-  "1 month",
-  "6 weeks",
-  "2 months",
-  "3 months",
-  "Continue",
+  // BLOOD PRESSURE
+  {
+    generic: "Telmisartan",
+    brands: ["Telma", "Telmikind"],
+    strengths: ["20 mg", "40 mg", "80 mg"],
+    form: "Tablet",
+    category: "Hypertension",
+  },
+  {
+    generic: "Amlodipine",
+    brands: ["Amlong", "Stamlo"],
+    strengths: ["2.5 mg", "5 mg", "10 mg"],
+    form: "Tablet",
+    category: "Hypertension",
+  },
+  {
+    generic: "Losartan",
+    brands: ["Losar", "Repace"],
+    strengths: ["25 mg", "50 mg", "100 mg"],
+    form: "Tablet",
+    category: "Hypertension",
+  },
+  {
+    generic: "Propranolol",
+    brands: ["Inderal", "Ciplar"],
+    strengths: ["10 mg", "20 mg", "40 mg", "80 mg"],
+    form: "Tablet",
+    category: "Hypertension/Anxiety",
+  },
 ];
 
 export default function DoctorPage() {
   const router = useRouter();
 
-  const [authorized, setAuthorized] = useState(false);
-
   const [patientName, setPatientName] = useState("");
   const [age, setAge] = useState("");
-  const [sex, setSex] = useState("");
+  const [gender, setGender] = useState("");
   const [mobile, setMobile] = useState("");
-  const [weight, setWeight] = useState("");
-  const [bp, setBp] = useState("");
-  const [diagnosis, setDiagnosis] = useState("");
   const [complaints, setComplaints] = useState("");
-  const [advice, setAdvice] = useState("");
-  const [followUp, setFollowUp] = useState("");
+  const [diagnosis, setDiagnosis] = useState("");
 
-  const [medicineSearch, setMedicineSearch] = useState("");
-  const [selectedMedicine, setSelectedMedicine] = useState("");
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<Medicine | null>(null);
+  const [brand, setBrand] = useState("");
+  const [strength, setStrength] = useState("");
   const [dose, setDose] = useState("");
   const [frequency, setFrequency] = useState("");
   const [duration, setDuration] = useState("");
   const [instruction, setInstruction] = useState("");
 
-  const [prescription, setPrescription] = useState<RxMedicine[]>([]);
+  const [rx, setRx] = useState<RxItem[]>([]);
 
   useEffect(() => {
     const loggedIn = sessionStorage.getItem("doctorLoggedIn");
-
     if (loggedIn !== "true") {
       router.replace("/doctor/login");
-      return;
     }
-
-    setAuthorized(true);
   }, [router]);
 
-  const searchResults = useMemo(() => {
-    const q = medicineSearch.trim().toLowerCase();
+  const results = useMemo(() => {
+    const q = search.trim().toLowerCase();
 
-    if (!q) return [];
+    if (q.length < 2) return [];
 
-    return medicineDatabase
+    return medicines
       .filter((m) => {
-        const combined = [
+        const text = [
           m.generic,
-          m.brand || "",
-          m.strength || "",
-          m.company || "",
           m.category,
+          m.form,
+          ...m.brands,
+          ...m.strengths,
         ]
           .join(" ")
           .toLowerCase();
 
-        return combined.includes(q);
+        return text.includes(q);
       })
       .slice(0, 12);
-  }, [medicineSearch]);
+  }, [search]);
 
-  const medicineLabel = (m: Medicine) => {
-    let text = "";
+  function chooseMedicine(m: Medicine) {
+    setSelected(m);
+    setSearch(m.generic);
+    setBrand(m.brands[0] || "");
+    setStrength(m.strengths[0] || "");
+  }
 
-    if (m.brand) {
-      text += `${m.brand} (${m.generic})`;
-    } else {
-      text += m.generic;
-    }
-
-    if (m.strength) {
-      text += ` - ${m.strength}`;
-    }
-
-    if (m.company) {
-      text += ` - ${m.company}`;
-    }
-
-    return text;
-  };
-
-  const selectMedicine = (m: Medicine) => {
-    const label = medicineLabel(m);
-    setSelectedMedicine(label);
-    setMedicineSearch(label);
-  };
-
-  const addMedicine = () => {
-    const finalMedicine = selectedMedicine || medicineSearch.trim();
-
-    if (!finalMedicine) {
-      alert("Please select or enter medicine.");
+  function addMedicine() {
+    if (!selected) {
+      alert("Please select a medicine from search results.");
       return;
     }
 
-    setPrescription((prev) => [
-      ...prev,
+    setRx((old) => [
+      ...old,
       {
-        medicine: finalMedicine,
+        id: Date.now(),
+        generic: selected.generic,
+        brand,
+        strength,
+        form: selected.form,
         dose,
         frequency,
         duration,
@@ -417,351 +503,329 @@ export default function DoctorPage() {
       },
     ]);
 
-    setMedicineSearch("");
-    setSelectedMedicine("");
+    setSearch("");
+    setSelected(null);
+    setBrand("");
+    setStrength("");
     setDose("");
     setFrequency("");
     setDuration("");
     setInstruction("");
-  };
+  }
 
-  const removeMedicine = (index: number) => {
-    setPrescription((prev) => prev.filter((_, i) => i !== index));
-  };
+  function removeMedicine(id: number) {
+    setRx((old) => old.filter((item) => item.id !== id));
+  }
 
-  const clearPrescription = () => {
-    if (!confirm("Clear complete prescription?")) return;
-
-    setPatientName("");
-    setAge("");
-    setSex("");
-    setMobile("");
-    setWeight("");
-    setBp("");
-    setDiagnosis("");
-    setComplaints("");
-    setAdvice("");
-    setFollowUp("");
-    setPrescription([]);
-  };
-
-  const logout = () => {
+  function logout() {
     sessionStorage.removeItem("doctorLoggedIn");
     router.replace("/doctor/login");
-  };
-
-  const printPrescription = () => {
-    window.print();
-  };
-
-  if (!authorized) {
-    return (
-      <main className="loading">
-        <p>Checking doctor login...</p>
-
-        <style jsx>{`
-          .loading {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: Arial, sans-serif;
-          }
-        `}</style>
-      </main>
-    );
   }
 
   return (
     <main className="page">
-      <div className="toolbar no-print">
+      <div className="topbar">
         <div>
           <h1>Neuro Mind Bloom</h1>
-          <p>Doctor Prescription Panel</p>
+          <p>Doctor Dashboard • e-Prescription</p>
         </div>
 
-        <div className="toolbarButtons">
-          <button className="secondary" onClick={clearPrescription}>
-            New Prescription
-          </button>
-
-          <button className="primary" onClick={printPrescription}>
-            Print / Save PDF
-          </button>
-
-          <button className="danger" onClick={logout}>
-            Logout
-          </button>
-        </div>
+        <button className="logout" onClick={logout}>
+          Logout
+        </button>
       </div>
 
-      <section className="prescriptionSheet">
-        <header className="rxHeader">
-          <div>
-            <h2>Dr. Kuldeep Budania</h2>
-            <div className="degree">MD Psychiatry</div>
-            <div className="speciality">
-              मानसिक रोग • नशा मुक्ति • सेक्स रोग विशेषज्ञ
-            </div>
-          </div>
+      <section className="card">
+        <h2>1. Patient Details</h2>
 
-          <div className="clinic">
-            <strong>Neuro Mind Bloom</strong>
-            <div>Psychiatry & Mental Health Clinic</div>
-          </div>
-        </header>
+        <div className="grid">
+          <input
+            placeholder="Patient name"
+            value={patientName}
+            onChange={(e) => setPatientName(e.target.value)}
+          />
 
-        <div className="divider" />
+          <input
+            placeholder="Age"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+          />
 
-        <section className="patientSection">
-          <h3>Patient Details</h3>
+          <select value={gender} onChange={(e) => setGender(e.target.value)}>
+            <option value="">Gender</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
 
-          <div className="grid4">
-            <label>
-              Patient Name
-              <input
-                value={patientName}
-                onChange={(e) => setPatientName(e.target.value)}
-                placeholder="Patient name"
-              />
-            </label>
+          <input
+            placeholder="Mobile number"
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+          />
+        </div>
+      </section>
 
-            <label>
-              Age
-              <input
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                placeholder="Age"
-              />
-            </label>
+      <section className="card">
+        <h2>2. Consultation</h2>
 
-            <label>
-              Sex
-              <select value={sex} onChange={(e) => setSex(e.target.value)}>
-                <option value="">Select</option>
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
-              </select>
-            </label>
+        <textarea
+          placeholder="Presenting complaints / history"
+          value={complaints}
+          onChange={(e) => setComplaints(e.target.value)}
+        />
 
-            <label>
-              Mobile
-              <input
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-                placeholder="Mobile"
-              />
-            </label>
+        <textarea
+          placeholder="Diagnosis"
+          value={diagnosis}
+          onChange={(e) => setDiagnosis(e.target.value)}
+        />
+      </section>
 
-            <label>
-              Weight
-              <input
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                placeholder="kg"
-              />
-            </label>
+      <section className="card">
+        <h2>3. e-Prescription</h2>
 
-            <label>
-              BP
-              <input
-                value={bp}
-                onChange={(e) => setBp(e.target.value)}
-                placeholder="120/80"
-              />
-            </label>
+        <label className="label">
+          Search Medicine / Brand / Generic
+        </label>
 
-            <label className="span2">
-              Diagnosis
-              <input
-                value={diagnosis}
-                onChange={(e) => setDiagnosis(e.target.value)}
-                placeholder="Diagnosis"
-              />
-            </label>
-          </div>
+        <div className="searchWrap">
+          <input
+            className="search"
+            placeholder="Type e.g. Escitalopram, Nexito, Olanzapine, Pantoprazole..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setSelected(null);
+            }}
+          />
 
-          <label>
-            Complaints / History
-            <textarea
-              value={complaints}
-              onChange={(e) => setComplaints(e.target.value)}
-              placeholder="Chief complaints, duration, relevant history..."
-              rows={3}
-            />
-          </label>
-        </section>
-
-        <section className="medicineSection no-print">
-          <h3>Add Medicine</h3>
-
-          <div className="medicineSearchWrap">
-            <label>
-              Search Medicine / Brand / Generic / Company
-              <input
-                value={medicineSearch}
-                onChange={(e) => {
-                  setMedicineSearch(e.target.value);
-                  setSelectedMedicine("");
-                }}
-                placeholder="Example: escitalopram, Feliz, olanzapine, Qutipin, pantoprazole..."
-                autoComplete="off"
-              />
-            </label>
-
-            {medicineSearch && searchResults.length > 0 && !selectedMedicine && (
-              <div className="suggestions">
-                {searchResults.map((m, index) => (
+          {search.trim().length >= 2 && !selected && (
+            <div className="dropdown">
+              {results.length > 0 ? (
+                results.map((m, index) => (
                   <button
                     type="button"
-                    key={`${m.generic}-${m.brand}-${index}`}
-                    className="suggestion"
-                    onClick={() => selectMedicine(m)}
+                    className="result"
+                    key={`${m.generic}-${index}`}
+                    onClick={() => chooseMedicine(m)}
                   >
-                    <strong>
-                      {m.brand ? `${m.brand} (${m.generic})` : m.generic}
-                    </strong>
+                    <strong>{m.generic}</strong>
 
                     <span>
-                      {m.strength ? `${m.strength} • ` : ""}
-                      {m.category}
-                      {m.company ? ` • ${m.company}` : ""}
+                      {m.brands.join(" • ")}
                     </span>
+
+                    <small>
+                      {m.category} | {m.form} | {m.strengths.join(", ")}
+                    </small>
                   </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="grid5">
-            <label>
-              Dose
-              <input
-                value={dose}
-                onChange={(e) => setDose(e.target.value)}
-                placeholder="e.g. 10 mg / 1 tab"
-              />
-            </label>
-
-            <label>
-              Frequency
-              <select
-                value={frequency}
-                onChange={(e) => setFrequency(e.target.value)}
-              >
-                <option value="">Select</option>
-                {frequencyOptions.map((f) => (
-                  <option key={f}>{f}</option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              Duration
-              <select
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-              >
-                <option value="">Select</option>
-                {durationOptions.map((d) => (
-                  <option key={d}>{d}</option>
-                ))}
-              </select>
-            </label>
-
-            <label className="span2">
-              Instruction
-              <input
-                value={instruction}
-                onChange={(e) => setInstruction(e.target.value)}
-                placeholder="After food / before food / bedtime / SOS..."
-              />
-            </label>
-          </div>
-
-          <button className="addButton" onClick={addMedicine}>
-            + Add Medicine
-          </button>
-        </section>
-
-        <section className="rxSection">
-          <div className="rxTitle">℞ Prescription</div>
-
-          {prescription.length === 0 ? (
-            <div className="emptyRx">No medicine added yet.</div>
-          ) : (
-            <div className="rxTableWrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Medicine</th>
-                    <th>Dose</th>
-                    <th>Frequency</th>
-                    <th>Duration</th>
-                    <th>Instruction</th>
-                    <th className="no-print">Remove</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {prescription.map((item, index) => (
-                    <tr key={`${item.medicine}-${index}`}>
-                      <td>{index + 1}</td>
-                      <td>{item.medicine}</td>
-                      <td>{item.dose || "-"}</td>
-                      <td>{item.frequency || "-"}</td>
-                      <td>{item.duration || "-"}</td>
-                      <td>{item.instruction || "-"}</td>
-                      <td className="no-print">
-                        <button
-                          className="removeButton"
-                          onClick={() => removeMedicine(index)}
-                        >
-                          ×
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))
+              ) : (
+                <div className="noResult">No matching medicine found</div>
+              )}
             </div>
           )}
-        </section>
+        </div>
 
-        <section className="adviceSection">
-          <label>
-            Advice / Investigations
-            <textarea
-              value={advice}
-              onChange={(e) => setAdvice(e.target.value)}
-              rows={4}
-              placeholder="Advice, investigations, psychotherapy, lifestyle instructions..."
-            />
-          </label>
+        {selected && (
+          <div className="selectedBox">
+            <div className="selectedTitle">
+              {selected.generic}
+              <span>{selected.category}</span>
+            </div>
 
-          <label>
-            Follow-up
-            <input
-              value={followUp}
-              onChange={(e) => setFollowUp(e.target.value)}
-              placeholder="e.g. After 2 weeks / 1 month"
-            />
-          </label>
-        </section>
+            <div className="rxGrid">
+              <div>
+                <label>Brand</label>
+                <input
+                  list="brandList"
+                  value={brand}
+                  onChange={(e) => setBrand(e.target.value)}
+                  placeholder="Brand"
+                />
 
-        <footer className="footer">
-          <div>
-            <strong>Note:</strong> Prescription generated by treating doctor.
+                <datalist id="brandList">
+                  {selected.brands.map((b) => (
+                    <option value={b} key={b} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div>
+                <label>Strength</label>
+                <select
+                  value={strength}
+                  onChange={(e) => setStrength(e.target.value)}
+                >
+                  {selected.strengths.map((s) => (
+                    <option key={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label>Dose</label>
+                <input
+                  placeholder="e.g. 1 tablet"
+                  value={dose}
+                  onChange={(e) => setDose(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Frequency</label>
+                <input
+                  list="frequencyList"
+                  placeholder="e.g. 1-0-1"
+                  value={frequency}
+                  onChange={(e) => setFrequency(e.target.value)}
+                />
+
+                <datalist id="frequencyList">
+                  <option value="1-0-0" />
+                  <option value="0-1-0" />
+                  <option value="0-0-1" />
+                  <option value="1-0-1" />
+                  <option value="1-1-1" />
+                  <option value="SOS" />
+                  <option value="HS" />
+                </datalist>
+              </div>
+
+              <div>
+                <label>Duration</label>
+                <input
+                  placeholder="e.g. 14 days"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Instruction</label>
+                <input
+                  placeholder="e.g. after food"
+                  value={instruction}
+                  onChange={(e) => setInstruction(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button className="primary" onClick={addMedicine}>
+              + Add Medicine
+            </button>
           </div>
+        )}
+
+        {rx.length > 0 && (
+          <div className="rxList">
+            <h3>Rx</h3>
+
+            {rx.map((item, index) => (
+              <div className="rxItem" key={item.id}>
+                <div>
+                  <strong>
+                    {index + 1}. {item.brand || item.generic}
+                  </strong>
+
+                  <div className="generic">
+                    {item.generic}
+                    {item.strength ? ` • ${item.strength}` : ""}
+                    {item.form ? ` • ${item.form}` : ""}
+                  </div>
+
+                  <div>
+                    {[item.dose, item.frequency, item.duration]
+                      .filter(Boolean)
+                      .join(" • ")}
+                  </div>
+
+                  {item.instruction && (
+                    <small>{item.instruction}</small>
+                  )}
+                </div>
+
+                <button
+                  className="remove"
+                  onClick={() => removeMedicine(item.id)}
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="card preview">
+        <h2>Prescription Preview</h2>
+
+        <div className="prescription">
+          <div className="doctor">
+            <h2>Dr. Kuldeep Budania</h2>
+            <strong>MD Psychiatry</strong>
+            <p>Neuro Mind Bloom</p>
+          </div>
+
+          <hr />
+
+          <p>
+            <b>Patient:</b> {patientName || "—"}
+          </p>
+
+          <p>
+            <b>Age/Gender:</b> {age || "—"} {gender ? `/ ${gender}` : ""}
+          </p>
+
+          <p>
+            <b>Mobile:</b> {mobile || "—"}
+          </p>
+
+          <p>
+            <b>Complaints:</b> {complaints || "—"}
+          </p>
+
+          <p>
+            <b>Diagnosis:</b> {diagnosis || "—"}
+          </p>
+
+          <h3>Rx</h3>
+
+          {rx.length === 0 ? (
+            <p>No medicines added.</p>
+          ) : (
+            rx.map((item, index) => (
+              <div className="printRx" key={item.id}>
+                <b>
+                  {index + 1}. {item.brand || item.generic}
+                  {item.strength ? ` ${item.strength}` : ""}
+                </b>
+
+                {item.brand && item.brand !== item.generic && (
+                  <span> ({item.generic})</span>
+                )}
+
+                <div>
+                  {[item.dose, item.frequency, item.duration]
+                    .filter(Boolean)
+                    .join(" • ")}
+                </div>
+
+                {item.instruction && <small>{item.instruction}</small>}
+              </div>
+            ))
+          )}
 
           <div className="signature">
-            <div className="signatureSpace" />
-            <strong>Dr. Kuldeep Budania</strong>
-            <div>MD Psychiatry</div>
+            <p>Dr. Kuldeep Budania</p>
+            <p>MD Psychiatry</p>
           </div>
-        </footer>
+        </div>
+
+        <button className="print" onClick={() => window.print()}>
+          Print Prescription
+        </button>
       </section>
 
       <style jsx>{`
@@ -771,333 +835,262 @@ export default function DoctorPage() {
 
         .page {
           min-height: 100vh;
-          background: #f3f6fa;
-          padding: 22px;
-          font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
-          color: #172033;
+          background: #f4f7f7;
+          padding: 28px;
+          color: #18343b;
+          font-family: Arial, sans-serif;
         }
 
-        .toolbar {
-          max-width: 1200px;
-          margin: 0 auto 18px;
-          background: white;
-          padding: 16px 20px;
-          border-radius: 14px;
+        .topbar {
+          max-width: 1100px;
+          margin: 0 auto 22px;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          gap: 16px;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
         }
 
-        .toolbar h1 {
+        .topbar h1 {
           margin: 0;
-          font-size: 24px;
+          font-size: 30px;
         }
 
-        .toolbar p {
-          margin: 4px 0 0;
-          color: #64748b;
+        .topbar p {
+          margin: 6px 0 0;
+          color: #63777b;
         }
 
-        .toolbarButtons {
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
-        }
-
-        button {
-          cursor: pointer;
-          border: none;
-          font-weight: 600;
-        }
-
-        .primary,
-        .secondary,
-        .danger {
-          padding: 10px 14px;
-          border-radius: 9px;
-        }
-
-        .primary {
-          background: #1d4ed8;
-          color: white;
-        }
-
-        .secondary {
-          background: #e2e8f0;
-          color: #172033;
-        }
-
-        .danger {
-          background: #fee2e2;
-          color: #b91c1c;
-        }
-
-        .prescriptionSheet {
-          max-width: 1200px;
-          margin: auto;
+        .card {
+          max-width: 1100px;
+          margin: 18px auto;
           background: white;
-          padding: 26px;
-          border-radius: 16px;
-          box-shadow: 0 5px 25px rgba(0, 0, 0, 0.07);
+          border-radius: 18px;
+          padding: 24px;
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
         }
 
-        .rxHeader {
-          display: flex;
-          justify-content: space-between;
-          gap: 20px;
-          align-items: flex-start;
+        h2 {
+          margin-top: 0;
         }
 
-        .rxHeader h2 {
-          margin: 0;
-          font-size: 26px;
-        }
-
-        .degree {
-          margin-top: 4px;
-          font-weight: 700;
-        }
-
-        .speciality {
-          margin-top: 5px;
-          color: #475569;
-        }
-
-        .clinic {
-          text-align: right;
-          line-height: 1.6;
-        }
-
-        .clinic strong {
-          font-size: 21px;
-        }
-
-        .divider {
-          height: 2px;
-          background: #dbe4ee;
-          margin: 18px 0;
-        }
-
-        h3 {
-          margin: 0 0 14px;
-          font-size: 18px;
-        }
-
-        .patientSection,
-        .medicineSection,
-        .rxSection,
-        .adviceSection {
-          margin-top: 24px;
-        }
-
-        label {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          font-weight: 600;
-          font-size: 14px;
+        .grid,
+        .rxGrid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 14px;
         }
 
         input,
         select,
         textarea {
           width: 100%;
-          border: 1px solid #cbd5e1;
-          border-radius: 8px;
-          padding: 10px 11px;
+          border: 1px solid #ccd7d9;
+          border-radius: 10px;
+          padding: 13px;
+          font-size: 15px;
           background: white;
-          color: #172033;
-          font-size: 14px;
-          outline: none;
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
-          border-color: #2563eb;
         }
 
         textarea {
+          min-height: 110px;
           resize: vertical;
-        }
-
-        .grid4 {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 12px;
           margin-bottom: 12px;
         }
 
-        .grid5 {
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          gap: 12px;
-          margin-top: 12px;
+        .label,
+        .rxGrid label {
+          display: block;
+          font-weight: 700;
+          margin-bottom: 7px;
         }
 
-        .span2 {
-          grid-column: span 2;
-        }
-
-        .medicineSearchWrap {
+        .searchWrap {
           position: relative;
         }
 
-        .suggestions {
+        .search {
+          font-size: 17px;
+        }
+
+        .dropdown {
           position: absolute;
+          top: calc(100% + 4px);
           left: 0;
           right: 0;
-          top: calc(100% + 4px);
           background: white;
-          border: 1px solid #cbd5e1;
-          border-radius: 10px;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-          max-height: 360px;
+          border: 1px solid #ccd7d9;
+          border-radius: 12px;
+          max-height: 390px;
           overflow-y: auto;
           z-index: 50;
+          box-shadow: 0 12px 35px rgba(0, 0, 0, 0.16);
         }
 
-        .suggestion {
+        .result {
           width: 100%;
-          background: white;
-          padding: 11px 12px;
-          text-align: left;
-          border-bottom: 1px solid #eef2f7;
           display: flex;
           flex-direction: column;
-          gap: 3px;
+          align-items: flex-start;
+          gap: 4px;
+          padding: 13px;
+          border: 0;
+          border-bottom: 1px solid #edf1f2;
+          background: white;
+          cursor: pointer;
+          text-align: left;
         }
 
-        .suggestion:hover {
-          background: #eff6ff;
+        .result:hover {
+          background: #f0f8f7;
         }
 
-        .suggestion span {
-          font-size: 12px;
-          color: #64748b;
-          font-weight: 400;
+        .result strong {
+          font-size: 16px;
         }
 
-        .addButton {
-          margin-top: 14px;
-          padding: 10px 16px;
-          border-radius: 8px;
-          background: #0f766e;
+        .result span {
+          color: #245c63;
+        }
+
+        .result small {
+          color: #6e7e82;
+        }
+
+        .noResult {
+          padding: 18px;
+          color: #777;
+        }
+
+        .selectedBox {
+          margin-top: 18px;
+          padding: 18px;
+          border-radius: 14px;
+          background: #f5faf9;
+          border: 1px solid #dce8e6;
+        }
+
+        .selectedTitle {
+          font-size: 20px;
+          font-weight: 700;
+          margin-bottom: 16px;
+        }
+
+        .selectedTitle span {
+          margin-left: 10px;
+          font-size: 13px;
+          font-weight: 500;
+          background: #dcefed;
+          padding: 5px 8px;
+          border-radius: 20px;
+        }
+
+        .primary,
+        .print,
+        .logout {
+          border: 0;
+          border-radius: 10px;
+          padding: 12px 18px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .primary,
+        .print {
+          margin-top: 16px;
+          background: #245d63;
           color: white;
         }
 
-        .rxTitle {
-          font-size: 25px;
-          font-weight: 700;
-          margin-bottom: 12px;
+        .logout {
+          background: #e7eeee;
+          color: #23464b;
         }
 
-        .emptyRx {
-          padding: 20px;
-          border: 1px dashed #cbd5e1;
-          border-radius: 10px;
-          color: #64748b;
-          text-align: center;
+        .rxList {
+          margin-top: 25px;
         }
 
-        .rxTableWrap {
-          overflow-x: auto;
-        }
-
-        table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-
-        th,
-        td {
-          border: 1px solid #dbe4ee;
-          padding: 9px;
-          text-align: left;
-          vertical-align: top;
-          font-size: 13px;
-        }
-
-        th {
-          background: #f8fafc;
-        }
-
-        .removeButton {
-          width: 30px;
-          height: 30px;
-          border-radius: 6px;
-          background: #fee2e2;
-          color: #b91c1c;
-          font-size: 18px;
-        }
-
-        .adviceSection {
-          display: grid;
-          grid-template-columns: 2fr 1fr;
-          gap: 16px;
-        }
-
-        .footer {
-          margin-top: 38px;
-          padding-top: 18px;
-          border-top: 1px solid #dbe4ee;
+        .rxItem {
           display: flex;
           justify-content: space-between;
           gap: 20px;
+          padding: 14px 0;
+          border-bottom: 1px solid #e3e8e9;
+        }
+
+        .generic {
+          color: #587176;
+          margin: 5px 0;
+        }
+
+        .remove {
+          border: 0;
+          background: #fff0f0;
+          color: #b22929;
+          border-radius: 8px;
+          padding: 8px 12px;
+          cursor: pointer;
+          height: fit-content;
+        }
+
+        .prescription {
+          border: 1px solid #d8e0e1;
+          padding: 28px;
+          border-radius: 12px;
+          background: white;
+        }
+
+        .doctor {
+          text-align: center;
+        }
+
+        .doctor h2 {
+          margin-bottom: 5px;
+        }
+
+        .doctor p {
+          margin-top: 5px;
+        }
+
+        .printRx {
+          margin: 15px 0;
+          line-height: 1.6;
         }
 
         .signature {
-          text-align: center;
-          min-width: 220px;
+          text-align: right;
+          margin-top: 50px;
+          line-height: 1.2;
         }
 
-        .signatureSpace {
-          height: 45px;
+        .signature p {
+          margin: 3px;
         }
 
-        @media (max-width: 850px) {
+        @media (max-width: 700px) {
           .page {
-            padding: 10px;
+            padding: 12px;
           }
 
-          .prescriptionSheet {
-            padding: 16px;
-          }
-
-          .toolbar,
-          .rxHeader,
-          .footer {
-            flex-direction: column;
-          }
-
-          .clinic {
-            text-align: left;
-          }
-
-          .grid4,
-          .grid5,
-          .adviceSection {
+          .grid,
+          .rxGrid {
             grid-template-columns: 1fr;
           }
 
-          .span2 {
-            grid-column: span 1;
+          .topbar h1 {
+            font-size: 23px;
+          }
+
+          .card {
+            padding: 17px;
           }
         }
 
         @media print {
-          @page {
-            size: A4;
-            margin: 12mm;
-          }
-
-          body {
-            background: white !important;
+          .topbar,
+          .page > .card:not(.preview),
+          .preview > h2,
+          .print {
+            display: none !important;
           }
 
           .page {
@@ -1105,32 +1098,14 @@ export default function DoctorPage() {
             background: white;
           }
 
-          .prescriptionSheet {
-            max-width: none;
+          .preview {
             box-shadow: none;
-            border-radius: 0;
+            margin: 0;
             padding: 0;
           }
 
-          .no-print {
-            display: none !important;
-          }
-
-          input,
-          select,
-          textarea {
-            border: none;
-            padding-left: 0;
-            padding-right: 0;
-            appearance: none;
-          }
-
-          textarea {
-            resize: none;
-          }
-
-          .rxSection {
-            page-break-inside: avoid;
+          .prescription {
+            border: 0;
           }
         }
       `}</style>
