@@ -1,0 +1,44 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../../firebase";
+
+export default function DoctorLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (pathname === "/doctor/login") {
+      setReady(true);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setReady(true);
+      } else {
+        setReady(false);
+        router.replace("/doctor/login");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [pathname, router]);
+
+  if (pathname !== "/doctor/login" && !ready) {
+    return (
+      <div style={{ padding: 40, textAlign: "center" }}>
+        Checking doctor login...
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
