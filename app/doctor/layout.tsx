@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "../../firebase";
+import { auth } from "../firebase";
 
 const DOCTOR_EMAIL = "drkuldeepbudania23@gmail.com";
 
@@ -14,7 +14,6 @@ export default function DoctorLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-
   const isLoginPage = pathname === "/doctor/login";
 
   const [loading, setLoading] = useState(!isLoginPage);
@@ -27,13 +26,11 @@ export default function DoctorLayout({
       return;
     }
 
-    setAuthorized(false);
-    setLoading(true);
-
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      const email = user?.email?.toLowerCase();
-
-      if (user && email === DOCTOR_EMAIL.toLowerCase()) {
+      if (
+        user &&
+        user.email?.toLowerCase() === DOCTOR_EMAIL.toLowerCase()
+      ) {
         setAuthorized(true);
         setLoading(false);
       } else {
@@ -62,15 +59,13 @@ export default function DoctorLayout({
 
   if (loading || !authorized) {
     return (
-      <main
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
+      <main style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "Arial, sans-serif"
+      }}>
         Checking doctor login...
       </main>
     );
@@ -78,15 +73,13 @@ export default function DoctorLayout({
 
   return (
     <>
-      <div
-        style={{
-          maxWidth: 900,
-          margin: "18px auto 0",
-          padding: "0 20px",
-          display: "flex",
-          justifyContent: "flex-end",
-        }}
-      >
+      <div style={{
+        maxWidth: 900,
+        margin: "18px auto 0",
+        padding: "0 20px",
+        display: "flex",
+        justifyContent: "flex-end"
+      }}>
         <button
           onClick={handleLogout}
           style={{
@@ -95,7 +88,7 @@ export default function DoctorLayout({
             borderRadius: 8,
             background: "white",
             cursor: "pointer",
-            fontWeight: 600,
+            fontWeight: 600
           }}
         >
           Logout
