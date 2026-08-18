@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../../firebase";
+
+const DOCTOR_EMAIL = "drkuldeepbudania23@gmail.com";
 
 export default function DoctorLayout({
   children,
@@ -12,33 +14,91 @@ export default function DoctorLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [ready, setReady] = useState(false);
+
+  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
+
+  const isLoginPage = pathname === "/doctor/login";
 
   useEffect(() => {
-    if (pathname === "/doctor/login") {
-      setReady(true);
+    if (isLoginPage) {
+      setAuthorized(true);
+      setLoading(false);
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setReady(true);
-      } else {
-        setReady(false);
-        router.replace("/doctor/login");
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      const email = user?.email?.toLowerCase();
+
+      if (user && email === DOCTOR_EMAIL.toLowerCase()) {
+        setAuthorized(true);
+        setLoading(false);
+        return;
       }
+
+      if (user) {
+        await signOut(auth);
+      }
+
+      setAuthorized(false);
+      setLoading(false);
+      router.replace("/doctor/login");
     });
 
     return () => unsubscribe();
-  }, [pathname, router]);
+  }, [isLoginPage, router]);
 
-  if (pathname !== "/doctor/login" && !ready) {
+  async function logout() {
+    await signOut(auth);
+    router.replace("/doctor/login");
+  }
+
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
+  if (loading || !authorized) {
     return (
-      <div style={{ padding: 40, textAlign: "center" }}>
-        Checking doctor login...
-      </div>
+      <main
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "Arial, sans-serif",
+        }}
+      >
+        <p>Checking doctor login...</p>
+      </main>
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          maxWidth: 1000,
+          margin: "15px auto 0",
+          padding: "0 20px",
+        }}
+      >
+        <button
+          onClick={logout}
+          style={{
+            border: "1px solid #ccc",
+            background: "white",
+            padding: "9px 16px",
+            borderRadius: 8,
+            cursor: "pointer",
+          }}
+        >
+          Logout
+        </button>
+      </div>
+
+      {children}
+    </>
+  );
 }
