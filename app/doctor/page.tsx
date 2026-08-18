@@ -1,18 +1,39 @@
-"use client";
-
-import Link from "next/link";
+﻿import Link from "next/link";
 
 export default function DoctorDashboard() {
-  return (
-    <main style={{ maxWidth: 900, margin: "40px auto", padding: 20, fontFamily: "Arial" }}>
-      <h1>Neuro Mind Bloom</h1>
-      <h2>Doctor Dashboard</h2>
-      <p>Dr. Kuldeep Budania - MD Psychiatry</p>
+  const cards = [
+    ["Appointments","/doctor/appointments"],
+    ["E-Prescription","/doctor/prescription"],
+    ["Follow-up","/doctor/follow-up"],
+    ["Payment","/doctor/payment"]
+  ];
 
-      <div style={{ display: "grid", gap: 20, marginTop: 30 }}>
-        <Link href="/doctor/prescription">e-Prescription</Link>
-        <Link href="/doctor/follow-up">Patient Follow-up</Link>
-        <Link href="/doctor/payment">Payment</Link>
+  return (
+    <main style={{padding:30,maxWidth:1100,margin:"auto"}}>
+      <h1>Doctor Dashboard</h1>
+      <p>Manage online consultation workflow from one place.</p>
+
+      <div style={{
+        display:"grid",
+        gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",
+        gap:18,
+        marginTop:25
+      }}>
+        {cards.map(([name,url]) => (
+          <Link key={url} href={url} style={{
+            display:"block",
+            padding:26,
+            border:"1px solid #ddd",
+            borderRadius:16,
+            textDecoration:"none",
+            color:"#123",
+            background:"white",
+            boxShadow:"0 5px 18px rgba(0,0,0,.06)"
+          }}>
+            <h2>{name}</h2>
+            <p>Open →</p>
+          </Link>
+        ))}
       </div>
     </main>
   );

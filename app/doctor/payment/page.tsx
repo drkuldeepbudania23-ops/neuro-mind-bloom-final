@@ -1,35 +1,43 @@
-"use client";
+﻿"use client";
 
 export default function PaymentPage() {
   return (
-    <main style={{
-      maxWidth: 650,
-      margin: "50px auto",
-      padding: 25,
-      fontFamily: "Arial",
-      textAlign: "center"
-    }}>
-      <h1>Neuro Mind Bloom</h1>
-      <h2>Consultation Payment</h2>
+    <main style={{padding:30,maxWidth:650,margin:"auto"}}>
+      <h1>Payment</h1>
 
       <div style={{
-        border: "1px solid #ddd",
-        borderRadius: 14,
-        padding: 30,
-        marginTop: 25
+        border:"1px solid #ddd",
+        borderRadius:14,
+        padding:24
       }}>
-        <h3>Video Consultation</h3>
-        <h1>Rs. 500</h1>
+        <h2>Consultation Fee</h2>
+        <p style={{fontSize:28,fontWeight:700}}>₹500</p>
 
-        <p>Online payment integration will be enabled here.</p>
+        <input
+          style={input}
+          placeholder="Patient name"
+        />
+
+        <input
+          style={input}
+          placeholder="Payment reference / UTR"
+        />
+
+        <select style={input}>
+          <option>Pending</option>
+          <option>Paid</option>
+        </select>
 
         <button
-          onClick={() => alert("Payment gateway will be connected in the next step.")}
-          style={{ padding: "13px 24px", borderRadius: 8 }}
+          style={button}
+          onClick={() => alert("Payment status saved")}
         >
-          Pay Rs. 500
+          Save Payment
         </button>
       </div>
     </main>
   );
 }
+
+const input={width:"100%",padding:12,marginBottom:12,border:"1px solid #bbb",borderRadius:8,boxSizing:"border-box" as const};
+const button={padding:"12px 20px",border:0,borderRadius:8,background:"#126a73",color:"white",cursor:"pointer"};

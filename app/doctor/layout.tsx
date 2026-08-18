@@ -1,101 +1,76 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { ReactNode, useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "../firebase";
+import { getFirebaseAuth } from "../../lib/firebase";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-const DOCTOR_EMAIL = "drkuldeepbudania23@gmail.com";
-
-export default function DoctorLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const pathname = usePathname();
+export default function DoctorLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const isLoginPage = pathname === "/doctor/login";
-
-  const [loading, setLoading] = useState(!isLoginPage);
-  const [authorized, setAuthorized] = useState(isLoginPage);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (isLoginPage) {
-      setAuthorized(true);
-      setLoading(false);
-      return;
-    }
+    const auth = getFirebaseAuth();
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (
-        user &&
-        user.email?.toLowerCase() === DOCTOR_EMAIL.toLowerCase()
-      ) {
-        setAuthorized(true);
-        setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.replace("/login");
       } else {
-        if (user) {
-          await signOut(auth);
-        }
-
-        setAuthorized(false);
-        setLoading(false);
-        router.replace("/doctor/login");
+        setReady(true);
       }
     });
 
     return () => unsubscribe();
-  }, [isLoginPage, router]);
+  }, [router]);
 
-  async function handleLogout() {
+  async function logout() {
+    const auth = getFirebaseAuth();
     await signOut(auth);
-    router.replace("/doctor/login");
-    router.refresh();
+    router.replace("/login");
   }
 
-  if (isLoginPage) {
-    return <>{children}</>;
-  }
-
-  if (loading || !authorized) {
-    return (
-      <main style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontFamily: "Arial, sans-serif"
-      }}>
-        Checking doctor login...
-      </main>
-    );
+  if (!ready) {
+    return <div style={{ padding: 40 }}>Checking doctor login...</div>;
   }
 
   return (
     <>
-      <div style={{
-        maxWidth: 900,
-        margin: "18px auto 0",
-        padding: "0 20px",
+      <header style={{
+        padding: "14px 20px",
+        background: "#0f5961",
+        color: "white",
         display: "flex",
-        justifyContent: "flex-end"
+        gap: 18,
+        alignItems: "center",
+        flexWrap: "wrap"
       }}>
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: "10px 16px",
-            border: "1px solid #ccc",
-            borderRadius: 8,
-            background: "white",
-            cursor: "pointer",
-            fontWeight: 600
-          }}
-        >
+        <strong style={{ marginRight: "auto" }}>
+          Neuro Mind Bloom — Doctor
+        </strong>
+
+        <Link href="/doctor" style={link}>Dashboard</Link>
+        <Link href="/doctor/appointments" style={link}>Appointments</Link>
+        <Link href="/doctor/prescription" style={link}>E-Prescription</Link>
+        <Link href="/doctor/follow-up" style={link}>Follow-up</Link>
+        <Link href="/doctor/payment" style={link}>Payment</Link>
+
+        <button onClick={logout} style={{
+          border: 0,
+          padding: "9px 14px",
+          borderRadius: 8,
+          cursor: "pointer"
+        }}>
           Logout
         </button>
-      </div>
+      </header>
 
       {children}
     </>
   );
 }
+
+const link = {
+  color: "white",
+  textDecoration: "none"
+};

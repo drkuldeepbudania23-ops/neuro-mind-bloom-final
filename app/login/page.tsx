@@ -1,216 +1,129 @@
 ﻿"use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { FormEvent, useState } from "react";
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from "firebase/auth";
+import { getFirebaseAuth } from "../../lib/firebase";
 import { useRouter } from "next/navigation";
-import { auth } from "../firebase";
 
-const DOCTOR_EMAIL = "drkuldeepbudania23@gmail.com";
-
-export default function DoctorLoginPage() {
+export default function LoginPage() {
   const router = useRouter();
-
-  const [email, setEmail] = useState(DOCTOR_EMAIL);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (
-      auth.currentUser &&
-      auth.currentUser.email?.toLowerCase() === DOCTOR_EMAIL.toLowerCase()
-    ) {
-      router.replace("/doctor");
-    }
-  }, [router]);
-
-  async function handleLogin(e: FormEvent<HTMLFormElement>) {
+  async function login(e: FormEvent) {
     e.preventDefault();
-
     setLoading(true);
-    setMessage("");
+    setMsg("");
 
     try {
-      const result = await signInWithEmailAndPassword(
-        auth,
-        email.trim(),
-        password
-      );
-
-      if (
-        result.user.email?.toLowerCase() !== DOCTOR_EMAIL.toLowerCase()
-      ) {
-        await signOut(auth);
-        setMessage("This account is not authorised for Doctor Login.");
-        return;
-      }
-
-      router.push("/doctor");
+      const auth = getFirebaseAuth();
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      router.replace("/doctor");
     } catch (error: any) {
-      console.error(error);
-
-      if (error?.code === "auth/invalid-credential") {
-        setMessage("Email or password is incorrect.");
-      } else if (error?.code === "auth/too-many-requests") {
-        setMessage("Too many attempts. Please try again later.");
-      } else {
-        setMessage("Login failed. Please check Firebase Authentication.");
-      }
+      setMsg(error?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   }
 
+  async function forgotPassword() {
+    if (!email.trim()) {
+      setMsg("पहले registered email लिखें।");
+      return;
+    }
+
+    try {
+      const auth = getFirebaseAuth();
+      await sendPasswordResetEmail(auth, email.trim());
+      setMsg("Password reset email भेज दिया गया है।");
+    } catch (error: any) {
+      setMsg(error?.message || "Reset email नहीं भेजा जा सका।");
+    }
+  }
+
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "24px",
-        background:
-          "linear-gradient(135deg,#eef9f7 0%,#ffffff 45%,#eef3ff 100%)",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "430px",
-          background: "white",
-          borderRadius: "24px",
-          padding: "32px",
-          boxShadow: "0 20px 55px rgba(0,0,0,0.10)",
-          border: "1px solid #e5e7eb",
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: "26px" }}>
-          <div style={{ fontSize: "42px", marginBottom: "8px" }}>🧠</div>
+    <main style={{
+      minHeight: "100vh",
+      display: "grid",
+      placeItems: "center",
+      background: "#f4f8f8",
+      padding: 20
+    }}>
+      <form onSubmit={login} style={{
+        width: "100%",
+        maxWidth: 420,
+        background: "white",
+        padding: 32,
+        borderRadius: 18,
+        boxShadow: "0 10px 35px rgba(0,0,0,.10)"
+      }}>
+        <h1>Doctor Login</h1>
+        <p>Neuro Mind Bloom</p>
 
-          <h1
-            style={{
-              margin: 0,
-              fontSize: "28px",
-              color: "#123d40",
-            }}
-          >
-            Neuro Mind Bloom
-          </h1>
+        <input
+          type="email"
+          placeholder="Registered email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          style={input}
+        />
 
-          <p
-            style={{
-              marginTop: "8px",
-              color: "#64748b",
-            }}
-          >
-            Doctor Login
-          </p>
-        </div>
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          style={input}
+        />
 
-        <form onSubmit={handleLogin}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "7px",
-              fontWeight: 600,
-            }}
-          >
-            Doctor Email
-          </label>
-
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{
-              width: "100%",
-              boxSizing: "border-box",
-              padding: "13px",
-              borderRadius: "10px",
-              border: "1px solid #cbd5e1",
-              marginBottom: "18px",
-              fontSize: "15px",
-            }}
-          />
-
-          <label
-            style={{
-              display: "block",
-              marginBottom: "7px",
-              fontWeight: 600,
-            }}
-          >
-            Password
-          </label>
-
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="Enter password"
-            style={{
-              width: "100%",
-              boxSizing: "border-box",
-              padding: "13px",
-              borderRadius: "10px",
-              border: "1px solid #cbd5e1",
-              marginBottom: "18px",
-              fontSize: "15px",
-            }}
-          />
-
-          {message && (
-            <div
-              style={{
-                background: "#fff1f2",
-                color: "#be123c",
-                padding: "10px 12px",
-                borderRadius: "8px",
-                marginBottom: "16px",
-                fontSize: "14px",
-              }}
-            >
-              {message}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              border: 0,
-              borderRadius: "12px",
-              padding: "14px",
-              cursor: "pointer",
-              fontWeight: 700,
-              fontSize: "16px",
-              background: "#136f63",
-              color: "white",
-            }}
-          >
-            {loading ? "Signing in..." : "Login as Doctor"}
-          </button>
-        </form>
-
-        <button
-          type="button"
-          onClick={() => router.push("/")}
-          style={{
-            width: "100%",
-            marginTop: "13px",
-            padding: "11px",
-            borderRadius: "10px",
-            background: "white",
-            border: "1px solid #d1d5db",
-            cursor: "pointer",
-          }}
-        >
-          ← Back to Website
+        <button type="submit" disabled={loading} style={primary}>
+          {loading ? "Signing in..." : "Login"}
         </button>
-      </div>
+
+        <button type="button" onClick={forgotPassword} style={secondary}>
+          Forgot Password
+        </button>
+
+        {msg && <p>{msg}</p>}
+      </form>
     </main>
   );
 }
+
+const input = {
+  width: "100%",
+  padding: "13px",
+  marginBottom: "12px",
+  border: "1px solid #ccc",
+  borderRadius: "10px",
+  boxSizing: "border-box" as const
+};
+
+const primary = {
+  width: "100%",
+  padding: "13px",
+  border: 0,
+  borderRadius: "10px",
+  background: "#126a73",
+  color: "white",
+  fontWeight: 700,
+  cursor: "pointer"
+};
+
+const secondary = {
+  width: "100%",
+  marginTop: "10px",
+  padding: "12px",
+  border: "1px solid #126a73",
+  borderRadius: "10px",
+  background: "white",
+  color: "#126a73",
+  cursor: "pointer"
+};
