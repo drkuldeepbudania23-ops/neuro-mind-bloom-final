@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import { auth, db } from "../../../lib/firebase";
 import { useEffect, useState } from "react";
 import {
   collection,
@@ -9,19 +10,15 @@ import {
   query,
   updateDoc,
 } from "firebase/firestore";
-import { db } from "../../../lib/firebase";
 
 type Appointment = {
   id: string;
   patientName?: string;
   mobile?: string;
-  age?: string;
-  sex?: string;
   service?: string;
-  fee?: number;
-  appointmentDate?: string;
-  appointmentTime?: string;
-  problem?: string;
+  preferredDate?: string;
+  preferredTime?: string;
+  concern?: string;
   status?: string;
   source?: string;
 };
@@ -40,17 +37,19 @@ export default function DoctorAppointmentsPage() {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        setAppointments(
-          snapshot.docs.map((d) => ({
-            id: d.id,
-            ...(d.data() as Omit<Appointment, "id">),
-          }))
-        );
+        const rows = snapshot.docs.map((item) => ({
+          id: item.id,
+          ...item.data(),
+        })) as Appointment[];
+
+        setAppointments(rows);
         setLoading(false);
       },
       (err) => {
         console.error(err);
-        setError(err.message);
+        setError(
+          "Appointments load nahi hui. Firestore connection/rules check karein."
+        );
         setLoading(false);
       }
     );
@@ -58,246 +57,236 @@ export default function DoctorAppointmentsPage() {
     return () => unsubscribe();
   }, []);
 
-  async function changeStatus(id: string, status: string) {
+  async function updateStatus(id: string, status: string) {
     try {
       await updateDoc(doc(db, "appointments", id), {
         status,
       });
-    } catch (err: any) {
-      alert(err?.message || "Status update failed.");
+    } catch (err) {
+      console.error(err);
+      alert("Status update nahi hua.");
     }
   }
 
-  function doctorWhatsApp(a: Appointment) {
-    const text = [
-      "New Appointment - Neuro Mind Bloom",
-      "",
-      `Patient: ${a.patientName || ""}`,
-      `Mobile: ${a.mobile || ""}`,
-      `Service: ${a.service || ""}`,
-      `Fee: ₹${a.fee || ""}`,
-      `Date: ${a.appointmentDate || ""}`,
-      `Time: ${a.appointmentTime || ""}`,
-      `Problem: ${a.problem || ""}`,
-      `Status: ${a.status || "New"}`,
-    ].join("\n");
-
-    window.open(
-      `https://wa.me/?text=${encodeURIComponent(text)}`,
-      "_blank"
-    );
-  }
-
   return (
-    <main style={s.page}>
-      <div style={s.header}>
-        <div>
-          <h1 style={{ margin: 0 }}>Appointments</h1>
-          <p style={s.muted}>
-            Website bookings appear here automatically.
-          </p>
-        </div>
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#f4f7f8",
+        padding: 24,
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+        }}
+      >
+        <h1
+          style={{
+            marginBottom: 6,
+            color: "#12343b",
+          }}
+        >
+          Patient Appointments
+        </h1>
 
-        <div style={s.badge}>
-          {appointments.length} appointment(s)
-        </div>
-      </div>
+        <p
+          style={{
+            marginTop: 0,
+            color: "#64748b",
+          }}
+        >
+          Website appointment requests appear here automatically.
+        </p>
 
-      {loading && <div style={s.card}>Loading appointments...</div>}
+        {loading && <p>Loading appointments...</p>}
 
-      {error && (
-        <div style={s.error}>
-          Firestore error: {error}
-        </div>
-      )}
+        {error && (
+          <div
+            style={{
+              background: "#fee2e2",
+              color: "#991b1b",
+              padding: 14,
+              borderRadius: 10,
+              marginBottom: 18,
+            }}
+          >
+            {error}
+          </div>
+        )}
 
-      {!loading && !error && appointments.length === 0 && (
-        <div style={s.card}>
-          No website appointments yet.
-        </div>
-      )}
+        {!loading && !error && appointments.length === 0 && (
+          <div
+            style={{
+              background: "white",
+              padding: 24,
+              borderRadius: 14,
+            }}
+          >
+            Abhi koi appointment nahi hai.
+          </div>
+        )}
 
-      <div style={s.list}>
-        {appointments.map((a) => (
-          <article key={a.id} style={s.card}>
-            <div style={s.top}>
-              <div>
-                <h2 style={{ margin: 0 }}>
-                  {a.patientName || "Patient"}
-                </h2>
-                <div style={s.muted}>
-                  {a.mobile || "No mobile"}
+        <div
+          style={{
+            display: "grid",
+            gap: 16,
+          }}
+        >
+          {appointments.map((appointment) => {
+            const cleanMobile = (appointment.mobile || "").replace(/\D/g, "");
+
+            const whatsappNumber =
+              cleanMobile.length === 10
+                ? `91${cleanMobile}`
+                : cleanMobile;
+
+            const whatsappText = encodeURIComponent(
+              `Hello ${appointment.patientName || ""}, this is Neuro Mind Bloom regarding your appointment request for ${
+                appointment.service || "consultation"
+              } on ${appointment.preferredDate || ""} at ${
+                appointment.preferredTime || ""
+              }.`
+            );
+
+            return (
+              <div
+                key={appointment.id}
+                style={{
+                  background: "white",
+                  borderRadius: 16,
+                  padding: 20,
+                  boxShadow: "0 4px 18px rgba(0,0,0,0.06)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: 16,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div>
+                    <h2
+                      style={{
+                        margin: 0,
+                        color: "#153f46",
+                      }}
+                    >
+                      {appointment.patientName || "Patient"}
+                    </h2>
+
+                    <div
+                      style={{
+                        marginTop: 8,
+                        lineHeight: 1.8,
+                        color: "#334155",
+                      }}
+                    >
+                      <div>
+                        <strong>Mobile:</strong>{" "}
+                        {appointment.mobile || "-"}
+                      </div>
+
+                      <div>
+                        <strong>Service:</strong>{" "}
+                        {appointment.service || "-"}
+                      </div>
+
+                      <div>
+                        <strong>Date:</strong>{" "}
+                        {appointment.preferredDate || "-"}
+                      </div>
+
+                      <div>
+                        <strong>Time:</strong>{" "}
+                        {appointment.preferredTime || "-"}
+                      </div>
+
+                      <div>
+                        <strong>Source:</strong>{" "}
+                        {appointment.source || "Website"}
+                      </div>
+
+                      <div>
+                        <strong>Concern:</strong>{" "}
+                        {appointment.concern || "-"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      minWidth: 180,
+                    }}
+                  >
+                    <label
+                      style={{
+                        fontWeight: 700,
+                        display: "block",
+                        marginBottom: 6,
+                      }}
+                    >
+                      Status
+                    </label>
+
+                    <select
+                      value={appointment.status || "New"}
+                      onChange={(e) =>
+                        updateStatus(appointment.id, e.target.value)
+                      }
+                      style={{
+                        width: "100%",
+                        padding: 10,
+                        borderRadius: 8,
+                        border: "1px solid #cbd5e1",
+                      }}
+                    >
+                      <option>New</option>
+                      <option>Confirmed</option>
+                      <option>Completed</option>
+                      <option>Cancelled</option>
+                    </select>
+
+                    {whatsappNumber && (
+                      <a
+                        href={`https://wa.me/${whatsappNumber}?text=${whatsappText}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: "block",
+                          marginTop: 12,
+                          padding: "11px 14px",
+                          textAlign: "center",
+                          textDecoration: "none",
+                          borderRadius: 9,
+                          background: "#25D366",
+                          color: "white",
+                          fontWeight: 800,
+                        }}
+                      >
+                        WhatsApp Patient
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
-
-              <span style={s.status}>
-                {a.status || "New"}
-              </span>
-            </div>
-
-            <div style={s.details}>
-              <div>
-                <strong>Service</strong>
-                <br />
-                {a.service || "-"}
-              </div>
-
-              <div>
-                <strong>Fee</strong>
-                <br />
-                ₹{a.fee || 0}
-              </div>
-
-              <div>
-                <strong>Date</strong>
-                <br />
-                {a.appointmentDate || "-"}
-              </div>
-
-              <div>
-                <strong>Time</strong>
-                <br />
-                {a.appointmentTime || "-"}
-              </div>
-            </div>
-
-            {a.problem && (
-              <div style={s.problem}>
-                <strong>Problem:</strong> {a.problem}
-              </div>
-            )}
-
-            <div style={s.actions}>
-              <button
-                style={s.confirm}
-                onClick={() =>
-                  changeStatus(a.id, "Confirmed")
-                }
-              >
-                Confirm
-              </button>
-
-              <button
-                style={s.complete}
-                onClick={() =>
-                  changeStatus(a.id, "Completed")
-                }
-              >
-                Complete
-              </button>
-
-              <button
-                style={s.cancel}
-                onClick={() =>
-                  changeStatus(a.id, "Cancelled")
-                }
-              >
-                Cancel
-              </button>
-
-              <button
-                style={s.whatsapp}
-                onClick={() => doctorWhatsApp(a)}
-              >
-                WhatsApp
-              </button>
-            </div>
-          </article>
-        ))}
+            );
+          })}
+        </div>
       </div>
     </main>
   );
 }
 
-const s: Record<string, React.CSSProperties> = {
-  page: {
-    maxWidth: 1000,
-    margin: "0 auto",
-    padding: 24,
-    fontFamily: "Arial, sans-serif",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 15,
-    marginBottom: 18,
-    flexWrap: "wrap",
-  },
-  muted: { color: "#64748b" },
-  badge: {
-    padding: "8px 12px",
-    borderRadius: 20,
-    background: "#e0f2fe",
-    fontWeight: 700,
-  },
-  list: { display: "grid", gap: 14 },
-  card: {
-    border: "1px solid #e2e8f0",
-    borderRadius: 14,
-    padding: 18,
-    background: "#fff",
-  },
-  top: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  status: {
-    padding: "6px 10px",
-    borderRadius: 15,
-    background: "#f1f5f9",
-    height: "fit-content",
-    fontWeight: 700,
-  },
-  details: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))",
-    gap: 12,
-    marginTop: 16,
-    paddingTop: 14,
-    borderTop: "1px solid #eee",
-  },
-  problem: {
-    marginTop: 14,
-    background: "#f8fafc",
-    padding: 10,
-    borderRadius: 8,
-  },
-  actions: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 14,
-  },
-  confirm: {
-    border: 0,
-    borderRadius: 8,
-    padding: "9px 12px",
-    cursor: "pointer",
-  },
-  complete: {
-    border: 0,
-    borderRadius: 8,
-    padding: "9px 12px",
-    cursor: "pointer",
-  },
-  cancel: {
-    border: 0,
-    borderRadius: 8,
-    padding: "9px 12px",
-    cursor: "pointer",
-  },
-  whatsapp: {
-    border: 0,
-    borderRadius: 8,
-    padding: "9px 12px",
-    cursor: "pointer",
-  },
-  error: {
-    padding: 14,
-    borderRadius: 9,
-    background: "#fee2e2",
-    marginBottom: 15,
-  },
-};
+
+
+
+
+
+
+
+

@@ -1,79 +1,76 @@
 ﻿"use client";
 
+import { auth, db } from "../../lib/firebase";
 import { FormEvent, useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "../../lib/firebase";
-
-const services = {
-  consultation: {
-    label: "Video Consultation",
-    fee: 500,
-  },
-  psychotherapy: {
-    label: "Psychotherapy",
-    fee: 2000,
-  },
-};
 
 export default function BookAppointmentPage() {
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
-  const [age, setAge] = useState("");
-  const [sex, setSex] = useState("");
-  const [service, setService] =
-    useState<keyof typeof services>("consultation");
+  const [service, setService] = useState("Psychiatric Consultation - ₹500");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [problem, setProblem] = useState("");
+  const [concern, setConcern] = useState("");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
-  async function submit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (!name.trim() || !mobile.trim() || !date || !time) {
-      alert("Name, mobile, date and time are required.");
+    setError("");
+    setSuccess(false);
+
+    const cleanName = name.trim();
+    const cleanMobile = mobile.replace(/\D/g, "");
+
+    if (!cleanName) {
+      setError("Please enter patient name.");
+      return;
+    }
+
+    if (cleanMobile.length < 10) {
+      setError("Please enter a valid mobile number.");
+      return;
+    }
+
+    if (!date) {
+      setError("Please select preferred date.");
+      return;
+    }
+
+    if (!time) {
+      setError("Please select preferred time.");
       return;
     }
 
     try {
       setLoading(true);
 
-      const selected = services[service];
-
-      const ref = await addDoc(collection(db, "appointments"), {
-        patientName: name.trim(),
-        mobile: mobile.trim(),
-        age: age.trim(),
-        sex,
-        service: selected.label,
-        serviceCode: service,
-        fee: selected.fee,
-        appointmentDate: date,
-        appointmentTime: time,
-        problem: problem.trim(),
+      await addDoc(collection(db, "appointments"), {
+        patientName: cleanName,
+        mobile: cleanMobile,
+        service,
+        preferredDate: date,
+        preferredTime: time,
+        concern: concern.trim(),
         status: "New",
         source: "Website",
         createdAt: serverTimestamp(),
-        whatsappNotified: false,
       });
 
-      setSuccess(
-        `Appointment booked successfully. Booking ID: ${ref.id.slice(0, 8)}`
-      );
+      setSuccess(true);
 
       setName("");
       setMobile("");
-      setAge("");
-      setSex("");
+      setService("Psychiatric Consultation - ₹500");
       setDate("");
       setTime("");
-      setProblem("");
-    } catch (error: any) {
-      console.error(error);
-      alert(
-        error?.message ||
-          "Appointment could not be booked. Please try again."
+      setConcern("");
+    } catch (err) {
+      console.error(err);
+      setError(
+        "Appointment save nahi hua. Firebase Firestore connection/rules check karni hongi."
       );
     } finally {
       setLoading(false);
@@ -81,225 +78,253 @@ export default function BookAppointmentPage() {
   }
 
   return (
-    <main style={s.page}>
-      <div style={s.card}>
-        <div style={s.header}>
-          <h1 style={{ margin: 0 }}>Book Appointment</h1>
-          <p style={s.muted}>
-            Neuro Mind Bloom · Online Appointment
+    <main
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg, #063b43 0%, #0d5962 45%, #edf7f5 45%, #ffffff 100%)",
+        padding: "40px 16px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: "0 auto",
+        }}
+      >
+        <div
+          style={{
+            marginBottom: 24,
+            color: "white",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 14,
+              letterSpacing: 2,
+              fontWeight: 700,
+              marginBottom: 8,
+            }}
+          >
+            NEURO MIND BLOOM
+          </div>
+
+          <h1
+            style={{
+              margin: 0,
+              fontSize: "clamp(32px, 5vw, 56px)",
+            }}
+          >
+            Book Appointment
+          </h1>
+
+          <p
+            style={{
+              maxWidth: 600,
+              fontSize: 17,
+              lineHeight: 1.6,
+            }}
+          >
+            Fill your details below. Your appointment request will be saved
+            securely and will appear directly in the doctor dashboard.
           </p>
         </div>
 
-        {success && <div style={s.success}>{success}</div>}
-
-        <form onSubmit={submit} style={s.form}>
-          <label style={s.label}>
-            Patient Name *
-            <input
-              style={s.input}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Full name"
-            />
-          </label>
-
-          <label style={s.label}>
-            Mobile Number *
-            <input
-              style={s.input}
-              value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
-              placeholder="10-digit mobile number"
-              inputMode="numeric"
-            />
-          </label>
-
-          <div style={s.grid2}>
-            <label style={s.label}>
-              Age
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            maxWidth: 760,
+            background: "white",
+            borderRadius: 22,
+            padding: 28,
+            boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 18,
+            }}
+          >
+            <label style={labelStyle}>
+              Patient name
               <input
-                style={s.input}
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter patient name"
+                style={inputStyle}
               />
             </label>
 
-            <label style={s.label}>
-              Sex
-              <select
-                style={s.input}
-                value={sex}
-                onChange={(e) => setSex(e.target.value)}
-              >
-                <option value="">Select</option>
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
-              </select>
+            <label style={labelStyle}>
+              Mobile number
+              <input
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value)}
+                placeholder="10-digit mobile number"
+                inputMode="numeric"
+                style={inputStyle}
+              />
             </label>
           </div>
 
-          <div style={s.services}>
-            <button
-              type="button"
-              onClick={() => setService("consultation")}
-              style={{
-                ...s.service,
-                border:
-                  service === "consultation"
-                    ? "2px solid #176b87"
-                    : "1px solid #dbe3ea",
-              }}
+          <label style={labelStyle}>
+            Choose service
+            <select
+              value={service}
+              onChange={(e) => setService(e.target.value)}
+              style={inputStyle}
             >
-              <strong>Video Consultation</strong>
-              <span style={s.fee}>₹500</span>
-            </button>
+              <option>Psychiatric Consultation - ₹500</option>
+              <option>Psychotherapy Session - ₹2000</option>
+            </select>
+          </label>
 
-            <button
-              type="button"
-              onClick={() => setService("psychotherapy")}
-              style={{
-                ...s.service,
-                border:
-                  service === "psychotherapy"
-                    ? "2px solid #176b87"
-                    : "1px solid #dbe3ea",
-              }}
-            >
-              <strong>Psychotherapy</strong>
-              <span style={s.fee}>₹2000</span>
-              <small>30–45 minutes</small>
-            </button>
-          </div>
-
-          <div style={s.grid2}>
-            <label style={s.label}>
-              Appointment Date *
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 18,
+            }}
+          >
+            <label style={labelStyle}>
+              Preferred date
               <input
                 type="date"
-                style={s.input}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                style={inputStyle}
               />
             </label>
 
-            <label style={s.label}>
-              Preferred Time *
+            <label style={labelStyle}>
+              Preferred time
               <input
                 type="time"
-                style={s.input}
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
+                style={inputStyle}
               />
             </label>
           </div>
 
-          <label style={s.label}>
-            Main Problem / Reason for Consultation
+          <label style={labelStyle}>
+            Brief concern
             <textarea
-              style={s.textarea}
-              value={problem}
-              onChange={(e) => setProblem(e.target.value)}
-              placeholder="Briefly describe the problem"
+              value={concern}
+              onChange={(e) => setConcern(e.target.value)}
+              placeholder="Write briefly about the concern"
+              rows={4}
+              style={{
+                ...inputStyle,
+                resize: "vertical",
+              }}
             />
           </label>
 
-          <div style={s.summary}>
-            <span>{services[service].label}</span>
-            <strong>₹{services[service].fee}</strong>
-          </div>
+          {error && (
+            <div
+              style={{
+                marginTop: 18,
+                padding: 14,
+                borderRadius: 10,
+                background: "#fee2e2",
+                color: "#991b1b",
+                fontWeight: 600,
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div
+              style={{
+                marginTop: 18,
+                padding: 16,
+                borderRadius: 12,
+                background: "#dcfce7",
+                color: "#166534",
+              }}
+            >
+              <strong>Appointment request saved successfully.</strong>
+              <div style={{ marginTop: 5 }}>
+                It is now available in the Doctor Dashboard.
+              </div>
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            style={s.primary}
+            style={{
+              width: "100%",
+              marginTop: 22,
+              padding: "16px 18px",
+              border: 0,
+              borderRadius: 12,
+              background: loading ? "#64748b" : "#0d6268",
+              color: "white",
+              fontSize: 17,
+              fontWeight: 800,
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
           >
-            {loading ? "Booking..." : "Confirm Appointment"}
+            {loading ? "Booking..." : "Book Appointment"}
           </button>
+
+          {success && process.env.NEXT_PUBLIC_WHATSAPP_NUMBER && (
+            <a
+              href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                "Hello Doctor, I have submitted an appointment request on the Neuro Mind Bloom website."
+              )}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "block",
+                textAlign: "center",
+                textDecoration: "none",
+                marginTop: 12,
+                padding: "14px 18px",
+                borderRadius: 12,
+                background: "#25D366",
+                color: "white",
+                fontWeight: 800,
+              }}
+            >
+              Continue on WhatsApp
+            </a>
+          )}
         </form>
       </div>
     </main>
   );
 }
 
-const s: Record<string, React.CSSProperties> = {
-  page: {
-    maxWidth: 720,
-    margin: "0 auto",
-    padding: 20,
-    fontFamily: "Arial, sans-serif",
-  },
-  card: {
-    border: "1px solid #e2e8f0",
-    borderRadius: 16,
-    padding: 22,
-    background: "#fff",
-  },
-  header: { textAlign: "center", marginBottom: 20 },
-  muted: { color: "#64748b" },
-  success: {
-    background: "#dcfce7",
-    border: "1px solid #86efac",
-    borderRadius: 9,
-    padding: 12,
-    marginBottom: 15,
-  },
-  form: { display: "grid", gap: 14 },
-  label: { display: "grid", gap: 6, fontWeight: 700 },
-  input: {
-    width: "100%",
-    boxSizing: "border-box",
-    padding: 11,
-    border: "1px solid #cbd5e1",
-    borderRadius: 8,
-  },
-  textarea: {
-    width: "100%",
-    minHeight: 90,
-    boxSizing: "border-box",
-    padding: 11,
-    border: "1px solid #cbd5e1",
-    borderRadius: 8,
-  },
-  grid2: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-    gap: 12,
-  },
-  services: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-    gap: 12,
-  },
-  service: {
-    display: "grid",
-    gap: 6,
-    padding: 17,
-    borderRadius: 12,
-    background: "#fff",
-    textAlign: "left",
-    cursor: "pointer",
-  },
-  fee: {
-    fontSize: 25,
-    fontWeight: 800,
-    color: "#176b87",
-  },
-  summary: {
-    display: "flex",
-    justifyContent: "space-between",
-    padding: 14,
-    borderRadius: 9,
-    background: "#f1f5f9",
-    fontSize: 18,
-  },
-  primary: {
-    padding: 13,
-    border: 0,
-    borderRadius: 9,
-    background: "#176b87",
-    color: "#fff",
-    fontWeight: 700,
-    cursor: "pointer",
-  },
-};
+const labelStyle = {
+  display: "block",
+  fontWeight: 700,
+  color: "#263238",
+  marginTop: 18,
+} as const;
+
+const inputStyle = {
+  width: "100%",
+  boxSizing: "border-box",
+  marginTop: 8,
+  padding: "13px 14px",
+  borderRadius: 10,
+  border: "1px solid #cbd5e1",
+  background: "white",
+  fontSize: 16,
+  outline: "none",
+} as const;
+
+
+
+
+
+
+
+
