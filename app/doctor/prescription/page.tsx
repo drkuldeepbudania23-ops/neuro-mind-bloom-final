@@ -9,17 +9,60 @@ type RxItem = {
   strength: string;
   dose: string;
   frequency: string;
+  timing: string;
+  food: string;
   duration: string;
   instruction: string;
 };
 
+type SavedPrescription = {
+  id: string;
+  date: string;
+  patientName: string;
+  age: string;
+  sex: string;
+  mobile: string;
+  diagnosis: string;
+  complaints: string;
+  history: string;
+  vitals: string;
+  rx: RxItem[];
+  investigations: string;
+  advice: string;
+  followUp: string;
+};
+
+const blankRx = (): RxItem => ({
+  generic: "",
+  brand: "",
+  strength: "",
+  dose: "1 tablet",
+  frequency: "OD",
+  timing: "Night",
+  food: "After food",
+  duration: "30 days",
+  instruction: "",
+});
+
 export default function PrescriptionPage() {
+  const [patientName, setPatientName] = useState("");
+  const [age, setAge] = useState("");
+  const [sex, setSex] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [diagnosis, setDiagnosis] = useState("");
+  const [complaints, setComplaints] = useState("");
+  const [history, setHistory] = useState("");
+  const [vitals, setVitals] = useState("");
   const [search, setSearch] = useState("");
   const [rx, setRx] = useState<RxItem[]>([]);
+  const [investigations, setInvestigations] = useState("");
+  const [advice, setAdvice] = useState("");
+  const [followUp, setFollowUp] = useState("");
+  const [savedMessage, setSavedMessage] = useState("");
 
   const results = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return medicines.slice(0, 30);
+    if (!q) return [];
 
     return medicines
       .filter((m) =>
@@ -33,7 +76,7 @@ export default function PrescriptionPage() {
           .toLowerCase()
           .includes(q)
       )
-      .slice(0, 50);
+      .slice(0, 60);
   }, [search]);
 
   function addMedicine(m: (typeof medicines)[number]) {
@@ -45,103 +88,318 @@ export default function PrescriptionPage() {
         strength: m.strengths?.[0] || "",
         dose: "1 tablet",
         frequency: "OD",
+        timing: "Night",
+        food: "After food",
         duration: "30 days",
-        instruction: "After food",
+        instruction: "",
       },
     ]);
     setSearch("");
   }
 
-  function update(index: number, key: keyof RxItem, value: string) {
+  function addCustomMedicine() {
+    setRx((old) => [...old, blankRx()]);
+    setSearch("");
+  }
+
+  function updateRx(index: number, key: keyof RxItem, value: string) {
     setRx((old) =>
-      old.map((item, i) => (i === index ? { ...item, [key]: value } : item))
+      old.map((item, i) =>
+        i === index ? { ...item, [key]: value } : item
+      )
     );
   }
 
-  function remove(index: number) {
+  function removeRx(index: number) {
     setRx((old) => old.filter((_, i) => i !== index));
   }
 
+  function savePrescription() {
+    if (!patientName.trim()) {
+      alert("Please enter patient name.");
+      return;
+    }
+
+    const record: SavedPrescription = {
+      id: Date.now().toString(),
+      date: new Date().toLocaleString(),
+      patientName,
+      age,
+      sex,
+      mobile,
+      diagnosis,
+      complaints,
+      history,
+      vitals,
+      rx,
+      investigations,
+      advice,
+      followUp,
+    };
+
+    const old = JSON.parse(
+      localStorage.getItem("nmb_prescriptions") || "[]"
+    );
+
+    localStorage.setItem(
+      "nmb_prescriptions",
+      JSON.stringify([record, ...old])
+    );
+
+    setSavedMessage("Prescription saved successfully.");
+    setTimeout(() => setSavedMessage(""), 3000);
+  }
+
+  function clearForm() {
+    if (!confirm("Clear current prescription?")) return;
+
+    setPatientName("");
+    setAge("");
+    setSex("");
+    setMobile("");
+    setDiagnosis("");
+    setComplaints("");
+    setHistory("");
+    setVitals("");
+    setSearch("");
+    setRx([]);
+    setInvestigations("");
+    setAdvice("");
+    setFollowUp("");
+    setSavedMessage("");
+  }
+
   return (
-    <main style={styles.page}>
-      <div style={styles.header}>
+    <main style={s.page}>
+      <div className="no-print" style={s.topbar}>
         <div>
           <h1 style={{ margin: 0 }}>E-Prescription</h1>
-          <p style={styles.muted}>
-            Search generic name, common brand, strength or category.
-          </p>
+          <div style={s.sub}>
+            Neuro Mind Bloom · Doctor Prescription Module
+          </div>
+        </div>
+
+        <div style={s.actions}>
+          <button style={s.secondary} onClick={clearForm}>
+            New Prescription
+          </button>
+          <button style={s.primary} onClick={savePrescription}>
+            Save
+          </button>
+          <button style={s.primary} onClick={() => window.print()}>
+            Print / PDF
+          </button>
         </div>
       </div>
 
-      <section style={styles.card}>
-        <h2>Medicine Search</h2>
-
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="e.g. escitalopram, Nexito, lithium, BP, diabetes..."
-          style={styles.input}
-        />
-
-        <div style={styles.results}>
-          {results.map((m, i) => (
-            <button
-              key={`${m.generic}-${i}`}
-              onClick={() => addMedicine(m)}
-              style={styles.medButton}
-            >
-              <strong>{m.generic}</strong>
-              <span>{m.category}</span>
-              {m.brands.length > 0 && (
-                <small>Brands: {m.brands.join(", ")}</small>
-              )}
-              {m.strengths?.length ? (
-                <small>Strengths: {m.strengths.join(", ")}</small>
-              ) : null}
-            </button>
-          ))}
+      {savedMessage && (
+        <div className="no-print" style={s.success}>
+          {savedMessage}
         </div>
+      )}
+
+      <section style={s.printHeader}>
+        <h2 style={{ marginBottom: 4 }}>NEURO MIND BLOOM</h2>
+        <strong>Dr. Kuldeep Budania · MD Psychiatry</strong>
+        <div>Mental Health · De-addiction · Sexual Disorders</div>
       </section>
 
-      <section style={styles.card}>
-        <h2>Prescription</h2>
+      <section style={s.card}>
+        <h2>Patient Details</h2>
 
-        {rx.length === 0 ? (
-          <p style={styles.muted}>No medicine selected yet.</p>
-        ) : (
-          rx.map((item, index) => (
-            <div key={index} style={styles.rxRow}>
-              <div style={styles.rxTitle}>
-                <strong>{index + 1}. {item.generic}</strong>
-                <button onClick={() => remove(index)} style={styles.remove}>
-                  Remove
+        <div style={s.grid4}>
+          <Field label="Patient Name">
+            <input
+              style={s.input}
+              value={patientName}
+              onChange={(e) => setPatientName(e.target.value)}
+            />
+          </Field>
+
+          <Field label="Age">
+            <input
+              style={s.input}
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+            />
+          </Field>
+
+          <Field label="Sex">
+            <select
+              style={s.input}
+              value={sex}
+              onChange={(e) => setSex(e.target.value)}
+            >
+              <option value="">Select</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </Field>
+
+          <Field label="Mobile">
+            <input
+              style={s.input}
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+            />
+          </Field>
+        </div>
+
+        <Field label="Diagnosis">
+          <input
+            style={s.input}
+            value={diagnosis}
+            onChange={(e) => setDiagnosis(e.target.value)}
+            placeholder="Diagnosis / provisional diagnosis"
+          />
+        </Field>
+
+        <div style={s.grid2}>
+          <Field label="Chief Complaints">
+            <textarea
+              style={s.textarea}
+              value={complaints}
+              onChange={(e) => setComplaints(e.target.value)}
+            />
+          </Field>
+
+          <Field label="Relevant History / Examination">
+            <textarea
+              style={s.textarea}
+              value={history}
+              onChange={(e) => setHistory(e.target.value)}
+            />
+          </Field>
+        </div>
+
+        <Field label="Vitals / Clinical Notes">
+          <input
+            style={s.input}
+            value={vitals}
+            onChange={(e) => setVitals(e.target.value)}
+            placeholder="BP, pulse, weight, relevant examination..."
+          />
+        </Field>
+      </section>
+
+      <section className="no-print" style={s.card}>
+        <h2>Medicine Search</h2>
+
+        <div style={s.searchRow}>
+          <input
+            style={s.input}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search generic, brand, strength or category..."
+          />
+
+          <button style={s.secondary} onClick={addCustomMedicine}>
+            + Custom Medicine
+          </button>
+        </div>
+
+        {search && (
+          <div style={s.results}>
+            {results.length > 0 ? (
+              results.map((m, index) => (
+                <button
+                  key={`${m.generic}-${index}`}
+                  style={s.med}
+                  onClick={() => addMedicine(m)}
+                >
+                  <strong>{m.generic}</strong>
+                  <span>{m.category}</span>
+
+                  {!!m.brands?.length && (
+                    <small>Brands: {m.brands.join(", ")}</small>
+                  )}
+
+                  {!!m.strengths?.length && (
+                    <small>
+                      Strengths: {m.strengths.join(", ")}
+                    </small>
+                  )}
                 </button>
+              ))
+            ) : (
+              <div style={s.empty}>
+                No exact medicine found. Use “Custom Medicine”.
               </div>
+            )}
+          </div>
+        )}
+      </section>
 
-              <div style={styles.grid}>
+      <section style={s.card}>
+        <h2>Rx</h2>
+
+        {rx.length === 0 && (
+          <div style={s.empty}>No medicine added yet.</div>
+        )}
+
+        {rx.map((item, index) => (
+          <div key={index} style={s.rxCard}>
+            <div style={s.rxTop}>
+              <strong>Rx {index + 1}</strong>
+
+              <button
+                className="no-print"
+                style={s.remove}
+                onClick={() => removeRx(index)}
+              >
+                Remove
+              </button>
+            </div>
+
+            <div style={s.grid4}>
+              <Field label="Generic">
                 <input
+                  style={s.input}
+                  value={item.generic}
+                  onChange={(e) =>
+                    updateRx(index, "generic", e.target.value)
+                  }
+                />
+              </Field>
+
+              <Field label="Brand">
+                <input
+                  style={s.input}
                   value={item.brand}
-                  onChange={(e) => update(index, "brand", e.target.value)}
-                  placeholder="Brand"
-                  style={styles.input}
+                  onChange={(e) =>
+                    updateRx(index, "brand", e.target.value)
+                  }
                 />
-                <input
-                  value={item.strength}
-                  onChange={(e) => update(index, "strength", e.target.value)}
-                  placeholder="Strength"
-                  style={styles.input}
-                />
-                <input
-                  value={item.dose}
-                  onChange={(e) => update(index, "dose", e.target.value)}
-                  placeholder="Dose"
-                  style={styles.input}
-                />
+              </Field>
 
+              <Field label="Strength">
+                <input
+                  style={s.input}
+                  value={item.strength}
+                  onChange={(e) =>
+                    updateRx(index, "strength", e.target.value)
+                  }
+                />
+              </Field>
+
+              <Field label="Dose">
+                <input
+                  style={s.input}
+                  value={item.dose}
+                  onChange={(e) =>
+                    updateRx(index, "dose", e.target.value)
+                  }
+                />
+              </Field>
+
+              <Field label="Frequency">
                 <select
+                  style={s.input}
                   value={item.frequency}
-                  onChange={(e) => update(index, "frequency", e.target.value)}
-                  style={styles.input}
+                  onChange={(e) =>
+                    updateRx(index, "frequency", e.target.value)
+                  }
                 >
                   <option>OD</option>
                   <option>BD</option>
@@ -155,129 +413,326 @@ export default function PrescriptionPage() {
                   <option>0-0-1</option>
                   <option>1-0-1</option>
                   <option>1-1-1</option>
+                  <option>1/2-0-1/2</option>
                 </select>
+              </Field>
 
-                <input
-                  value={item.duration}
-                  onChange={(e) => update(index, "duration", e.target.value)}
-                  placeholder="Duration"
-                  style={styles.input}
-                />
-
+              <Field label="Timing">
                 <select
-                  value={item.instruction}
-                  onChange={(e) => update(index, "instruction", e.target.value)}
-                  style={styles.input}
+                  style={s.input}
+                  value={item.timing}
+                  onChange={(e) =>
+                    updateRx(index, "timing", e.target.value)
+                  }
+                >
+                  <option>Morning</option>
+                  <option>Afternoon</option>
+                  <option>Evening</option>
+                  <option>Night</option>
+                  <option>Morning & Night</option>
+                  <option>As required</option>
+                </select>
+              </Field>
+
+              <Field label="Food">
+                <select
+                  style={s.input}
+                  value={item.food}
+                  onChange={(e) =>
+                    updateRx(index, "food", e.target.value)
+                  }
                 >
                   <option>After food</option>
                   <option>Before food</option>
                   <option>With food</option>
-                  <option>At bedtime</option>
-                  <option>Morning</option>
-                  <option>As required</option>
+                  <option>Irrespective of food</option>
                 </select>
-              </div>
-            </div>
-          ))
-        )}
+              </Field>
 
-        <div style={{ marginTop: 20 }}>
-          <button onClick={() => window.print()} style={styles.primary}>
-            Print / Save Prescription
-          </button>
+              <Field label="Duration">
+                <input
+                  style={s.input}
+                  value={item.duration}
+                  onChange={(e) =>
+                    updateRx(index, "duration", e.target.value)
+                  }
+                />
+              </Field>
+            </div>
+
+            <Field label="Special Instructions">
+              <input
+                style={s.input}
+                value={item.instruction}
+                onChange={(e) =>
+                  updateRx(index, "instruction", e.target.value)
+                }
+                placeholder="Tapering / titration / monitoring / PRN instructions..."
+              />
+            </Field>
+          </div>
+        ))}
+      </section>
+
+      <section style={s.card}>
+        <div style={s.grid2}>
+          <Field label="Investigations">
+            <textarea
+              style={s.textarea}
+              value={investigations}
+              onChange={(e) => setInvestigations(e.target.value)}
+              placeholder="CBC, LFT, RFT, TFT, HbA1c, ECG, lithium level..."
+            />
+          </Field>
+
+          <Field label="Advice">
+            <textarea
+              style={s.textarea}
+              value={advice}
+              onChange={(e) => setAdvice(e.target.value)}
+              placeholder="Sleep hygiene, abstinence, psychotherapy, exercise..."
+            />
+          </Field>
+        </div>
+
+        <Field label="Follow-up">
+          <input
+            style={s.input}
+            value={followUp}
+            onChange={(e) => setFollowUp(e.target.value)}
+            placeholder="e.g. After 2 weeks / 15-09-2026"
+          />
+        </Field>
+      </section>
+
+      <section style={s.signature}>
+        <div>
+          Date: {new Date().toLocaleDateString()}
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <strong>Dr. Kuldeep Budania</strong>
+          <br />
+          MD Psychiatry
+          <br />
+          Signature
         </div>
       </section>
 
-      <div style={styles.note}>
-        Clinical prescribing tool: verify indication, contraindications,
-        interactions, pregnancy status, renal/hepatic function and current
-        prescribing information before issuing a prescription.
+      <div className="no-print" style={s.warning}>
+        Verify indication, dose, interactions, allergies, pregnancy status,
+        renal/hepatic function and current prescribing information before
+        issuing the prescription.
       </div>
+
+      <style jsx global>{`
+        @media print {
+          .no-print {
+            display: none !important;
+          }
+
+          body {
+            background: white !important;
+          }
+
+          @page {
+            size: A4;
+            margin: 12mm;
+          }
+        }
+      `}</style>
     </main>
   );
 }
 
-const styles: Record<string, React.CSSProperties> = {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label style={s.field}>
+      <span style={s.label}>{label}</span>
+      {children}
+    </label>
+  );
+}
+
+const s: Record<string, React.CSSProperties> = {
   page: {
-    maxWidth: 1100,
+    maxWidth: 1150,
     margin: "0 auto",
     padding: 24,
     fontFamily: "Arial, sans-serif",
   },
-  header: {
+
+  topbar: {
     display: "flex",
     justifyContent: "space-between",
+    gap: 20,
     alignItems: "center",
     marginBottom: 20,
+    flexWrap: "wrap",
   },
-  muted: { color: "#666" },
+
+  sub: {
+    color: "#64748b",
+    marginTop: 4,
+  },
+
+  actions: {
+    display: "flex",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+
+  printHeader: {
+    textAlign: "center",
+    marginBottom: 18,
+    borderBottom: "2px solid #176b87",
+    paddingBottom: 12,
+  },
+
   card: {
+    border: "1px solid #e2e8f0",
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 18,
     background: "#fff",
-    border: "1px solid #e5e7eb",
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
   },
+
+  field: {
+    display: "grid",
+    gap: 5,
+    marginBottom: 10,
+  },
+
+  label: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#334155",
+  },
+
   input: {
     width: "100%",
     boxSizing: "border-box",
-    padding: "11px 12px",
     border: "1px solid #cbd5e1",
-    borderRadius: 9,
+    borderRadius: 8,
+    padding: "10px 11px",
     background: "#fff",
   },
+
+  textarea: {
+    width: "100%",
+    minHeight: 90,
+    resize: "vertical",
+    boxSizing: "border-box",
+    border: "1px solid #cbd5e1",
+    borderRadius: 8,
+    padding: 10,
+  },
+
+  grid4: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+    gap: 10,
+  },
+
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+    gap: 12,
+  },
+
+  searchRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    gap: 10,
+  },
+
   results: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
-    gap: 10,
-    marginTop: 14,
-    maxHeight: 430,
+    gap: 8,
+    maxHeight: 420,
     overflowY: "auto",
+    marginTop: 12,
   },
-  medButton: {
+
+  med: {
+    textAlign: "left",
     display: "flex",
     flexDirection: "column",
-    textAlign: "left",
-    gap: 4,
-    padding: 12,
+    gap: 3,
     border: "1px solid #dbe3ea",
-    borderRadius: 10,
+    borderRadius: 9,
+    padding: 10,
     background: "#f8fafc",
     cursor: "pointer",
   },
-  rxRow: {
-    borderTop: "1px solid #eee",
-    paddingTop: 16,
-    marginTop: 16,
+
+  rxCard: {
+    borderTop: "1px solid #e2e8f0",
+    paddingTop: 14,
+    marginTop: 14,
   },
-  rxTitle: {
+
+  rxTop: {
     display: "flex",
     justifyContent: "space-between",
     marginBottom: 10,
   },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))",
-    gap: 10,
+
+  primary: {
+    border: 0,
+    borderRadius: 9,
+    background: "#176b87",
+    color: "#fff",
+    padding: "10px 15px",
+    fontWeight: 700,
+    cursor: "pointer",
   },
+
+  secondary: {
+    border: "1px solid #176b87",
+    borderRadius: 9,
+    background: "#fff",
+    color: "#176b87",
+    padding: "10px 15px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+
   remove: {
     border: 0,
     background: "transparent",
-    cursor: "pointer",
     color: "#b91c1c",
-  },
-  primary: {
-    border: 0,
-    borderRadius: 10,
-    padding: "12px 18px",
-    background: "#176b87",
-    color: "#fff",
     cursor: "pointer",
-    fontWeight: 700,
   },
-  note: {
+
+  success: {
+    padding: 12,
+    background: "#dcfce7",
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+
+  empty: {
+    color: "#64748b",
+    padding: 12,
+  },
+
+  signature: {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "24px 10px",
+  },
+
+  warning: {
     fontSize: 12,
-    color: "#666",
-    padding: 8,
+    color: "#64748b",
+    borderTop: "1px solid #ddd",
+    paddingTop: 10,
   },
 };

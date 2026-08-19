@@ -1,122 +1,254 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const services = [
-  {
-    id: "video",
-    title: "Video Consultation",
+type Appointment = {
+  id: string;
+  patient: string;
+  mobile: string;
+  service: string;
+  fee: number;
+  date: string;
+  time: string;
+  status: string;
+};
+
+const services = {
+  consultation: {
+    label: "Video Consultation",
     fee: 500,
-    detail: "Psychiatry consultation",
+    description: "Psychiatry consultation",
   },
-  {
-    id: "psychotherapy",
-    title: "Psychotherapy",
+  psychotherapy: {
+    label: "Psychotherapy",
     fee: 2000,
-    detail: "30–45 minute psychotherapy / counselling session",
+    description: "30–45 minute psychotherapy / counselling session",
   },
-];
+};
 
 export default function AppointmentsPage() {
-  const [selected, setSelected] = useState("video");
+  const [patient, setPatient] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [service, setService] =
+    useState<keyof typeof services>("consultation");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
-  const current = services.find((s) => s.id === selected)!;
+  useEffect(() => {
+    setAppointments(
+      JSON.parse(localStorage.getItem("nmb_appointments") || "[]")
+    );
+  }, []);
+
+  function save() {
+    if (!patient || !date || !time) {
+      alert("Patient name, date and time are required.");
+      return;
+    }
+
+    const item: Appointment = {
+      id: Date.now().toString(),
+      patient,
+      mobile,
+      service: services[service].label,
+      fee: services[service].fee,
+      date,
+      time,
+      status: "Booked",
+    };
+
+    const updated = [item, ...appointments];
+
+    setAppointments(updated);
+    localStorage.setItem(
+      "nmb_appointments",
+      JSON.stringify(updated)
+    );
+
+    setPatient("");
+    setMobile("");
+    setDate("");
+    setTime("");
+  }
 
   return (
-    <main style={styles.page}>
+    <main style={s.page}>
       <h1>Appointments</h1>
-      <p style={styles.muted}>Select consultation type and create appointment.</p>
 
-      <div style={styles.cards}>
-        {services.map((service) => (
+      <section style={s.cards}>
+        {Object.entries(services).map(([key, value]) => (
           <button
-            key={service.id}
-            onClick={() => setSelected(service.id)}
+            key={key}
+            onClick={() =>
+              setService(key as keyof typeof services)
+            }
             style={{
-              ...styles.service,
+              ...s.serviceCard,
               border:
-                selected === service.id
+                service === key
                   ? "2px solid #176b87"
-                  : "1px solid #d7dee5",
+                  : "1px solid #dbe3ea",
             }}
           >
-            <h2>{service.title}</h2>
-            <div style={styles.price}>₹{service.fee}</div>
-            <p>{service.detail}</p>
+            <strong>{value.label}</strong>
+            <span style={s.fee}>₹{value.fee}</span>
+            <small>{value.description}</small>
           </button>
         ))}
-      </div>
+      </section>
 
-      <section style={styles.form}>
+      <section style={s.card}>
         <h2>New Appointment</h2>
 
-        <input placeholder="Patient name" style={styles.input} />
-        <input placeholder="Mobile number" style={styles.input} />
-        <input type="date" style={styles.input} />
-        <input type="time" style={styles.input} />
+        <div style={s.grid}>
+          <input
+            style={s.input}
+            placeholder="Patient name"
+            value={patient}
+            onChange={(e) => setPatient(e.target.value)}
+          />
 
-        <div style={styles.summary}>
-          <strong>{current.title}</strong>
-          <span>Fee: ₹{current.fee}</span>
+          <input
+            style={s.input}
+            placeholder="Mobile"
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+          />
+
+          <input
+            style={s.input}
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+
+          <input
+            style={s.input}
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+          />
         </div>
 
-        <button style={styles.primary}>Save Appointment</button>
+        <div style={s.summary}>
+          <strong>{services[service].label}</strong>
+          <strong>₹{services[service].fee}</strong>
+        </div>
+
+        <button style={s.primary} onClick={save}>
+          Save Appointment
+        </button>
+      </section>
+
+      <section style={s.card}>
+        <h2>Saved Appointments</h2>
+
+        {appointments.length === 0 ? (
+          <p>No appointments saved yet.</p>
+        ) : (
+          appointments.map((a) => (
+            <div key={a.id} style={s.row}>
+              <div>
+                <strong>{a.patient}</strong>
+                <br />
+                <small>{a.mobile}</small>
+              </div>
+
+              <div>
+                {a.date}
+                <br />
+                {a.time}
+              </div>
+
+              <div>
+                {a.service}
+                <br />
+                ₹{a.fee}
+              </div>
+
+              <strong>{a.status}</strong>
+            </div>
+          ))
+        )}
       </section>
     </main>
   );
 }
 
-const styles: Record<string, React.CSSProperties> = {
+const s: Record<string, React.CSSProperties> = {
   page: {
-    maxWidth: 950,
+    maxWidth: 1000,
     margin: "0 auto",
     padding: 24,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Arial",
   },
-  muted: { color: "#666" },
+
   cards: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
-    gap: 16,
-    margin: "20px 0",
+    gap: 14,
+    marginBottom: 18,
   },
-  service: {
-    borderRadius: 16,
-    padding: 22,
+
+  serviceCard: {
+    padding: 20,
+    borderRadius: 14,
     background: "#fff",
     textAlign: "left",
+    display: "grid",
+    gap: 8,
     cursor: "pointer",
   },
-  price: {
-    fontSize: 30,
+
+  fee: {
+    fontSize: 28,
     fontWeight: 800,
     color: "#176b87",
   },
-  form: {
+
+  card: {
+    padding: 20,
+    border: "1px solid #e2e8f0",
+    borderRadius: 14,
+    marginBottom: 18,
+  },
+
+  grid: {
     display: "grid",
-    gap: 12,
-    padding: 22,
-    border: "1px solid #e5e7eb",
-    borderRadius: 16,
+    gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+    gap: 10,
   },
+
   input: {
-    padding: 12,
-    borderRadius: 9,
+    padding: 11,
     border: "1px solid #cbd5e1",
+    borderRadius: 8,
   },
+
   summary: {
     display: "flex",
     justifyContent: "space-between",
-    background: "#f4f8fa",
     padding: 14,
-    borderRadius: 10,
+    background: "#f1f5f9",
+    borderRadius: 8,
+    margin: "14px 0",
   },
+
   primary: {
-    padding: 13,
+    padding: 12,
     border: 0,
-    borderRadius: 9,
-    color: "#fff",
+    borderRadius: 8,
     background: "#176b87",
+    color: "white",
     fontWeight: 700,
+  },
+
+  row: {
+    display: "grid",
+    gridTemplateColumns: "2fr 1fr 2fr 1fr",
+    gap: 12,
+    borderTop: "1px solid #eee",
+    padding: "12px 0",
   },
 };
