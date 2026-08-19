@@ -4,17 +4,15 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
-  response.headers.set(
-    "Cache-Control",
-    "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
-  );
+  response.headers.set("Content-Type", "text/html; charset=utf-8");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
   response.headers.set("Pragma", "no-cache");
   response.headers.set("Expires", "0");
-  response.headers.set("X-Neuro-Mind-Bloom-Version", "2026-08-20-final");
 
   return response;
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
