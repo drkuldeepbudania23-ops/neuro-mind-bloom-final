@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import { FormEvent, useMemo, useState } from "react";
@@ -196,7 +196,7 @@ export default function Home() {
         <div className="faqList">{faqs.map(([q,a],i)=><div className="faqItem" key={q}><button onClick={()=>setFaqOpen(faqOpen===i?null:i)}><span>{q}</span><b>{faqOpen===i?"âˆ’":"+"}</b></button>{faqOpen===i&&<p>{a}</p>}</div>)}</div>
       </div></section>
 
-      <footer id="contact" className="footer"><div className="container footerGrid"><div><h3>Neuro Mind Bloom</h3><p>Psychiatry â€¢ Psychology â€¢ Wellness</p><p>Dr. Kuldeep Budania, MD Psychiatry</p></div><div><h4>Contact</h4><a href="tel:+918107639481">Call: +91 8107639481</a><a href="https://wa.me/919376315331" target="_blank" rel="noreferrer">WhatsApp: +91 9376315331</a><a href="mailto:drkuldeepbudania23@gmail.com">drkuldeepbudania23@gmail.com</a><span>Ajmer, Rajasthan</span></div><div><h4>Services</h4><a href="#consultations">Psychiatric Consultation</a><a href="#consultations">Psychotherapy</a><a href="#services">Sexual Disorders</a><a href="#services">Addiction Psychiatry</a></div></div><div className="copyright">Â© 2026 Neuro Mind Bloom. All rights reserved.</div></footer>
+      <footer id="contact" className="footer"><div className="container footerGrid"><div><h3>Neuro Mind Bloom</h3><p>Psychiatry â€¢ Psychology â€¢ Wellness</p><p>Dr. Kuldeep Budania, MD Psychiatry</p></div><div><h4>Contact</h4><a href="tel:+918107639481">Call: +91 8107639481</a><a href="https://wa.me/919376315331" target="_blank" rel="noreferrer">WhatsApp: +91 9376315331</a><a href="mailto:drkuldeepbudania23@gmail.com">drkuldeepbudania23@gmail.com</a><span>Ajmer, Rajasthan</span></div><div><h4>Services</h4><a href="#consultations">Psychiatric Consultation</a><a href="#consultations">Psychotherapy</a><a href="#services">Sexual Disorders</a><a href="#services">Addiction Psychiatry</a></div></div><div className="copyright">© 2026 Neuro Mind Bloom. All rights reserved.</div></footer>
 
       <a className="floatingWhatsApp" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book an online consultation.")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp">WhatsApp</a>
     </main>

@@ -1,4 +1,4 @@
-﻿import DoctorLoginButton from "./components/DoctorLoginButton";
+import DoctorLoginButton from "./components/DoctorLoginButton";
 import type { Metadata } from "next";
 import "./globals.css";
 
