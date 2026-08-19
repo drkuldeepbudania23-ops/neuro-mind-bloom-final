@@ -1,4 +1,4 @@
-﻿export type Medicine = {
+export type Medicine = {
   generic: string;
   brands: string[];
   category: string;
