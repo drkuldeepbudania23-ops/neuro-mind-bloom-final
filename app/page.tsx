@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import { FormEvent, useMemo, useState } from "react";
@@ -193,7 +193,7 @@ export default function Home() {
 </section>
 
       <section id="faq" className="section light"><div className="container narrow"><div className="sectionHead"><span className="sectionLabel">FAQ</span><h2>Common questions</h2></div>
-        <div className="faqList">{faqs.map(([q,a],i)=><div className="faqItem" key={q}><button onClick={()=>setFaqOpen(faqOpen===i?null:i)}><span>{q}</span><b>{faqOpen===i?"Ã¢Ë†â€™":"+"}</b></button>{faqOpen===i&&<p>{a}</p>}</div>)}</div>
+        <div className="faqList">{faqs.map(([q,a],i)=><div className="faqItem" key={q}><button onClick={()=>setFaqOpen(faqOpen===i?null:i)}><span>{q}</span><b>{faqOpen===i?"":"+"}</b></button>{faqOpen===i&&<p>{a}</p>}</div>)}</div>
       </div></section>
 
       <section
