@@ -59,7 +59,7 @@ export default function Home() {
   <a href="#services">Services</a>
   <a href="#consultations">Consultations</a>
   <a href="/doctor">Doctor Login</a>
-  <a className="navCta" href="/book-appointment">Book Appointment</a>
+  <a className="navCta" href="#booking">Book Appointment</a>
 </nav>
         </div>
       </header>
@@ -72,7 +72,7 @@ export default function Home() {
             <h1>Your Mental Health <em>Matters</em></h1>
             <p>Compassionate, confidential and evidence-based online psychiatric care from the comfort of your home.</p>
             <div className="heroActions">
-              <a className="btn primary" href="/book-appointment">Book Video Consultation</a>
+              <a className="btn primary" href="#booking">Book Video Consultation</a>
               <a className="btn secondary" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book an online consultation.")}`} target="_blank" rel="noreferrer">WhatsApp Now</a>
             </div>
             <div className="trustRow">
@@ -113,18 +113,84 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="booking" className="section bookingSection">
-        <div className="container bookingGrid">
-          <div><span className="sectionLabel white">BOOK AN APPOINTMENT</span><h2>Request your preferred date and time</h2><p>Fill the form and continue on WhatsApp. Your appointment will be confirmed after availability is checked.</p></div>
-          <form className="bookingForm" onSubmit={submitBooking}>
-            <div className="twoCols"><label>Patient name<input required value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} /></label><label>Mobile number<input required type="tel" value={form.phone} onChange={(e)=>setForm({...form,phone:e.target.value})} /></label></div>
-            <label>Choose service<select value={form.service} onChange={(e)=>setForm({...form,service:e.target.value})}><option>Psychiatric Consultation â€“ â‚¹500</option><option>Psychotherapy Session â€“ â‚¹2000</option></select></label>
-            <div className="twoCols"><label>Preferred date<input type="date" value={form.date} onChange={(e)=>setForm({...form,date:e.target.value})} /></label><label>Preferred time<input type="time" value={form.time} onChange={(e)=>setForm({...form,time:e.target.value})} /></label></div>
-            <label>Brief concern<textarea rows={4} value={form.concern} onChange={(e)=>setForm({...form,concern:e.target.value})} /></label>
-            <button className="btn primary full" type="submit">Continue on WhatsApp</button>
-          </form>
-        </div>
-      </section>
+      <section
+  id="booking"
+  style={{
+    padding: "70px 16px",
+    background: "#f4f8f7",
+  }}
+>
+  <div
+    style={{
+      maxWidth: "1180px",
+      margin: "0 auto",
+    }}
+  >
+    <div
+      style={{
+        textAlign: "center",
+        marginBottom: "28px",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "13px",
+          fontWeight: 800,
+          letterSpacing: "2px",
+          color: "#17656b",
+          marginBottom: "8px",
+        }}
+      >
+        BOOK AN APPOINTMENT
+      </div>
+
+      <h2
+        style={{
+          margin: 0,
+          fontSize: "clamp(30px, 5vw, 48px)",
+          color: "#173f44",
+        }}
+      >
+        Request your preferred date and time
+      </h2>
+
+      <p
+        style={{
+          color: "#64748b",
+          maxWidth: "700px",
+          margin: "14px auto 0",
+          lineHeight: 1.6,
+        }}
+      >
+        Submit your appointment request. It will be saved directly
+        to the Doctor Dashboard. WhatsApp is also available after booking.
+      </p>
+    </div>
+
+    <div
+      style={{
+        maxWidth: "1000px",
+        margin: "0 auto",
+        background: "#ffffff",
+        borderRadius: "22px",
+        overflow: "hidden",
+        boxShadow: "0 18px 50px rgba(0,0,0,0.10)",
+      }}
+    >
+      <iframe
+        src="/book-appointment"
+        title="Book Appointment - Neuro Mind Bloom"
+        style={{
+          width: "100%",
+          height: "920px",
+          border: "0",
+          display: "block",
+          background: "#ffffff",
+        }}
+      />
+    </div>
+  </div>
+</section>
 
       <section id="faq" className="section light"><div className="container narrow"><div className="sectionHead"><span className="sectionLabel">FAQ</span><h2>Common questions</h2></div>
         <div className="faqList">{faqs.map(([q,a],i)=><div className="faqItem" key={q}><button onClick={()=>setFaqOpen(faqOpen===i?null:i)}><span>{q}</span><b>{faqOpen===i?"âˆ’":"+"}</b></button>{faqOpen===i&&<p>{a}</p>}</div>)}</div>
@@ -136,6 +202,7 @@ export default function Home() {
     </main>
   );
 }
+
 
 
 

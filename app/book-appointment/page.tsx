@@ -274,9 +274,9 @@ export default function BookAppointmentPage() {
             {loading ? "Booking..." : "Book Appointment"}
           </button>
 
-          {success && process.env.NEXT_PUBLIC_WHATSAPP_NUMBER && (
+          {success && "919376315331" && (
             <a
-              href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+              href={`https://wa.me/${"919376315331"}?text=${encodeURIComponent(
                 "Hello Doctor, I have submitted an appointment request on the Neuro Mind Bloom website."
               )}`}
               target="_blank"
@@ -320,6 +320,7 @@ const inputStyle = {
   fontSize: 16,
   outline: "none",
 } as const;
+
 
 
 
