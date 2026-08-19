@@ -59,7 +59,7 @@ export default function Home() {
   <a href="#services">Services</a>
   <a href="#consultations">Consultations</a>
   <a href="/doctor">Doctor Login</a>
-  <a className="navCta" href="#booking">Book Appointment</a>
+  <a className="navCta" href="/book-appointment">Book Appointment</a>
 </nav>
         </div>
       </header>
@@ -72,7 +72,7 @@ export default function Home() {
             <h1>Your Mental Health <em>Matters</em></h1>
             <p>Compassionate, confidential and evidence-based online psychiatric care from the comfort of your home.</p>
             <div className="heroActions">
-              <a className="btn primary" href="#booking">Book Video Consultation</a>
+              <a className="btn primary" href="/book-appointment">Book Video Consultation</a>
               <a className="btn secondary" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book an online consultation.")}`} target="_blank" rel="noreferrer">WhatsApp Now</a>
             </div>
             <div className="trustRow">
@@ -136,5 +136,6 @@ export default function Home() {
     </main>
   );
 }
+
 
 
