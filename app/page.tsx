@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { FormEvent, useMemo, useState } from "react";
@@ -20,8 +20,8 @@ const services = [
 
 const faqs = [
   ["Is the consultation online?", "Yes. The current service is video consultation only."],
-  ["What is the psychiatric consultation fee?", "The psychiatric consultation fee is ₹500."],
-  ["What is the psychotherapy fee?", "A psychotherapy session is ₹2000."],
+  ["What is the psychiatric consultation fee?", "The psychiatric consultation fee is â‚¹500."],
+  ["What is the psychotherapy fee?", "A psychotherapy session is â‚¹2000."],
   ["How will I receive the video link?", "The clinic will confirm your slot and share the consultation link on WhatsApp."],
   ["Will I receive a prescription?", "A digital prescription may be provided when clinically appropriate."],
   ["Is my information confidential?", "Yes. Personal and clinical information is handled with privacy and confidentiality."],
@@ -30,7 +30,7 @@ const faqs = [
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
-  const [form, setForm] = useState({ name: "", phone: "", service: "Psychiatric Consultation – ₹500", date: "", time: "", concern: "" });
+  const [form, setForm] = useState({ name: "", phone: "", service: "Psychiatric Consultation â€“ â‚¹500", date: "", time: "", concern: "" });
 
   const whatsappBase = "https://wa.me/919376315331";
   const appointmentMessage = useMemo(() => {
@@ -50,9 +50,9 @@ export default function Home() {
         <div className="navWrap container">
           <a className="brand" href="#home" aria-label="Neuro Mind Bloom home">
             <span className="brandMark">N</span>
-            <span><strong>Neuro Mind Bloom</strong><small>Psychiatry • Psychology • Wellness</small></span>
+            <span><strong>Neuro Mind Bloom</strong><small>Psychiatry â€¢ Psychology â€¢ Wellness</small></span>
           </a>
-          <button className="menuBtn" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu">☰</button>
+          <button className="menuBtn" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu">â˜°</button>
           
           <nav className={menuOpen ? "nav open" : "nav"}>
   <a href="#about">About</a>
@@ -68,7 +68,7 @@ export default function Home() {
         <div className="heroGlow one" /><div className="heroGlow two" />
         <div className="container heroGrid">
           <div className="heroCopy">
-            <span className="eyebrow">✓ Confidential Online Mental Health Care</span>
+            <span className="eyebrow">âœ“ Confidential Online Mental Health Care</span>
             <h1>Your Mental Health <em>Matters</em></h1>
             <p>Compassionate, confidential and evidence-based online psychiatric care from the comfort of your home.</p>
             <div className="heroActions">
@@ -93,7 +93,7 @@ export default function Home() {
         <div className="container aboutGrid">
           <div><span className="sectionLabel">ABOUT THE DOCTOR</span><h2>Professional care with dignity and empathy</h2><p className="lead">Dr. Kuldeep Budania provides online psychiatric consultation and psychotherapy with a personalized, respectful and confidential approach.</p></div>
           <div className="featureGrid">
-            {["Confidential care", "Evidence-based approach", "Personalized treatment", "Easy online access", "Digital prescription", "Follow-up guidance"].map((item) => <div className="featureCard" key={item}>✓ {item}</div>)}
+            {["Confidential care", "Evidence-based approach", "Personalized treatment", "Easy online access", "Digital prescription", "Follow-up guidance"].map((item) => <div className="featureCard" key={item}>âœ“ {item}</div>)}
           </div>
         </div>
       </section>
@@ -101,15 +101,15 @@ export default function Home() {
       <section id="consultations" className="section">
         <div className="container"><div className="sectionHead"><span className="sectionLabel">ONLINE CONSULTATIONS</span><h2>Choose your consultation</h2></div>
           <div className="pricingGrid">
-            <article className="priceCard teal"><div className="roundIcon">🩺</div><h3>Psychiatric Consultation</h3><div className="price">₹500</div><a className="btn primary full" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book a Psychiatric Consultation for ₹500.")}`} target="_blank" rel="noreferrer">Book on WhatsApp</a></article>
-            <article className="priceCard blue"><div className="roundIcon">💬</div><h3>Psychotherapy Session</h3><div className="price">₹2000</div><a className="btn blueBtn full" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book a Psychotherapy Session for ₹2000.")}`} target="_blank" rel="noreferrer">Book on WhatsApp</a></article>
+            <article className="priceCard teal"><div className="roundIcon">ðŸ©º</div><h3>Psychiatric Consultation</h3><div className="price">â‚¹500</div><a className="btn primary full" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book a Psychiatric Consultation for â‚¹500.")}`} target="_blank" rel="noreferrer">Book on WhatsApp</a></article>
+            <article className="priceCard blue"><div className="roundIcon">ðŸ’¬</div><h3>Psychotherapy Session</h3><div className="price">â‚¹2000</div><a className="btn blueBtn full" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book a Psychotherapy Session for â‚¹2000.")}`} target="_blank" rel="noreferrer">Book on WhatsApp</a></article>
           </div>
         </div>
       </section>
 
       <section id="services" className="section light">
         <div className="container"><div className="sectionHead"><span className="sectionLabel">AREAS OF CARE</span><h2>Mental health services</h2></div>
-          <div className="servicesGrid">{services.map(([title, desc]) => <article className="serviceCard" key={title}><span className="serviceIcon">✦</span><div><h3>{title}</h3><p>{desc}</p></div></article>)}</div>
+          <div className="servicesGrid">{services.map(([title, desc]) => <article className="serviceCard" key={title}><span className="serviceIcon">âœ¦</span><div><h3>{title}</h3><p>{desc}</p></div></article>)}</div>
         </div>
       </section>
 
@@ -193,15 +193,147 @@ export default function Home() {
 </section>
 
       <section id="faq" className="section light"><div className="container narrow"><div className="sectionHead"><span className="sectionLabel">FAQ</span><h2>Common questions</h2></div>
-        <div className="faqList">{faqs.map(([q,a],i)=><div className="faqItem" key={q}><button onClick={()=>setFaqOpen(faqOpen===i?null:i)}><span>{q}</span><b>{faqOpen===i?"−":"+"}</b></button>{faqOpen===i&&<p>{a}</p>}</div>)}</div>
+        <div className="faqList">{faqs.map(([q,a],i)=><div className="faqItem" key={q}><button onClick={()=>setFaqOpen(faqOpen===i?null:i)}><span>{q}</span><b>{faqOpen===i?"âˆ’":"+"}</b></button>{faqOpen===i&&<p>{a}</p>}</div>)}</div>
       </div></section>
 
-      <footer id="contact" className="footer"><div className="container footerGrid"><div><h3>Neuro Mind Bloom</h3><p>Psychiatry • Psychology • Wellness</p><p>Dr. Kuldeep Budania, MD Psychiatry</p></div><div><h4>Contact</h4><a href="tel:+918107639481">Call: +91 8107639481</a><a href="https://wa.me/919376315331" target="_blank" rel="noreferrer">WhatsApp: +91 9376315331</a><a href="mailto:drkuldeepbudania23@gmail.com">drkuldeepbudania23@gmail.com</a><span>Ajmer, Rajasthan</span></div><div><h4>Services</h4><a href="#consultations">Psychiatric Consultation</a><a href="#consultations">Psychotherapy</a><a href="#services">Sexual Disorders</a><a href="#services">Addiction Psychiatry</a></div></div><div className="copyright">� 2026 Neuro Mind Bloom. All rights reserved.</div></footer>
+      <section
+  id="social"
+  style={{
+    padding: "70px 20px",
+    background: "#f4f8f7",
+  }}
+>
+  <div
+    style={{
+      maxWidth: "1100px",
+      margin: "0 auto",
+      textAlign: "center",
+    }}
+  >
+    <p
+      style={{
+        color: "#17656b",
+        fontWeight: 800,
+        letterSpacing: "2px",
+        fontSize: "13px",
+      }}
+    >
+      CONNECT WITH US
+    </p>
+
+    <h2
+      style={{
+        fontSize: "clamp(30px,5vw,46px)",
+        margin: "8px 0 14px",
+        color: "#173f44",
+      }}
+    >
+      Follow Neuro Mind Bloom
+    </h2>
+
+    <p
+      style={{
+        color: "#64748b",
+        marginBottom: "32px",
+      }}
+    >
+      Mental health awareness, educational videos, updates and online consultation.
+    </p>
+
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "center",
+        gap: "14px",
+      }}
+    >
+
+      <a
+        href="https://www.youtube.com/results?search_query=Neuro+Mind+Bloom+Dr+Kuldeep+Budania"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          padding: "14px 24px",
+          borderRadius: "12px",
+          background: "#ff0000",
+          color: "#fff",
+          textDecoration: "none",
+          fontWeight: 800,
+        }}
+      >
+        YouTube
+      </a>
+
+      <a
+        href="https://www.facebook.com/search/top?q=Neuro%20Mind%20Bloom"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          padding: "14px 24px",
+          borderRadius: "12px",
+          background: "#1877f2",
+          color: "#fff",
+          textDecoration: "none",
+          fontWeight: 800,
+        }}
+      >
+        Facebook
+      </a>
+
+      <a
+        href="https://www.instagram.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          padding: "14px 24px",
+          borderRadius: "12px",
+          background: "#833ab4",
+          color: "#fff",
+          textDecoration: "none",
+          fontWeight: 800,
+        }}
+      >
+        Instagram
+      </a>
+
+      <a
+        href="https://wa.me/919376315331"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          padding: "14px 24px",
+          borderRadius: "12px",
+          background: "#25d366",
+          color: "#fff",
+          textDecoration: "none",
+          fontWeight: 800,
+        }}
+      >
+        WhatsApp Business
+      </a>
+
+    </div>
+
+    <p
+      style={{
+        marginTop: "24px",
+        fontSize: "13px",
+        color: "#64748b",
+      }}
+    >
+      Neuro Mind Bloom • Psychiatry • Psychology • Wellness
+    </p>
+
+  </div>
+</section>
+<footer id="contact" className="footer"><div className="container footerGrid"><div><h3>Neuro Mind Bloom</h3><p>Psychiatry â€¢ Psychology â€¢ Wellness</p><p>Dr. Kuldeep Budania, MD Psychiatry</p></div><div><h4>Contact</h4><a href="tel:+918107639481">Call: +91 8107639481</a><a href="https://wa.me/919376315331" target="_blank" rel="noreferrer">WhatsApp: +91 9376315331</a><a href="mailto:drkuldeepbudania23@gmail.com">drkuldeepbudania23@gmail.com</a><span>Ajmer, Rajasthan</span></div><div><h4>Services</h4><a href="#consultations">Psychiatric Consultation</a><a href="#consultations">Psychotherapy</a><a href="#services">Sexual Disorders</a><a href="#services">Addiction Psychiatry</a></div></div><div className="copyright">ï¿½ 2026 Neuro Mind Bloom. All rights reserved.</div></footer>
 
       <a className="floatingWhatsApp" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book an online consultation.")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp">WhatsApp</a>
     </main>
   );
 }
+
 
 
 
