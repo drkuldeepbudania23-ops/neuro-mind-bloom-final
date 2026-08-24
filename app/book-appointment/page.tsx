@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { auth, db } from "../../lib/firebase";
 import { FormEvent, useState } from "react";
@@ -7,7 +7,7 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 export default function BookAppointmentPage() {
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
-  const [service, setService] = useState("Psychiatric Consultation - ₹500");
+  const [service, setService] = useState("Psychiatric Consultation - â‚¹500");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [concern, setConcern] = useState("");
@@ -49,12 +49,16 @@ export default function BookAppointmentPage() {
 
       await addDoc(collection(db, "appointments"), {
         patientName: cleanName,
+        name: cleanName,
         mobile: cleanMobile,
         service,
         preferredDate: date,
+        date: date,
         preferredTime: time,
+        time: time,
         concern: concern.trim(),
-        status: "New",
+        mode: "Online",
+        status: "pending",
         source: "Website",
         createdAt: serverTimestamp(),
       });
@@ -63,7 +67,7 @@ export default function BookAppointmentPage() {
 
       setName("");
       setMobile("");
-      setService("Psychiatric Consultation - ₹500");
+      setService("Psychiatric Consultation - â‚¹500");
       setDate("");
       setTime("");
       setConcern("");
@@ -176,8 +180,8 @@ export default function BookAppointmentPage() {
               onChange={(e) => setService(e.target.value)}
               style={inputStyle}
             >
-              <option>Psychiatric Consultation - ₹500</option>
-              <option>Psychotherapy Session - ₹2000</option>
+              <option>Psychiatric Consultation - â‚¹500</option>
+              <option>Psychotherapy Session - â‚¹2000</option>
             </select>
           </label>
 
@@ -320,6 +324,10 @@ const inputStyle = {
   fontSize: 16,
   outline: "none",
 } as const;
+
+
+
+
 
 
 

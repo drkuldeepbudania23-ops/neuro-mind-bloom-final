@@ -13,13 +13,18 @@ import { db } from "../../firebase";
 type Appointment = {
   id: string;
   name?: string;
+  patientName?: string;
   mobile?: string;
   email?: string;
   age?: string | number;
   gender?: string;
   date?: string;
+  preferredDate?: string;
   time?: string;
+  preferredTime?: string;
   mode?: string;
+  service?: string;
+  source?: string;
   status?: string;
   concern?: string;
   paymentStatus?: string;
@@ -73,9 +78,10 @@ export default function DoctorAppointmentsPage() {
 
   const pending = useMemo(
     () =>
-      appointments.filter(
-        (item) => (item.status || "pending").toLowerCase() === "pending"
-      ).length,
+      appointments.filter((item) => {
+        const status = (item.status || "pending").toLowerCase();
+        return status === "pending" || status === "new";
+      }).length,
     [appointments]
   );
 
@@ -137,7 +143,7 @@ export default function DoctorAppointmentsPage() {
                 >
                   <div>
                     <h2 style={{ marginTop: 0 }}>
-                      {appointment.name || "Patient"}
+                      {appointment.name || appointment.patientName || "Patient"}
                     </h2>
 
                     <div><b>Mobile:</b> {appointment.mobile || "-"}</div>
@@ -155,9 +161,9 @@ export default function DoctorAppointmentsPage() {
                   </div>
 
                   <div>
-                    <div><b>Date:</b> {appointment.date || "-"}</div>
-                    <div><b>Time:</b> {appointment.time || "-"}</div>
-                    <div><b>Mode:</b> {appointment.mode || "-"}</div>
+                    <div><b>Date:</b> {appointment.date || appointment.preferredDate || "-"}</div>
+                    <div><b>Time:</b> {appointment.time || appointment.preferredTime || "-"}</div>
+                    <div><b>Mode:</b> {appointment.mode || appointment.source || "-"}</div>
 
                     <div style={{ marginTop: 8 }}>
                       <b>Status:</b>{" "}
@@ -220,7 +226,9 @@ export default function DoctorAppointmentsPage() {
                     <a
                       href={`https://wa.me/91${appointment.mobile
                         .replace(/\D/g, "")
-                        .slice(-10)}`}
+                        .slice(-10)}?text=${encodeURIComponent(
+                        `Namaste ${appointment.name || appointment.patientName || "Patient"}, your Neuro Mind Bloom appointment ${status.toLowerCase() === "confirmed" ? "is confirmed" : "request has been received"}${appointment.date || appointment.preferredDate ? ` for ${appointment.date || appointment.preferredDate}` : ""}${appointment.time || appointment.preferredTime ? ` at ${appointment.time || appointment.preferredTime}` : ""}. For assistance, please reply to this WhatsApp message.`
+                      )}`}
                       target="_blank"
                       rel="noreferrer"
                       style={whatsappButton}
@@ -300,3 +308,4 @@ const whatsappButton = {
   background: "#128C7E",
   color: "white",
 };
+
