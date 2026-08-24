@@ -1,26 +1,22 @@
-"use client";
+﻿"use client";
 
-import { auth, db } from "../../../lib/firebase";
-import { useEffect, useState } from "react";
-import {
-  collection,
-  doc,
-  onSnapshot,
-  orderBy,
-  query,
-  updateDoc,
-} from "firebase/firestore";
+import { useEffect, useMemo, useState } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "../../firebase";
 
 type Appointment = {
   id: string;
-  patientName?: string;
+  name?: string;
   mobile?: string;
-  service?: string;
-  preferredDate?: string;
-  preferredTime?: string;
-  concern?: string;
+  email?: string;
+  age?: string | number;
+  gender?: string;
+  date?: string;
+  time?: string;
+  mode?: string;
   status?: string;
-  source?: string;
+  concern?: string;
+  createdAt?: any;
 };
 
 export default function DoctorAppointmentsPage() {
@@ -29,27 +25,39 @@ export default function DoctorAppointmentsPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const q = query(
-      collection(db, "appointments"),
-      orderBy("createdAt", "desc")
-    );
+    const ref = collection(db, "appointments");
 
     const unsubscribe = onSnapshot(
-      q,
+      ref,
       (snapshot) => {
-        const rows = snapshot.docs.map((item) => ({
-          id: item.id,
-          ...item.data(),
-        })) as Appointment[];
+        const rows: Appointment[] = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as Omit<Appointment, "id">),
+        }));
+
+        rows.sort((a, b) => {
+          const aTime =
+            a.createdAt?.seconds ??
+            a.createdAt?.toMillis?.() ??
+            new Date(`${a.date || ""} ${a.time || ""}`).getTime() ??
+            0;
+
+          const bTime =
+            b.createdAt?.seconds ??
+            b.createdAt?.toMillis?.() ??
+            new Date(`${b.date || ""} ${b.time || ""}`).getTime() ??
+            0;
+
+          return Number(bTime || 0) - Number(aTime || 0);
+        });
 
         setAppointments(rows);
         setLoading(false);
+        setError("");
       },
       (err) => {
         console.error(err);
-        setError(
-          "Appointments load nahi hui. Firestore connection/rules check karein."
-        );
+        setError("Appointments load nahi ho pa rahe. Firestore permissions check karein.");
         setLoading(false);
       }
     );
@@ -57,59 +65,69 @@ export default function DoctorAppointmentsPage() {
     return () => unsubscribe();
   }, []);
 
-  async function updateStatus(id: string, status: string) {
-    try {
-      await updateDoc(doc(db, "appointments", id), {
-        status,
-      });
-    } catch (err) {
-      console.error(err);
-      alert("Status update nahi hua.");
-    }
-  }
+  const total = appointments.length;
+
+  const pending = useMemo(
+    () =>
+      appointments.filter(
+        (item) => (item.status || "pending").toLowerCase() === "pending"
+      ).length,
+    [appointments]
+  );
 
   return (
     <main
       style={{
         minHeight: "100vh",
-        background: "#f4f7f8",
-        padding: 24,
+        background: "#f4f7fb",
+        padding: "24px",
+        fontFamily: "Arial, sans-serif",
       }}
     >
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: "0 auto",
-        }}
-      >
-        <h1
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div
           style={{
-            marginBottom: 6,
-            color: "#12343b",
+            background: "white",
+            padding: 24,
+            borderRadius: 16,
+            marginBottom: 20,
+            boxShadow: "0 4px 18px rgba(0,0,0,0.08)",
           }}
         >
-          Patient Appointments
-        </h1>
+          <h1 style={{ margin: 0, fontSize: 28 }}>Patient Appointments</h1>
+          <p style={{ marginBottom: 0, color: "#555" }}>
+            Neuro Mind Bloom Doctor Dashboard
+          </p>
 
-        <p
-          style={{
-            marginTop: 0,
-            color: "#64748b",
-          }}
-        >
-          Website appointment requests appear here automatically.
-        </p>
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              marginTop: 18,
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={statStyle}>
+              <b>Total Appointments</b>
+              <div style={numberStyle}>{total}</div>
+            </div>
 
-        {loading && <p>Loading appointments...</p>}
+            <div style={statStyle}>
+              <b>Pending</b>
+              <div style={numberStyle}>{pending}</div>
+            </div>
+          </div>
+        </div>
+
+        {loading && (
+          <div style={messageStyle}>Appointments loading...</div>
+        )}
 
         {error && (
           <div
             style={{
-              background: "#fee2e2",
-              color: "#991b1b",
-              padding: 14,
-              borderRadius: 10,
-              marginBottom: 18,
+              ...messageStyle,
+              color: "#b00020",
             }}
           >
             {error}
@@ -117,176 +135,132 @@ export default function DoctorAppointmentsPage() {
         )}
 
         {!loading && !error && appointments.length === 0 && (
-          <div
-            style={{
-              background: "white",
-              padding: 24,
-              borderRadius: 14,
-            }}
-          >
-            Abhi koi appointment nahi hai.
-          </div>
+          <div style={messageStyle}>Abhi koi appointment nahi hai.</div>
         )}
 
-        <div
-          style={{
-            display: "grid",
-            gap: 16,
-          }}
-        >
-          {appointments.map((appointment) => {
-            const cleanMobile = (appointment.mobile || "").replace(/\D/g, "");
-
-            const whatsappNumber =
-              cleanMobile.length === 10
-                ? `91${cleanMobile}`
-                : cleanMobile;
-
-            const whatsappText = encodeURIComponent(
-              `Hello ${appointment.patientName || ""}, this is Neuro Mind Bloom regarding your appointment request for ${
-                appointment.service || "consultation"
-              } on ${appointment.preferredDate || ""} at ${
-                appointment.preferredTime || ""
-              }.`
-            );
-
-            return (
+        <div style={{ display: "grid", gap: 16 }}>
+          {appointments.map((appointment) => (
+            <div
+              key={appointment.id}
+              style={{
+                background: "white",
+                borderRadius: 16,
+                padding: 20,
+                boxShadow: "0 3px 14px rgba(0,0,0,0.07)",
+              }}
+            >
               <div
-                key={appointment.id}
                 style={{
-                  background: "white",
-                  borderRadius: 16,
-                  padding: 20,
-                  boxShadow: "0 4px 18px rgba(0,0,0,0.06)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 15,
+                  flexWrap: "wrap",
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    gap: 16,
-                    flexWrap: "wrap",
-                  }}
-                >
+                <div>
+                  <h2 style={{ marginTop: 0, marginBottom: 8 }}>
+                    {appointment.name || "Patient"}
+                  </h2>
+
                   <div>
-                    <h2
-                      style={{
-                        margin: 0,
-                        color: "#153f46",
-                      }}
-                    >
-                      {appointment.patientName || "Patient"}
-                    </h2>
-
-                    <div
-                      style={{
-                        marginTop: 8,
-                        lineHeight: 1.8,
-                        color: "#334155",
-                      }}
-                    >
-                      <div>
-                        <strong>Mobile:</strong>{" "}
-                        {appointment.mobile || "-"}
-                      </div>
-
-                      <div>
-                        <strong>Service:</strong>{" "}
-                        {appointment.service || "-"}
-                      </div>
-
-                      <div>
-                        <strong>Date:</strong>{" "}
-                        {appointment.preferredDate || "-"}
-                      </div>
-
-                      <div>
-                        <strong>Time:</strong>{" "}
-                        {appointment.preferredTime || "-"}
-                      </div>
-
-                      <div>
-                        <strong>Source:</strong>{" "}
-                        {appointment.source || "Website"}
-                      </div>
-
-                      <div>
-                        <strong>Concern:</strong>{" "}
-                        {appointment.concern || "-"}
-                      </div>
-                    </div>
+                    <b>Mobile:</b> {appointment.mobile || "-"}
                   </div>
 
-                  <div
-                    style={{
-                      minWidth: 180,
-                    }}
-                  >
-                    <label
+                  <div>
+                    <b>Email:</b> {appointment.email || "-"}
+                  </div>
+
+                  <div>
+                    <b>Age/Gender:</b>{" "}
+                    {appointment.age || "-"} / {appointment.gender || "-"}
+                  </div>
+                </div>
+
+                <div>
+                  <div>
+                    <b>Date:</b> {appointment.date || "-"}
+                  </div>
+
+                  <div>
+                    <b>Time:</b> {appointment.time || "-"}
+                  </div>
+
+                  <div>
+                    <b>Mode:</b> {appointment.mode || "-"}
+                  </div>
+
+                  <div>
+                    <b>Status:</b>{" "}
+                    <span
                       style={{
                         fontWeight: 700,
-                        display: "block",
-                        marginBottom: 6,
+                        textTransform: "capitalize",
                       }}
                     >
-                      Status
-                    </label>
-
-                    <select
-                      value={appointment.status || "New"}
-                      onChange={(e) =>
-                        updateStatus(appointment.id, e.target.value)
-                      }
-                      style={{
-                        width: "100%",
-                        padding: 10,
-                        borderRadius: 8,
-                        border: "1px solid #cbd5e1",
-                      }}
-                    >
-                      <option>New</option>
-                      <option>Confirmed</option>
-                      <option>Completed</option>
-                      <option>Cancelled</option>
-                    </select>
-
-                    {whatsappNumber && (
-                      <a
-                        href={`https://wa.me/${whatsappNumber}?text=${whatsappText}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          display: "block",
-                          marginTop: 12,
-                          padding: "11px 14px",
-                          textAlign: "center",
-                          textDecoration: "none",
-                          borderRadius: 9,
-                          background: "#25D366",
-                          color: "white",
-                          fontWeight: 800,
-                        }}
-                      >
-                        WhatsApp Patient
-                      </a>
-                    )}
+                      {appointment.status || "pending"}
+                    </span>
                   </div>
                 </div>
               </div>
-            );
-          })}
+
+              {appointment.concern && (
+                <div
+                  style={{
+                    marginTop: 14,
+                    paddingTop: 14,
+                    borderTop: "1px solid #eee",
+                  }}
+                >
+                  <b>Concern:</b> {appointment.concern}
+                </div>
+              )}
+
+              {appointment.mobile && (
+                <div style={{ marginTop: 16 }}>
+                  <a
+                    href={`https://wa.me/91${appointment.mobile
+                      .replace(/\D/g, "")
+                      .slice(-10)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: "inline-block",
+                      padding: "10px 16px",
+                      borderRadius: 8,
+                      background: "#111",
+                      color: "white",
+                      textDecoration: "none",
+                      fontWeight: 700,
+                    }}
+                  >
+                    WhatsApp Patient
+                  </a>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </main>
   );
 }
 
+const statStyle = {
+  background: "#f1f3f5",
+  padding: "14px 18px",
+  borderRadius: 12,
+  minWidth: 170,
+};
 
+const numberStyle = {
+  fontSize: 26,
+  fontWeight: 800,
+  marginTop: 5,
+};
 
-
-
-
-
-
-
+const messageStyle = {
+  background: "white",
+  padding: 20,
+  borderRadius: 14,
+  marginBottom: 16,
+};
