@@ -5,8 +5,14 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/doctor/", "/login/"],
+      disallow: [
+        "/doctor/",
+        "/login/",
+        "/api/"
+      ]
     },
+
     sitemap: "https://neuromindbloom.com/sitemap.xml",
+    host: "https://neuromindbloom.com"
   };
 }

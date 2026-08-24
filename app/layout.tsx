@@ -1,3 +1,4 @@
+﻿import SeoStructuredData from "./SeoStructuredData";
 import DoctorLoginButton from "./components/DoctorLoginButton";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -18,10 +19,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}        <DoctorLoginButton />
+      <body>
+        <SeoStructuredData />{children}        <DoctorLoginButton />
       </body>
     </html>
   );
 }
+
 
 
