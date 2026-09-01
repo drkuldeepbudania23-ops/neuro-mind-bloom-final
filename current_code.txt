@@ -1,0 +1,5048 @@
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\layout.tsx ================
+
+"use client";
+
+import { ReactNode, useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { usePathname, useRouter } from "next/navigation";
+import { auth } from "../../lib/firebase";
+
+export default function DoctorLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    if (pathname === "/doctor/login") {
+      setChecking(false);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.replace("/login");
+      } else {
+        setChecking(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [pathname, router]);
+
+  if (pathname === "/doctor/login") {
+    return <>{children}</>;
+  }
+
+  if (checking) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "grid",
+          placeItems: "center",
+          fontFamily: "Arial, sans-serif",
+        }}
+      >
+        Checking doctor login...
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\page.tsx ================
+
+import Link from "next/link";
+
+export default function DoctorDashboard() {
+  const cards = [
+    ["Appointments","/doctor/appointments"],
+    ["E-Prescription","/doctor/prescription"],
+    ["Follow-up","/doctor/follow-up"],
+    ["Payment","/doctor/payment"]
+  ];
+
+  return (
+    <main style={{padding:30,maxWidth:1100,margin:"auto"}}>
+      <h1>Doctor Dashboard</h1>
+      <p>Manage online consultation workflow from one place.</p>
+
+      <div style={{
+        display:"grid",
+        gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",
+        gap:18,
+        marginTop:25
+      }}>
+        {cards.map(([name,url]) => (
+          <Link key={url} href={url} style={{
+            display:"block",
+            padding:26,
+            border:"1px solid #ddd",
+            borderRadius:16,
+            textDecoration:"none",
+            color:"#123",
+            background:"white",
+            boxShadow:"0 5px 18px rgba(0,0,0,.06)"
+          }}>
+            <h2>{name}</h2>
+            <p>Open →</p>
+          </Link>
+        ))}
+      </div>
+    </main>
+  );
+}
+
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\appointments\page.backup.tsx ================
+
+"use client";
+
+import { auth, db } from "../../../lib/firebase";
+import { useEffect, useState } from "react";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  updateDoc,
+} from "firebase/firestore";
+
+type Appointment = {
+  id: string;
+  patientName?: string;
+  mobile?: string;
+  service?: string;
+  preferredDate?: string;
+  preferredTime?: string;
+  concern?: string;
+  status?: string;
+  source?: string;
+};
+
+export default function DoctorAppointmentsPage() {
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "appointments"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const rows = snapshot.docs.map((item) => ({
+          id: item.id,
+          ...item.data(),
+        })) as Appointment[];
+
+        setAppointments(rows);
+        setLoading(false);
+      },
+      (err) => {
+        console.error(err);
+        setError(
+          "Appointments load nahi hui. Firestore connection/rules check karein."
+        );
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  async function updateStatus(id: string, status: string) {
+    try {
+      await updateDoc(doc(db, "appointments", id), {
+        status,
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Status update nahi hua.");
+    }
+  }
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#f4f7f8",
+        padding: 24,
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+        }}
+      >
+        <h1
+          style={{
+            marginBottom: 6,
+            color: "#12343b",
+          }}
+        >
+          Patient Appointments
+        </h1>
+
+        <p
+          style={{
+            marginTop: 0,
+            color: "#64748b",
+          }}
+        >
+          Website appointment requests appear here automatically.
+        </p>
+
+        {loading && <p>Loading appointments...</p>}
+
+        {error && (
+          <div
+            style={{
+              background: "#fee2e2",
+              color: "#991b1b",
+              padding: 14,
+              borderRadius: 10,
+              marginBottom: 18,
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && appointments.length === 0 && (
+          <div
+            style={{
+              background: "white",
+              padding: 24,
+              borderRadius: 14,
+            }}
+          >
+            Abhi koi appointment nahi hai.
+          </div>
+        )}
+
+        <div
+          style={{
+            display: "grid",
+            gap: 16,
+          }}
+        >
+          {appointments.map((appointment) => {
+            const cleanMobile = (appointment.mobile || "").replace(/\D/g, "");
+
+            const whatsappNumber =
+              cleanMobile.length === 10
+                ? `91${cleanMobile}`
+                : cleanMobile;
+
+            const whatsappText = encodeURIComponent(
+              `Hello ${appointment.patientName || ""}, this is Neuro Mind Bloom regarding your appointment request for ${
+                appointment.service || "consultation"
+              } on ${appointment.preferredDate || ""} at ${
+                appointment.preferredTime || ""
+              }.`
+            );
+
+            return (
+              <div
+                key={appointment.id}
+                style={{
+                  background: "white",
+                  borderRadius: 16,
+                  padding: 20,
+                  boxShadow: "0 4px 18px rgba(0,0,0,0.06)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: 16,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div>
+                    <h2
+                      style={{
+                        margin: 0,
+                        color: "#153f46",
+                      }}
+                    >
+                      {appointment.patientName || "Patient"}
+                    </h2>
+
+                    <div
+                      style={{
+                        marginTop: 8,
+                        lineHeight: 1.8,
+                        color: "#334155",
+                      }}
+                    >
+                      <div>
+                        <strong>Mobile:</strong>{" "}
+                        {appointment.mobile || "-"}
+                      </div>
+
+                      <div>
+                        <strong>Service:</strong>{" "}
+                        {appointment.service || "-"}
+                      </div>
+
+                      <div>
+                        <strong>Date:</strong>{" "}
+                        {appointment.preferredDate || "-"}
+                      </div>
+
+                      <div>
+                        <strong>Time:</strong>{" "}
+                        {appointment.preferredTime || "-"}
+                      </div>
+
+                      <div>
+                        <strong>Source:</strong>{" "}
+                        {appointment.source || "Website"}
+                      </div>
+
+                      <div>
+                        <strong>Concern:</strong>{" "}
+                        {appointment.concern || "-"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      minWidth: 180,
+                    }}
+                  >
+                    <label
+                      style={{
+                        fontWeight: 700,
+                        display: "block",
+                        marginBottom: 6,
+                      }}
+                    >
+                      Status
+                    </label>
+
+                    <select
+                      value={appointment.status || "New"}
+                      onChange={(e) =>
+                        updateStatus(appointment.id, e.target.value)
+                      }
+                      style={{
+                        width: "100%",
+                        padding: 10,
+                        borderRadius: 8,
+                        border: "1px solid #cbd5e1",
+                      }}
+                    >
+                      <option>New</option>
+                      <option>Confirmed</option>
+                      <option>Completed</option>
+                      <option>Cancelled</option>
+                    </select>
+
+                    {whatsappNumber && (
+                      <a
+                        href={`https://wa.me/${whatsappNumber}?text=${whatsappText}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: "block",
+                          marginTop: 12,
+                          padding: "11px 14px",
+                          textAlign: "center",
+                          textDecoration: "none",
+                          borderRadius: 9,
+                          background: "#25D366",
+                          color: "white",
+                          fontWeight: 800,
+                        }}
+                      >
+                        WhatsApp Patient
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+
+
+
+
+
+
+
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\appointments\page.tsx ================
+
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
+import { db } from "../../firebase";
+
+type Appointment = {
+  id: string;
+  name?: string;
+  patientName?: string;
+  mobile?: string;
+  email?: string;
+  age?: string | number;
+  gender?: string;
+  date?: string;
+  preferredDate?: string;
+  time?: string;
+  preferredTime?: string;
+  mode?: string;
+  service?: string;
+  source?: string;
+  status?: string;
+  concern?: string;
+  paymentStatus?: string;
+  createdAt?: any;
+};
+
+export default function DoctorAppointmentsPage() {
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [updating, setUpdating] = useState("");
+
+  useEffect(() => {
+    const ref = collection(db, "appointments");
+
+    const unsubscribe = onSnapshot(
+      ref,
+      (snapshot) => {
+        const rows: Appointment[] = snapshot.docs.map((item) => ({
+          id: item.id,
+          ...(item.data() as Omit<Appointment, "id">),
+        }));
+
+        rows.sort((a, b) => {
+          const aTime =
+            a.createdAt?.toMillis?.() ??
+            (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
+
+          const bTime =
+            b.createdAt?.toMillis?.() ??
+            (b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
+
+          return bTime - aTime;
+        });
+
+        setAppointments(rows);
+        setLoading(false);
+        setError("");
+      },
+      (err) => {
+        console.error(err);
+        setError("Appointments load nahi ho pa rahe.");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  const total = appointments.length;
+
+  const pending = useMemo(
+    () =>
+      appointments.filter((item) => {
+        const status = (item.status || "pending").toLowerCase();
+        return status === "pending" || status === "new";
+      }).length,
+    [appointments]
+  );
+
+  async function changeStatus(id: string, status: string) {
+    try {
+      setUpdating(id);
+      await updateDoc(doc(db, "appointments", id), { status });
+    } catch (err) {
+      console.error(err);
+      alert("Status update nahi ho paya.");
+    } finally {
+      setUpdating("");
+    }
+  }
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#f4f7fb",
+        padding: 24,
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={headerCard}>
+          <h1 style={{ margin: 0, fontSize: 28 }}>Patient Appointments</h1>
+          <p style={{ color: "#555" }}>Neuro Mind Bloom Doctor Dashboard</p>
+
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <div style={statStyle}>
+              <b>Total Appointments</b>
+              <div style={numberStyle}>{total}</div>
+            </div>
+
+            <div style={statStyle}>
+              <b>Pending</b>
+              <div style={numberStyle}>{pending}</div>
+            </div>
+          </div>
+        </div>
+
+        {loading && <div style={messageStyle}>Appointments loading...</div>}
+        {error && <div style={{ ...messageStyle, color: "red" }}>{error}</div>}
+
+        <div style={{ display: "grid", gap: 16 }}>
+          {appointments.map((appointment) => {
+            const status = appointment.status || "pending";
+
+            return (
+              <div key={appointment.id} style={cardStyle}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 20,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div>
+                    <h2 style={{ marginTop: 0 }}>
+                      {appointment.name || appointment.patientName || "Patient"}
+                    </h2>
+
+                    <div><b>Mobile:</b> {appointment.mobile || "-"}</div>
+                    <div><b>Email:</b> {appointment.email || "-"}</div>
+                    <div>
+                      <b>Age/Gender:</b> {appointment.age || "-"} /{" "}
+                      {appointment.gender || "-"}
+                    </div>
+
+                    {appointment.concern && (
+                      <div style={{ marginTop: 10 }}>
+                        <b>Concern:</b> {appointment.concern}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <div><b>Date:</b> {appointment.date || appointment.preferredDate || "-"}</div>
+                    <div><b>Time:</b> {appointment.time || appointment.preferredTime || "-"}</div>
+                    <div><b>Mode:</b> {appointment.mode || appointment.source || "-"}</div>
+
+                    <div style={{ marginTop: 8 }}>
+                      <b>Status:</b>{" "}
+                      <span style={{ fontWeight: 800, textTransform: "capitalize" }}>
+                        {status}
+                      </span>
+                    </div>
+
+                    <div>
+                      <b>Payment:</b>{" "}
+                      {appointment.paymentStatus || "Pending"}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 18,
+                    paddingTop: 16,
+                    borderTop: "1px solid #eee",
+                    display: "flex",
+                    gap: 10,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {status.toLowerCase() !== "confirmed" && (
+                    <button
+                      onClick={() => changeStatus(appointment.id, "confirmed")}
+                      disabled={updating === appointment.id}
+                      style={buttonStyle}
+                    >
+                      {updating === appointment.id
+                        ? "Updating..."
+                        : "Confirm Appointment"}
+                    </button>
+                  )}
+
+                  <Link
+                    href={`/doctor/prescription?appointmentId=${appointment.id}`}
+                    style={linkButton}
+                  >
+                    E-Prescription
+                  </Link>
+
+                  <Link
+                    href={`/doctor/follow-up?appointmentId=${appointment.id}`}
+                    style={linkButton}
+                  >
+                    Follow-up
+                  </Link>
+
+                  <Link
+                    href={`/doctor/payment?appointmentId=${appointment.id}`}
+                    style={linkButton}
+                  >
+                    Payment
+                  </Link>
+
+                  {appointment.mobile && (
+                    <a
+                      href={`https://wa.me/91${appointment.mobile
+                        .replace(/\D/g, "")
+                        .slice(-10)}?text=${encodeURIComponent(
+                        `Namaste ${appointment.name || appointment.patientName || "Patient"}, your Neuro Mind Bloom appointment ${status.toLowerCase() === "confirmed" ? "is confirmed" : "request has been received"}${appointment.date || appointment.preferredDate ? ` for ${appointment.date || appointment.preferredDate}` : ""}${appointment.time || appointment.preferredTime ? ` at ${appointment.time || appointment.preferredTime}` : ""}. For assistance, please reply to this WhatsApp message.`
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={whatsappButton}
+                    >
+                      WhatsApp Patient
+                    </a>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+const headerCard = {
+  background: "white",
+  padding: 24,
+  borderRadius: 16,
+  marginBottom: 20,
+  boxShadow: "0 4px 18px rgba(0,0,0,0.08)",
+};
+
+const statStyle = {
+  background: "#f1f3f5",
+  padding: "14px 18px",
+  borderRadius: 12,
+  minWidth: 170,
+};
+
+const numberStyle = {
+  fontSize: 26,
+  fontWeight: 800,
+  marginTop: 5,
+};
+
+const messageStyle = {
+  background: "white",
+  padding: 20,
+  borderRadius: 14,
+  marginBottom: 16,
+};
+
+const cardStyle = {
+  background: "white",
+  borderRadius: 16,
+  padding: 20,
+  boxShadow: "0 3px 14px rgba(0,0,0,0.07)",
+};
+
+const buttonStyle = {
+  border: 0,
+  borderRadius: 8,
+  padding: "10px 15px",
+  cursor: "pointer",
+  fontWeight: 700,
+  background: "#111827",
+  color: "white",
+};
+
+const linkButton = {
+  textDecoration: "none",
+  borderRadius: 8,
+  padding: "10px 15px",
+  fontWeight: 700,
+  background: "#e9eef5",
+  color: "#111",
+};
+
+const whatsappButton = {
+  textDecoration: "none",
+  borderRadius: 8,
+  padding: "10px 15px",
+  fontWeight: 700,
+  background: "#128C7E",
+  color: "white",
+};
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\appointments\page.workflow-backup.tsx ================
+
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "../../firebase";
+
+type Appointment = {
+  id: string;
+  name?: string;
+  mobile?: string;
+  email?: string;
+  age?: string | number;
+  gender?: string;
+  date?: string;
+  time?: string;
+  mode?: string;
+  status?: string;
+  concern?: string;
+  createdAt?: any;
+};
+
+export default function DoctorAppointmentsPage() {
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const ref = collection(db, "appointments");
+
+    const unsubscribe = onSnapshot(
+      ref,
+      (snapshot) => {
+        const rows: Appointment[] = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as Omit<Appointment, "id">),
+        }));
+
+        rows.sort((a, b) => {
+          const aTime =
+            a.createdAt?.seconds ??
+            a.createdAt?.toMillis?.() ??
+            new Date(`${a.date || ""} ${a.time || ""}`).getTime() ??
+            0;
+
+          const bTime =
+            b.createdAt?.seconds ??
+            b.createdAt?.toMillis?.() ??
+            new Date(`${b.date || ""} ${b.time || ""}`).getTime() ??
+            0;
+
+          return Number(bTime || 0) - Number(aTime || 0);
+        });
+
+        setAppointments(rows);
+        setLoading(false);
+        setError("");
+      },
+      (err) => {
+        console.error(err);
+        setError("Appointments load nahi ho pa rahe. Firestore permissions check karein.");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  const total = appointments.length;
+
+  const pending = useMemo(
+    () =>
+      appointments.filter(
+        (item) => (item.status || "pending").toLowerCase() === "pending"
+      ).length,
+    [appointments]
+  );
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#f4f7fb",
+        padding: "24px",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div
+          style={{
+            background: "white",
+            padding: 24,
+            borderRadius: 16,
+            marginBottom: 20,
+            boxShadow: "0 4px 18px rgba(0,0,0,0.08)",
+          }}
+        >
+          <h1 style={{ margin: 0, fontSize: 28 }}>Patient Appointments</h1>
+          <p style={{ marginBottom: 0, color: "#555" }}>
+            Neuro Mind Bloom Doctor Dashboard
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              marginTop: 18,
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={statStyle}>
+              <b>Total Appointments</b>
+              <div style={numberStyle}>{total}</div>
+            </div>
+
+            <div style={statStyle}>
+              <b>Pending</b>
+              <div style={numberStyle}>{pending}</div>
+            </div>
+          </div>
+        </div>
+
+        {loading && (
+          <div style={messageStyle}>Appointments loading...</div>
+        )}
+
+        {error && (
+          <div
+            style={{
+              ...messageStyle,
+              color: "#b00020",
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && appointments.length === 0 && (
+          <div style={messageStyle}>Abhi koi appointment nahi hai.</div>
+        )}
+
+        <div style={{ display: "grid", gap: 16 }}>
+          {appointments.map((appointment) => (
+            <div
+              key={appointment.id}
+              style={{
+                background: "white",
+                borderRadius: 16,
+                padding: 20,
+                boxShadow: "0 3px 14px rgba(0,0,0,0.07)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 15,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <h2 style={{ marginTop: 0, marginBottom: 8 }}>
+                    {appointment.name || "Patient"}
+                  </h2>
+
+                  <div>
+                    <b>Mobile:</b> {appointment.mobile || "-"}
+                  </div>
+
+                  <div>
+                    <b>Email:</b> {appointment.email || "-"}
+                  </div>
+
+                  <div>
+                    <b>Age/Gender:</b>{" "}
+                    {appointment.age || "-"} / {appointment.gender || "-"}
+                  </div>
+                </div>
+
+                <div>
+                  <div>
+                    <b>Date:</b> {appointment.date || "-"}
+                  </div>
+
+                  <div>
+                    <b>Time:</b> {appointment.time || "-"}
+                  </div>
+
+                  <div>
+                    <b>Mode:</b> {appointment.mode || "-"}
+                  </div>
+
+                  <div>
+                    <b>Status:</b>{" "}
+                    <span
+                      style={{
+                        fontWeight: 700,
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      {appointment.status || "pending"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {appointment.concern && (
+                <div
+                  style={{
+                    marginTop: 14,
+                    paddingTop: 14,
+                    borderTop: "1px solid #eee",
+                  }}
+                >
+                  <b>Concern:</b> {appointment.concern}
+                </div>
+              )}
+
+              {appointment.mobile && (
+                <div style={{ marginTop: 16 }}>
+                  <a
+                    href={`https://wa.me/91${appointment.mobile
+                      .replace(/\D/g, "")
+                      .slice(-10)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: "inline-block",
+                      padding: "10px 16px",
+                      borderRadius: 8,
+                      background: "#111",
+                      color: "white",
+                      textDecoration: "none",
+                      fontWeight: 700,
+                    }}
+                  >
+                    WhatsApp Patient
+                  </a>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+const statStyle = {
+  background: "#f1f3f5",
+  padding: "14px 18px",
+  borderRadius: 12,
+  minWidth: 170,
+};
+
+const numberStyle = {
+  fontSize: 26,
+  fontWeight: 800,
+  marginTop: 5,
+};
+
+const messageStyle = {
+  background: "white",
+  padding: 20,
+  borderRadius: 14,
+  marginBottom: 16,
+};
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\follow-up\page.tsx ================
+
+"use client";
+
+import { useEffect, useState } from "react";
+
+type FollowUp = {
+  id: string;
+  patient: string;
+  mobile: string;
+  date: string;
+  improvement: string;
+  sideEffects: string;
+  mse: string;
+  medicationPlan: string;
+  advice: string;
+  nextVisit: string;
+};
+
+export default function FollowUpPage() {
+  const [patient, setPatient] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [improvement, setImprovement] = useState("");
+  const [sideEffects, setSideEffects] = useState("");
+  const [mse, setMse] = useState("");
+  const [medicationPlan, setMedicationPlan] = useState("");
+  const [advice, setAdvice] = useState("");
+  const [nextVisit, setNextVisit] = useState("");
+  const [records, setRecords] = useState<FollowUp[]>([]);
+
+  useEffect(() => {
+    setRecords(
+      JSON.parse(localStorage.getItem("nmb_followups") || "[]")
+    );
+  }, []);
+
+  function save() {
+    if (!patient) {
+      alert("Patient name is required.");
+      return;
+    }
+
+    const item: FollowUp = {
+      id: Date.now().toString(),
+      patient,
+      mobile,
+      date: new Date().toLocaleDateString(),
+      improvement,
+      sideEffects,
+      mse,
+      medicationPlan,
+      advice,
+      nextVisit,
+    };
+
+    const updated = [item, ...records];
+
+    setRecords(updated);
+    localStorage.setItem("nmb_followups", JSON.stringify(updated));
+
+    alert("Follow-up saved.");
+  }
+
+  return (
+    <main style={s.page}>
+      <h1>Patient Follow-up</h1>
+
+      <section style={s.card}>
+        <div style={s.grid2}>
+          <input
+            style={s.input}
+            placeholder="Patient name"
+            value={patient}
+            onChange={(e) => setPatient(e.target.value)}
+          />
+
+          <input
+            style={s.input}
+            placeholder="Mobile / Patient ID"
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+          />
+        </div>
+
+        <label style={s.label}>Clinical Improvement</label>
+        <textarea
+          style={s.textarea}
+          value={improvement}
+          onChange={(e) => setImprovement(e.target.value)}
+        />
+
+        <label style={s.label}>Side Effects / New Complaints</label>
+        <textarea
+          style={s.textarea}
+          value={sideEffects}
+          onChange={(e) => setSideEffects(e.target.value)}
+        />
+
+        <label style={s.label}>MSE / Clinical Notes</label>
+        <textarea
+          style={s.textarea}
+          value={mse}
+          onChange={(e) => setMse(e.target.value)}
+        />
+
+        <label style={s.label}>Medication / Treatment Plan</label>
+        <textarea
+          style={s.textarea}
+          value={medicationPlan}
+          onChange={(e) => setMedicationPlan(e.target.value)}
+        />
+
+        <label style={s.label}>Advice</label>
+        <textarea
+          style={s.textarea}
+          value={advice}
+          onChange={(e) => setAdvice(e.target.value)}
+        />
+
+        <label style={s.label}>Next Visit</label>
+        <input
+          style={s.input}
+          value={nextVisit}
+          onChange={(e) => setNextVisit(e.target.value)}
+          placeholder="e.g. 2 weeks"
+        />
+
+        <button style={s.button} onClick={save}>
+          Save Follow-up
+        </button>
+      </section>
+    </main>
+  );
+}
+
+const s: Record<string, React.CSSProperties> = {
+  page: {
+    maxWidth: 900,
+    margin: "0 auto",
+    padding: 24,
+    fontFamily: "Arial",
+  },
+
+  card: {
+    display: "grid",
+    gap: 10,
+    border: "1px solid #e2e8f0",
+    borderRadius: 14,
+    padding: 20,
+  },
+
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+    gap: 10,
+  },
+
+  label: {
+    fontWeight: 700,
+    marginTop: 5,
+  },
+
+  input: {
+    padding: 11,
+    border: "1px solid #cbd5e1",
+    borderRadius: 8,
+  },
+
+  textarea: {
+    minHeight: 85,
+    padding: 10,
+    border: "1px solid #cbd5e1",
+    borderRadius: 8,
+  },
+
+  button: {
+    padding: 12,
+    border: 0,
+    borderRadius: 8,
+    background: "#176b87",
+    color: "#fff",
+    fontWeight: 700,
+  },
+};
+
+
+
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\login\page.tsx ================
+
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+export default function DoctorLoginRedirect() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/login");
+  }, [router]);
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+      }}
+    >
+      Opening Doctor Login...
+    </main>
+  );
+}
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\payment\page.tsx ================
+
+"use client";
+
+import { useState } from "react";
+
+export default function PaymentPage() {
+  const [patient, setPatient] = useState("");
+  const [service, setService] = useState("consultation");
+  const [mode, setMode] = useState("UPI");
+  const [reference, setReference] = useState("");
+  const [status, setStatus] = useState("Paid");
+
+  const fee = service === "psychotherapy" ? 2000 : 500;
+
+  function savePayment() {
+    if (!patient) {
+      alert("Patient name is required.");
+      return;
+    }
+
+    const payment = {
+      id: Date.now().toString(),
+      patient,
+      service:
+        service === "psychotherapy"
+          ? "Psychotherapy 30–45 min"
+          : "Video Consultation",
+      fee,
+      mode,
+      reference,
+      status,
+      date: new Date().toLocaleString(),
+    };
+
+    const old = JSON.parse(
+      localStorage.getItem("nmb_payments") || "[]"
+    );
+
+    localStorage.setItem(
+      "nmb_payments",
+      JSON.stringify([payment, ...old])
+    );
+
+    alert("Payment saved.");
+  }
+
+  return (
+    <main style={s.page}>
+      <div className="no-print">
+        <h1>Payment & Receipt</h1>
+      </div>
+
+      <section style={s.receipt}>
+        <div style={s.heading}>
+          <h2>NEURO MIND BLOOM</h2>
+          <strong>Consultation Receipt</strong>
+        </div>
+
+        <label style={s.label}>Patient Name</label>
+        <input
+          style={s.input}
+          value={patient}
+          onChange={(e) => setPatient(e.target.value)}
+        />
+
+        <label style={s.label}>Service</label>
+        <select
+          style={s.input}
+          value={service}
+          onChange={(e) => setService(e.target.value)}
+        >
+          <option value="consultation">
+            Video Consultation — ₹500
+          </option>
+          <option value="psychotherapy">
+            Psychotherapy 30–45 min — ₹2000
+          </option>
+        </select>
+
+        <div style={s.total}>
+          <span>Amount</span>
+          <strong>₹{fee}</strong>
+        </div>
+
+        <label style={s.label}>Payment Mode</label>
+        <select
+          style={s.input}
+          value={mode}
+          onChange={(e) => setMode(e.target.value)}
+        >
+          <option>UPI</option>
+          <option>Cash</option>
+          <option>Bank Transfer</option>
+          <option>Card</option>
+          <option>Other</option>
+        </select>
+
+        <label style={s.label}>Transaction / Reference No.</label>
+        <input
+          style={s.input}
+          value={reference}
+          onChange={(e) => setReference(e.target.value)}
+        />
+
+        <label style={s.label}>Status</label>
+        <select
+          style={s.input}
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        >
+          <option>Paid</option>
+          <option>Pending</option>
+        </select>
+
+        <div style={s.date}>
+          Date: {new Date().toLocaleString()}
+        </div>
+
+        <div className="no-print" style={s.buttons}>
+          <button style={s.button} onClick={savePayment}>
+            Save Payment
+          </button>
+
+          <button
+            style={s.button}
+            onClick={() => window.print()}
+          >
+            Print Receipt
+          </button>
+        </div>
+      </section>
+
+      <style jsx global>{`
+        @media print {
+          .no-print {
+            display: none !important;
+          }
+
+          @page {
+            size: A4;
+            margin: 15mm;
+          }
+        }
+      `}</style>
+    </main>
+  );
+}
+
+const s: Record<string, React.CSSProperties> = {
+  page: {
+    maxWidth: 720,
+    margin: "0 auto",
+    padding: 24,
+    fontFamily: "Arial",
+  },
+
+  receipt: {
+    display: "grid",
+    gap: 10,
+    border: "1px solid #e2e8f0",
+    borderRadius: 14,
+    padding: 24,
+  },
+
+  heading: {
+    textAlign: "center",
+    borderBottom: "2px solid #176b87",
+    paddingBottom: 12,
+    marginBottom: 8,
+  },
+
+  label: {
+    fontWeight: 700,
+  },
+
+  input: {
+    padding: 11,
+    border: "1px solid #cbd5e1",
+    borderRadius: 8,
+  },
+
+  total: {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: 26,
+    background: "#f1f5f9",
+    padding: 15,
+    borderRadius: 9,
+    margin: "8px 0",
+  },
+
+  date: {
+    marginTop: 10,
+  },
+
+  buttons: {
+    display: "flex",
+    gap: 10,
+    marginTop: 12,
+  },
+
+  button: {
+    flex: 1,
+    padding: 12,
+    border: 0,
+    borderRadius: 8,
+    background: "#176b87",
+    color: "#fff",
+    fontWeight: 700,
+  },
+};
+
+
+
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\prescription\page.tsx ================
+
+"use client";
+
+import { useMemo, useState } from "react";
+import { medicines } from "../../../data/medicines";
+
+type RxItem = {
+  generic: string;
+  brand: string;
+  strength: string;
+  dose: string;
+  frequency: string;
+  timing: string;
+  food: string;
+  duration: string;
+  instruction: string;
+};
+
+type SavedPrescription = {
+  id: string;
+  date: string;
+  patientName: string;
+  age: string;
+  sex: string;
+  mobile: string;
+  diagnosis: string;
+  complaints: string;
+  history: string;
+  vitals: string;
+  rx: RxItem[];
+  investigations: string;
+  advice: string;
+  followUp: string;
+};
+
+const blankRx = (): RxItem => ({
+  generic: "",
+  brand: "",
+  strength: "",
+  dose: "1 tablet",
+  frequency: "OD",
+  timing: "Night",
+  food: "After food",
+  duration: "30 days",
+  instruction: "",
+});
+
+export default function PrescriptionPage() {
+  const [patientName, setPatientName] = useState("");
+  const [age, setAge] = useState("");
+  const [sex, setSex] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [diagnosis, setDiagnosis] = useState("");
+  const [complaints, setComplaints] = useState("");
+  const [history, setHistory] = useState("");
+  const [vitals, setVitals] = useState("");
+  const [search, setSearch] = useState("");
+  const [rx, setRx] = useState<RxItem[]>([]);
+  const [investigations, setInvestigations] = useState("");
+  const [advice, setAdvice] = useState("");
+  const [followUp, setFollowUp] = useState("");
+  const [savedMessage, setSavedMessage] = useState("");
+
+  const results = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+
+    return medicines
+      .filter((m) =>
+        [
+          m.generic,
+          m.category,
+          ...(m.brands || []),
+          ...(m.strengths || []),
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(q)
+      )
+      .slice(0, 60);
+  }, [search]);
+
+  function addMedicine(m: (typeof medicines)[number]) {
+    setRx((old) => [
+      ...old,
+      {
+        generic: m.generic,
+        brand: m.brands?.[0] || "",
+        strength: m.strengths?.[0] || "",
+        dose: "1 tablet",
+        frequency: "OD",
+        timing: "Night",
+        food: "After food",
+        duration: "30 days",
+        instruction: "",
+      },
+    ]);
+    setSearch("");
+  }
+
+  function addCustomMedicine() {
+    setRx((old) => [...old, blankRx()]);
+    setSearch("");
+  }
+
+  function updateRx(index: number, key: keyof RxItem, value: string) {
+    setRx((old) =>
+      old.map((item, i) =>
+        i === index ? { ...item, [key]: value } : item
+      )
+    );
+  }
+
+  function removeRx(index: number) {
+    setRx((old) => old.filter((_, i) => i !== index));
+  }
+
+  function savePrescription() {
+    if (!patientName.trim()) {
+      alert("Please enter patient name.");
+      return;
+    }
+
+    const record: SavedPrescription = {
+      id: Date.now().toString(),
+      date: new Date().toLocaleString(),
+      patientName,
+      age,
+      sex,
+      mobile,
+      diagnosis,
+      complaints,
+      history,
+      vitals,
+      rx,
+      investigations,
+      advice,
+      followUp,
+    };
+
+    const old = JSON.parse(
+      localStorage.getItem("nmb_prescriptions") || "[]"
+    );
+
+    localStorage.setItem(
+      "nmb_prescriptions",
+      JSON.stringify([record, ...old])
+    );
+
+    setSavedMessage("Prescription saved successfully.");
+    setTimeout(() => setSavedMessage(""), 3000);
+  }
+
+  function clearForm() {
+    if (!confirm("Clear current prescription?")) return;
+
+    setPatientName("");
+    setAge("");
+    setSex("");
+    setMobile("");
+    setDiagnosis("");
+    setComplaints("");
+    setHistory("");
+    setVitals("");
+    setSearch("");
+    setRx([]);
+    setInvestigations("");
+    setAdvice("");
+    setFollowUp("");
+    setSavedMessage("");
+  }
+
+  return (
+    <main style={s.page}>
+      <div className="no-print" style={s.topbar}>
+        <div>
+          <h1 style={{ margin: 0 }}>E-Prescription</h1>
+          <div style={s.sub}>
+            Neuro Mind Bloom · Doctor Prescription Module
+          </div>
+        </div>
+
+        <div style={s.actions}>
+          <button style={s.secondary} onClick={clearForm}>
+            New Prescription
+          </button>
+          <button style={s.primary} onClick={savePrescription}>
+            Save
+          </button>
+          <button style={s.primary} onClick={() => window.print()}>
+            Print / PDF
+          </button>
+        </div>
+      </div>
+
+      {savedMessage && (
+        <div className="no-print" style={s.success}>
+          {savedMessage}
+        </div>
+      )}
+
+      <section style={s.printHeader}>
+        <h2 style={{ marginBottom: 4 }}>NEURO MIND BLOOM</h2>
+        <strong>Dr. Kuldeep Budania · MD Psychiatry</strong>
+        <div>Mental Health · De-addiction · Sexual Disorders</div>
+      </section>
+
+      <section style={s.card}>
+        <h2>Patient Details</h2>
+
+        <div style={s.grid4}>
+          <Field label="Patient Name">
+            <input
+              style={s.input}
+              value={patientName}
+              onChange={(e) => setPatientName(e.target.value)}
+            />
+          </Field>
+
+          <Field label="Age">
+            <input
+              style={s.input}
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+            />
+          </Field>
+
+          <Field label="Sex">
+            <select
+              style={s.input}
+              value={sex}
+              onChange={(e) => setSex(e.target.value)}
+            >
+              <option value="">Select</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </Field>
+
+          <Field label="Mobile">
+            <input
+              style={s.input}
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+            />
+          </Field>
+        </div>
+
+        <Field label="Diagnosis">
+          <input
+            style={s.input}
+            value={diagnosis}
+            onChange={(e) => setDiagnosis(e.target.value)}
+            placeholder="Diagnosis / provisional diagnosis"
+          />
+        </Field>
+
+        <div style={s.grid2}>
+          <Field label="Chief Complaints">
+            <textarea
+              style={s.textarea}
+              value={complaints}
+              onChange={(e) => setComplaints(e.target.value)}
+            />
+          </Field>
+
+          <Field label="Relevant History / Examination">
+            <textarea
+              style={s.textarea}
+              value={history}
+              onChange={(e) => setHistory(e.target.value)}
+            />
+          </Field>
+        </div>
+
+        <Field label="Vitals / Clinical Notes">
+          <input
+            style={s.input}
+            value={vitals}
+            onChange={(e) => setVitals(e.target.value)}
+            placeholder="BP, pulse, weight, relevant examination..."
+          />
+        </Field>
+      </section>
+
+      <section className="no-print" style={s.card}>
+        <h2>Medicine Search</h2>
+
+        <div style={s.searchRow}>
+          <input
+            style={s.input}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search generic, brand, strength or category..."
+          />
+
+          <button style={s.secondary} onClick={addCustomMedicine}>
+            + Custom Medicine
+          </button>
+        </div>
+
+        {search && (
+          <div style={s.results}>
+            {results.length > 0 ? (
+              results.map((m, index) => (
+                <button
+                  key={`${m.generic}-${index}`}
+                  style={s.med}
+                  onClick={() => addMedicine(m)}
+                >
+                  <strong>{m.generic}</strong>
+                  <span>{m.category}</span>
+
+                  {!!m.brands?.length && (
+                    <small>Brands: {m.brands.join(", ")}</small>
+                  )}
+
+                  {!!m.strengths?.length && (
+                    <small>
+                      Strengths: {m.strengths.join(", ")}
+                    </small>
+                  )}
+                </button>
+              ))
+            ) : (
+              <div style={s.empty}>
+                No exact medicine found. Use “Custom Medicine”.
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      <section style={s.card}>
+        <h2>Rx</h2>
+
+        {rx.length === 0 && (
+          <div style={s.empty}>No medicine added yet.</div>
+        )}
+
+        {rx.map((item, index) => (
+          <div key={index} style={s.rxCard}>
+            <div style={s.rxTop}>
+              <strong>Rx {index + 1}</strong>
+
+              <button
+                className="no-print"
+                style={s.remove}
+                onClick={() => removeRx(index)}
+              >
+                Remove
+              </button>
+            </div>
+
+            <div style={s.grid4}>
+              <Field label="Generic">
+                <input
+                  style={s.input}
+                  value={item.generic}
+                  onChange={(e) =>
+                    updateRx(index, "generic", e.target.value)
+                  }
+                />
+              </Field>
+
+              <Field label="Brand">
+                <input
+                  style={s.input}
+                  value={item.brand}
+                  onChange={(e) =>
+                    updateRx(index, "brand", e.target.value)
+                  }
+                />
+              </Field>
+
+              <Field label="Strength">
+                <input
+                  style={s.input}
+                  value={item.strength}
+                  onChange={(e) =>
+                    updateRx(index, "strength", e.target.value)
+                  }
+                />
+              </Field>
+
+              <Field label="Dose">
+                <input
+                  style={s.input}
+                  value={item.dose}
+                  onChange={(e) =>
+                    updateRx(index, "dose", e.target.value)
+                  }
+                />
+              </Field>
+
+              <Field label="Frequency">
+                <select
+                  style={s.input}
+                  value={item.frequency}
+                  onChange={(e) =>
+                    updateRx(index, "frequency", e.target.value)
+                  }
+                >
+                  <option>OD</option>
+                  <option>BD</option>
+                  <option>TDS</option>
+                  <option>QID</option>
+                  <option>HS</option>
+                  <option>SOS</option>
+                  <option>STAT</option>
+                  <option>1-0-0</option>
+                  <option>0-1-0</option>
+                  <option>0-0-1</option>
+                  <option>1-0-1</option>
+                  <option>1-1-1</option>
+                  <option>1/2-0-1/2</option>
+                </select>
+              </Field>
+
+              <Field label="Timing">
+                <select
+                  style={s.input}
+                  value={item.timing}
+                  onChange={(e) =>
+                    updateRx(index, "timing", e.target.value)
+                  }
+                >
+                  <option>Morning</option>
+                  <option>Afternoon</option>
+                  <option>Evening</option>
+                  <option>Night</option>
+                  <option>Morning & Night</option>
+                  <option>As required</option>
+                </select>
+              </Field>
+
+              <Field label="Food">
+                <select
+                  style={s.input}
+                  value={item.food}
+                  onChange={(e) =>
+                    updateRx(index, "food", e.target.value)
+                  }
+                >
+                  <option>After food</option>
+                  <option>Before food</option>
+                  <option>With food</option>
+                  <option>Irrespective of food</option>
+                </select>
+              </Field>
+
+              <Field label="Duration">
+                <input
+                  style={s.input}
+                  value={item.duration}
+                  onChange={(e) =>
+                    updateRx(index, "duration", e.target.value)
+                  }
+                />
+              </Field>
+            </div>
+
+            <Field label="Special Instructions">
+              <input
+                style={s.input}
+                value={item.instruction}
+                onChange={(e) =>
+                  updateRx(index, "instruction", e.target.value)
+                }
+                placeholder="Tapering / titration / monitoring / PRN instructions..."
+              />
+            </Field>
+          </div>
+        ))}
+      </section>
+
+      <section style={s.card}>
+        <div style={s.grid2}>
+          <Field label="Investigations">
+            <textarea
+              style={s.textarea}
+              value={investigations}
+              onChange={(e) => setInvestigations(e.target.value)}
+              placeholder="CBC, LFT, RFT, TFT, HbA1c, ECG, lithium level..."
+            />
+          </Field>
+
+          <Field label="Advice">
+            <textarea
+              style={s.textarea}
+              value={advice}
+              onChange={(e) => setAdvice(e.target.value)}
+              placeholder="Sleep hygiene, abstinence, psychotherapy, exercise..."
+            />
+          </Field>
+        </div>
+
+        <Field label="Follow-up">
+          <input
+            style={s.input}
+            value={followUp}
+            onChange={(e) => setFollowUp(e.target.value)}
+            placeholder="e.g. After 2 weeks / 15-09-2026"
+          />
+        </Field>
+      </section>
+
+      <section style={s.signature}>
+        <div>
+          Date: {new Date().toLocaleDateString()}
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <strong>Dr. Kuldeep Budania</strong>
+          <br />
+          MD Psychiatry
+          <br />
+          Signature
+        </div>
+      </section>
+
+      <div className="no-print" style={s.warning}>
+        Verify indication, dose, interactions, allergies, pregnancy status,
+        renal/hepatic function and current prescribing information before
+        issuing the prescription.
+      </div>
+
+      <style jsx global>{`
+        @media print {
+          .no-print {
+            display: none !important;
+          }
+
+          body {
+            background: white !important;
+          }
+
+          @page {
+            size: A4;
+            margin: 12mm;
+          }
+        }
+      `}</style>
+    </main>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label style={s.field}>
+      <span style={s.label}>{label}</span>
+      {children}
+    </label>
+  );
+}
+
+const s: Record<string, React.CSSProperties> = {
+  page: {
+    maxWidth: 1150,
+    margin: "0 auto",
+    padding: 24,
+    fontFamily: "Arial, sans-serif",
+  },
+
+  topbar: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 20,
+    alignItems: "center",
+    marginBottom: 20,
+    flexWrap: "wrap",
+  },
+
+  sub: {
+    color: "#64748b",
+    marginTop: 4,
+  },
+
+  actions: {
+    display: "flex",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+
+  printHeader: {
+    textAlign: "center",
+    marginBottom: 18,
+    borderBottom: "2px solid #176b87",
+    paddingBottom: 12,
+  },
+
+  card: {
+    border: "1px solid #e2e8f0",
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 18,
+    background: "#fff",
+  },
+
+  field: {
+    display: "grid",
+    gap: 5,
+    marginBottom: 10,
+  },
+
+  label: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#334155",
+  },
+
+  input: {
+    width: "100%",
+    boxSizing: "border-box",
+    border: "1px solid #cbd5e1",
+    borderRadius: 8,
+    padding: "10px 11px",
+    background: "#fff",
+  },
+
+  textarea: {
+    width: "100%",
+    minHeight: 90,
+    resize: "vertical",
+    boxSizing: "border-box",
+    border: "1px solid #cbd5e1",
+    borderRadius: 8,
+    padding: 10,
+  },
+
+  grid4: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+    gap: 10,
+  },
+
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+    gap: 12,
+  },
+
+  searchRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    gap: 10,
+  },
+
+  results: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
+    gap: 8,
+    maxHeight: 420,
+    overflowY: "auto",
+    marginTop: 12,
+  },
+
+  med: {
+    textAlign: "left",
+    display: "flex",
+    flexDirection: "column",
+    gap: 3,
+    border: "1px solid #dbe3ea",
+    borderRadius: 9,
+    padding: 10,
+    background: "#f8fafc",
+    cursor: "pointer",
+  },
+
+  rxCard: {
+    borderTop: "1px solid #e2e8f0",
+    paddingTop: 14,
+    marginTop: 14,
+  },
+
+  rxTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+
+  primary: {
+    border: 0,
+    borderRadius: 9,
+    background: "#176b87",
+    color: "#fff",
+    padding: "10px 15px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+
+  secondary: {
+    border: "1px solid #176b87",
+    borderRadius: 9,
+    background: "#fff",
+    color: "#176b87",
+    padding: "10px 15px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+
+  remove: {
+    border: 0,
+    background: "transparent",
+    color: "#b91c1c",
+    cursor: "pointer",
+  },
+
+  success: {
+    padding: 12,
+    background: "#dcfce7",
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+
+  empty: {
+    color: "#64748b",
+    padding: 12,
+  },
+
+  signature: {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "24px 10px",
+  },
+
+  warning: {
+    fontSize: 12,
+    color: "#64748b",
+    borderTop: "1px solid #ddd",
+    paddingTop: 10,
+  },
+};
+
+
+
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\book-appointment\page.tsx ================
+
+"use client";
+
+import { auth, db } from "../../lib/firebase";
+import { FormEvent, useState } from "react";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+
+export default function BookAppointmentPage() {
+  const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [service, setService] = useState("Psychiatric Consultation - ₹500");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [concern, setConcern] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    setError("");
+    setSuccess(false);
+
+    const cleanName = name.trim();
+    const cleanMobile = mobile.replace(/\D/g, "");
+
+    if (!cleanName) {
+      setError("Please enter patient name.");
+      return;
+    }
+
+    if (cleanMobile.length < 10) {
+      setError("Please enter a valid mobile number.");
+      return;
+    }
+
+    if (!date) {
+      setError("Please select preferred date.");
+      return;
+    }
+
+    if (!time) {
+      setError("Please select preferred time.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await addDoc(collection(db, "appointments"), {
+        patientName: cleanName,
+        name: cleanName,
+        mobile: cleanMobile,
+        service,
+        preferredDate: date,
+        date: date,
+        preferredTime: time,
+        time: time,
+        concern: concern.trim(),
+        mode: "Online",
+        status: "pending",
+        source: "Website",
+        createdAt: serverTimestamp(),
+      });
+
+      setSuccess(true);
+
+      setName("");
+      setMobile("");
+      setService("Psychiatric Consultation - ₹500");
+      setDate("");
+      setTime("");
+      setConcern("");
+    } catch (err) {
+      console.error(err);
+      setError(
+        "Appointment save nahi hua. Firebase Firestore connection/rules check karni hongi."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg, #063b43 0%, #0d5962 45%, #edf7f5 45%, #ffffff 100%)",
+        padding: "40px 16px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: "0 auto",
+        }}
+      >
+        <div
+          style={{
+            marginBottom: 24,
+            color: "white",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 14,
+              letterSpacing: 2,
+              fontWeight: 700,
+              marginBottom: 8,
+            }}
+          >
+            NEURO MIND BLOOM
+          </div>
+
+          <h1
+            style={{
+              margin: 0,
+              fontSize: "clamp(32px, 5vw, 56px)",
+            }}
+          >
+            Book Appointment
+          </h1>
+
+          <p
+            style={{
+              maxWidth: 600,
+              fontSize: 17,
+              lineHeight: 1.6,
+            }}
+          >
+            Fill your details below. Your appointment request will be saved
+            securely and will appear directly in the doctor dashboard.
+          </p>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            maxWidth: 760,
+            background: "white",
+            borderRadius: 22,
+            padding: 28,
+            boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 18,
+            }}
+          >
+            <label style={labelStyle}>
+              Patient name
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter patient name"
+                style={inputStyle}
+              />
+            </label>
+
+            <label style={labelStyle}>
+              Mobile number
+              <input
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value)}
+                placeholder="10-digit mobile number"
+                inputMode="numeric"
+                style={inputStyle}
+              />
+            </label>
+          </div>
+
+          <label style={labelStyle}>
+            Choose service
+            <select
+              value={service}
+              onChange={(e) => setService(e.target.value)}
+              style={inputStyle}
+            >
+              <option>Psychiatric Consultation - ₹500</option>
+              <option>Psychotherapy Session - ₹2000</option>
+            </select>
+          </label>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 18,
+            }}
+          >
+            <label style={labelStyle}>
+              Preferred date
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                style={inputStyle}
+              />
+            </label>
+
+            <label style={labelStyle}>
+              Preferred time
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                style={inputStyle}
+              />
+            </label>
+          </div>
+
+          <label style={labelStyle}>
+            Brief concern
+            <textarea
+              value={concern}
+              onChange={(e) => setConcern(e.target.value)}
+              placeholder="Write briefly about the concern"
+              rows={4}
+              style={{
+                ...inputStyle,
+                resize: "vertical",
+              }}
+            />
+          </label>
+
+          {error && (
+            <div
+              style={{
+                marginTop: 18,
+                padding: 14,
+                borderRadius: 10,
+                background: "#fee2e2",
+                color: "#991b1b",
+                fontWeight: 600,
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div
+              style={{
+                marginTop: 18,
+                padding: 16,
+                borderRadius: 12,
+                background: "#dcfce7",
+                color: "#166534",
+              }}
+            >
+              <strong>Appointment request saved successfully.</strong>
+              <div style={{ marginTop: 5 }}>
+                It is now available in the Doctor Dashboard.
+              </div>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              marginTop: 22,
+              padding: "16px 18px",
+              border: 0,
+              borderRadius: 12,
+              background: loading ? "#64748b" : "#0d6268",
+              color: "white",
+              fontSize: 17,
+              fontWeight: 800,
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? "Booking..." : "Book Appointment"}
+          </button>
+
+          {success && "919376315331" && (
+            <a
+              href={`https://wa.me/${"919376315331"}?text=${encodeURIComponent(
+                "Hello Doctor, I have submitted an appointment request on the Neuro Mind Bloom website."
+              )}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "block",
+                textAlign: "center",
+                textDecoration: "none",
+                marginTop: 12,
+                padding: "14px 18px",
+                borderRadius: 12,
+                background: "#25D366",
+                color: "white",
+                fontWeight: 800,
+              }}
+            >
+              Continue on WhatsApp
+            </a>
+          )}
+        </form>
+      </div>
+    </main>
+  );
+}
+
+const labelStyle = {
+  display: "block",
+  fontWeight: 700,
+  color: "#263238",
+  marginTop: 18,
+} as const;
+
+const inputStyle = {
+  width: "100%",
+  boxSizing: "border-box",
+  marginTop: 8,
+  padding: "13px 14px",
+  borderRadius: 10,
+  border: "1px solid #cbd5e1",
+  background: "white",
+  fontSize: 16,
+  outline: "none",
+} as const;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\firebase.ts ================
+
+export { auth, db } from "../lib/firebase";
+export { default } from "../lib/firebase";
+export { default as app } from "../lib/firebase";
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\book-appointment\page.tsx ================
+
+"use client";
+
+import { auth, db } from "../../lib/firebase";
+import { FormEvent, useState } from "react";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+
+export default function BookAppointmentPage() {
+  const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [service, setService] = useState("Psychiatric Consultation - ₹500");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [concern, setConcern] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    setError("");
+    setSuccess(false);
+
+    const cleanName = name.trim();
+    const cleanMobile = mobile.replace(/\D/g, "");
+
+    if (!cleanName) {
+      setError("Please enter patient name.");
+      return;
+    }
+
+    if (cleanMobile.length < 10) {
+      setError("Please enter a valid mobile number.");
+      return;
+    }
+
+    if (!date) {
+      setError("Please select preferred date.");
+      return;
+    }
+
+    if (!time) {
+      setError("Please select preferred time.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await addDoc(collection(db, "appointments"), {
+        patientName: cleanName,
+        name: cleanName,
+        mobile: cleanMobile,
+        service,
+        preferredDate: date,
+        date: date,
+        preferredTime: time,
+        time: time,
+        concern: concern.trim(),
+        mode: "Online",
+        status: "pending",
+        source: "Website",
+        createdAt: serverTimestamp(),
+      });
+
+      setSuccess(true);
+
+      setName("");
+      setMobile("");
+      setService("Psychiatric Consultation - ₹500");
+      setDate("");
+      setTime("");
+      setConcern("");
+    } catch (err) {
+      console.error(err);
+      setError(
+        "Appointment save nahi hua. Firebase Firestore connection/rules check karni hongi."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg, #063b43 0%, #0d5962 45%, #edf7f5 45%, #ffffff 100%)",
+        padding: "40px 16px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: "0 auto",
+        }}
+      >
+        <div
+          style={{
+            marginBottom: 24,
+            color: "white",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 14,
+              letterSpacing: 2,
+              fontWeight: 700,
+              marginBottom: 8,
+            }}
+          >
+            NEURO MIND BLOOM
+          </div>
+
+          <h1
+            style={{
+              margin: 0,
+              fontSize: "clamp(32px, 5vw, 56px)",
+            }}
+          >
+            Book Appointment
+          </h1>
+
+          <p
+            style={{
+              maxWidth: 600,
+              fontSize: 17,
+              lineHeight: 1.6,
+            }}
+          >
+            Fill your details below. Your appointment request will be saved
+            securely and will appear directly in the doctor dashboard.
+          </p>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            maxWidth: 760,
+            background: "white",
+            borderRadius: 22,
+            padding: 28,
+            boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 18,
+            }}
+          >
+            <label style={labelStyle}>
+              Patient name
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter patient name"
+                style={inputStyle}
+              />
+            </label>
+
+            <label style={labelStyle}>
+              Mobile number
+              <input
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value)}
+                placeholder="10-digit mobile number"
+                inputMode="numeric"
+                style={inputStyle}
+              />
+            </label>
+          </div>
+
+          <label style={labelStyle}>
+            Choose service
+            <select
+              value={service}
+              onChange={(e) => setService(e.target.value)}
+              style={inputStyle}
+            >
+              <option>Psychiatric Consultation - ₹500</option>
+              <option>Psychotherapy Session - ₹2000</option>
+            </select>
+          </label>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 18,
+            }}
+          >
+            <label style={labelStyle}>
+              Preferred date
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                style={inputStyle}
+              />
+            </label>
+
+            <label style={labelStyle}>
+              Preferred time
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                style={inputStyle}
+              />
+            </label>
+          </div>
+
+          <label style={labelStyle}>
+            Brief concern
+            <textarea
+              value={concern}
+              onChange={(e) => setConcern(e.target.value)}
+              placeholder="Write briefly about the concern"
+              rows={4}
+              style={{
+                ...inputStyle,
+                resize: "vertical",
+              }}
+            />
+          </label>
+
+          {error && (
+            <div
+              style={{
+                marginTop: 18,
+                padding: 14,
+                borderRadius: 10,
+                background: "#fee2e2",
+                color: "#991b1b",
+                fontWeight: 600,
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div
+              style={{
+                marginTop: 18,
+                padding: 16,
+                borderRadius: 12,
+                background: "#dcfce7",
+                color: "#166534",
+              }}
+            >
+              <strong>Appointment request saved successfully.</strong>
+              <div style={{ marginTop: 5 }}>
+                It is now available in the Doctor Dashboard.
+              </div>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              marginTop: 22,
+              padding: "16px 18px",
+              border: 0,
+              borderRadius: 12,
+              background: loading ? "#64748b" : "#0d6268",
+              color: "white",
+              fontSize: 17,
+              fontWeight: 800,
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? "Booking..." : "Book Appointment"}
+          </button>
+
+          {success && "919376315331" && (
+            <a
+              href={`https://wa.me/${"919376315331"}?text=${encodeURIComponent(
+                "Hello Doctor, I have submitted an appointment request on the Neuro Mind Bloom website."
+              )}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "block",
+                textAlign: "center",
+                textDecoration: "none",
+                marginTop: 12,
+                padding: "14px 18px",
+                borderRadius: 12,
+                background: "#25D366",
+                color: "white",
+                fontWeight: 800,
+              }}
+            >
+              Continue on WhatsApp
+            </a>
+          )}
+        </form>
+      </div>
+    </main>
+  );
+}
+
+const labelStyle = {
+  display: "block",
+  fontWeight: 700,
+  color: "#263238",
+  marginTop: 18,
+} as const;
+
+const inputStyle = {
+  width: "100%",
+  boxSizing: "border-box",
+  marginTop: 8,
+  padding: "13px 14px",
+  borderRadius: 10,
+  border: "1px solid #cbd5e1",
+  background: "white",
+  fontSize: 16,
+  outline: "none",
+} as const;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\appointments\page.tsx ================
+
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
+import { db } from "../../firebase";
+
+type Appointment = {
+  id: string;
+  name?: string;
+  patientName?: string;
+  mobile?: string;
+  email?: string;
+  age?: string | number;
+  gender?: string;
+  date?: string;
+  preferredDate?: string;
+  time?: string;
+  preferredTime?: string;
+  mode?: string;
+  service?: string;
+  source?: string;
+  status?: string;
+  concern?: string;
+  paymentStatus?: string;
+  createdAt?: any;
+};
+
+export default function DoctorAppointmentsPage() {
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [updating, setUpdating] = useState("");
+
+  useEffect(() => {
+    const ref = collection(db, "appointments");
+
+    const unsubscribe = onSnapshot(
+      ref,
+      (snapshot) => {
+        const rows: Appointment[] = snapshot.docs.map((item) => ({
+          id: item.id,
+          ...(item.data() as Omit<Appointment, "id">),
+        }));
+
+        rows.sort((a, b) => {
+          const aTime =
+            a.createdAt?.toMillis?.() ??
+            (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
+
+          const bTime =
+            b.createdAt?.toMillis?.() ??
+            (b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
+
+          return bTime - aTime;
+        });
+
+        setAppointments(rows);
+        setLoading(false);
+        setError("");
+      },
+      (err) => {
+        console.error(err);
+        setError("Appointments load nahi ho pa rahe.");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  const total = appointments.length;
+
+  const pending = useMemo(
+    () =>
+      appointments.filter((item) => {
+        const status = (item.status || "pending").toLowerCase();
+        return status === "pending" || status === "new";
+      }).length,
+    [appointments]
+  );
+
+  async function changeStatus(id: string, status: string) {
+    try {
+      setUpdating(id);
+      await updateDoc(doc(db, "appointments", id), { status });
+    } catch (err) {
+      console.error(err);
+      alert("Status update nahi ho paya.");
+    } finally {
+      setUpdating("");
+    }
+  }
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#f4f7fb",
+        padding: 24,
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={headerCard}>
+          <h1 style={{ margin: 0, fontSize: 28 }}>Patient Appointments</h1>
+          <p style={{ color: "#555" }}>Neuro Mind Bloom Doctor Dashboard</p>
+
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <div style={statStyle}>
+              <b>Total Appointments</b>
+              <div style={numberStyle}>{total}</div>
+            </div>
+
+            <div style={statStyle}>
+              <b>Pending</b>
+              <div style={numberStyle}>{pending}</div>
+            </div>
+          </div>
+        </div>
+
+        {loading && <div style={messageStyle}>Appointments loading...</div>}
+        {error && <div style={{ ...messageStyle, color: "red" }}>{error}</div>}
+
+        <div style={{ display: "grid", gap: 16 }}>
+          {appointments.map((appointment) => {
+            const status = appointment.status || "pending";
+
+            return (
+              <div key={appointment.id} style={cardStyle}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 20,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div>
+                    <h2 style={{ marginTop: 0 }}>
+                      {appointment.name || appointment.patientName || "Patient"}
+                    </h2>
+
+                    <div><b>Mobile:</b> {appointment.mobile || "-"}</div>
+                    <div><b>Email:</b> {appointment.email || "-"}</div>
+                    <div>
+                      <b>Age/Gender:</b> {appointment.age || "-"} /{" "}
+                      {appointment.gender || "-"}
+                    </div>
+
+                    {appointment.concern && (
+                      <div style={{ marginTop: 10 }}>
+                        <b>Concern:</b> {appointment.concern}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <div><b>Date:</b> {appointment.date || appointment.preferredDate || "-"}</div>
+                    <div><b>Time:</b> {appointment.time || appointment.preferredTime || "-"}</div>
+                    <div><b>Mode:</b> {appointment.mode || appointment.source || "-"}</div>
+
+                    <div style={{ marginTop: 8 }}>
+                      <b>Status:</b>{" "}
+                      <span style={{ fontWeight: 800, textTransform: "capitalize" }}>
+                        {status}
+                      </span>
+                    </div>
+
+                    <div>
+                      <b>Payment:</b>{" "}
+                      {appointment.paymentStatus || "Pending"}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 18,
+                    paddingTop: 16,
+                    borderTop: "1px solid #eee",
+                    display: "flex",
+                    gap: 10,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {status.toLowerCase() !== "confirmed" && (
+                    <button
+                      onClick={() => changeStatus(appointment.id, "confirmed")}
+                      disabled={updating === appointment.id}
+                      style={buttonStyle}
+                    >
+                      {updating === appointment.id
+                        ? "Updating..."
+                        : "Confirm Appointment"}
+                    </button>
+                  )}
+
+                  <Link
+                    href={`/doctor/prescription?appointmentId=${appointment.id}`}
+                    style={linkButton}
+                  >
+                    E-Prescription
+                  </Link>
+
+                  <Link
+                    href={`/doctor/follow-up?appointmentId=${appointment.id}`}
+                    style={linkButton}
+                  >
+                    Follow-up
+                  </Link>
+
+                  <Link
+                    href={`/doctor/payment?appointmentId=${appointment.id}`}
+                    style={linkButton}
+                  >
+                    Payment
+                  </Link>
+
+                  {appointment.mobile && (
+                    <a
+                      href={`https://wa.me/91${appointment.mobile
+                        .replace(/\D/g, "")
+                        .slice(-10)}?text=${encodeURIComponent(
+                        `Namaste ${appointment.name || appointment.patientName || "Patient"}, your Neuro Mind Bloom appointment ${status.toLowerCase() === "confirmed" ? "is confirmed" : "request has been received"}${appointment.date || appointment.preferredDate ? ` for ${appointment.date || appointment.preferredDate}` : ""}${appointment.time || appointment.preferredTime ? ` at ${appointment.time || appointment.preferredTime}` : ""}. For assistance, please reply to this WhatsApp message.`
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={whatsappButton}
+                    >
+                      WhatsApp Patient
+                    </a>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+const headerCard = {
+  background: "white",
+  padding: 24,
+  borderRadius: 16,
+  marginBottom: 20,
+  boxShadow: "0 4px 18px rgba(0,0,0,0.08)",
+};
+
+const statStyle = {
+  background: "#f1f3f5",
+  padding: "14px 18px",
+  borderRadius: 12,
+  minWidth: 170,
+};
+
+const numberStyle = {
+  fontSize: 26,
+  fontWeight: 800,
+  marginTop: 5,
+};
+
+const messageStyle = {
+  background: "white",
+  padding: 20,
+  borderRadius: 14,
+  marginBottom: 16,
+};
+
+const cardStyle = {
+  background: "white",
+  borderRadius: 16,
+  padding: 20,
+  boxShadow: "0 3px 14px rgba(0,0,0,0.07)",
+};
+
+const buttonStyle = {
+  border: 0,
+  borderRadius: 8,
+  padding: "10px 15px",
+  cursor: "pointer",
+  fontWeight: 700,
+  background: "#111827",
+  color: "white",
+};
+
+const linkButton = {
+  textDecoration: "none",
+  borderRadius: 8,
+  padding: "10px 15px",
+  fontWeight: 700,
+  background: "#e9eef5",
+  color: "#111",
+};
+
+const whatsappButton = {
+  textDecoration: "none",
+  borderRadius: 8,
+  padding: "10px 15px",
+  fontWeight: 700,
+  background: "#128C7E",
+  color: "white",
+};
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\follow-up\page.tsx ================
+
+"use client";
+
+import { useEffect, useState } from "react";
+
+type FollowUp = {
+  id: string;
+  patient: string;
+  mobile: string;
+  date: string;
+  improvement: string;
+  sideEffects: string;
+  mse: string;
+  medicationPlan: string;
+  advice: string;
+  nextVisit: string;
+};
+
+export default function FollowUpPage() {
+  const [patient, setPatient] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [improvement, setImprovement] = useState("");
+  const [sideEffects, setSideEffects] = useState("");
+  const [mse, setMse] = useState("");
+  const [medicationPlan, setMedicationPlan] = useState("");
+  const [advice, setAdvice] = useState("");
+  const [nextVisit, setNextVisit] = useState("");
+  const [records, setRecords] = useState<FollowUp[]>([]);
+
+  useEffect(() => {
+    setRecords(
+      JSON.parse(localStorage.getItem("nmb_followups") || "[]")
+    );
+  }, []);
+
+  function save() {
+    if (!patient) {
+      alert("Patient name is required.");
+      return;
+    }
+
+    const item: FollowUp = {
+      id: Date.now().toString(),
+      patient,
+      mobile,
+      date: new Date().toLocaleDateString(),
+      improvement,
+      sideEffects,
+      mse,
+      medicationPlan,
+      advice,
+      nextVisit,
+    };
+
+    const updated = [item, ...records];
+
+    setRecords(updated);
+    localStorage.setItem("nmb_followups", JSON.stringify(updated));
+
+    alert("Follow-up saved.");
+  }
+
+  return (
+    <main style={s.page}>
+      <h1>Patient Follow-up</h1>
+
+      <section style={s.card}>
+        <div style={s.grid2}>
+          <input
+            style={s.input}
+            placeholder="Patient name"
+            value={patient}
+            onChange={(e) => setPatient(e.target.value)}
+          />
+
+          <input
+            style={s.input}
+            placeholder="Mobile / Patient ID"
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+          />
+        </div>
+
+        <label style={s.label}>Clinical Improvement</label>
+        <textarea
+          style={s.textarea}
+          value={improvement}
+          onChange={(e) => setImprovement(e.target.value)}
+        />
+
+        <label style={s.label}>Side Effects / New Complaints</label>
+        <textarea
+          style={s.textarea}
+          value={sideEffects}
+          onChange={(e) => setSideEffects(e.target.value)}
+        />
+
+        <label style={s.label}>MSE / Clinical Notes</label>
+        <textarea
+          style={s.textarea}
+          value={mse}
+          onChange={(e) => setMse(e.target.value)}
+        />
+
+        <label style={s.label}>Medication / Treatment Plan</label>
+        <textarea
+          style={s.textarea}
+          value={medicationPlan}
+          onChange={(e) => setMedicationPlan(e.target.value)}
+        />
+
+        <label style={s.label}>Advice</label>
+        <textarea
+          style={s.textarea}
+          value={advice}
+          onChange={(e) => setAdvice(e.target.value)}
+        />
+
+        <label style={s.label}>Next Visit</label>
+        <input
+          style={s.input}
+          value={nextVisit}
+          onChange={(e) => setNextVisit(e.target.value)}
+          placeholder="e.g. 2 weeks"
+        />
+
+        <button style={s.button} onClick={save}>
+          Save Follow-up
+        </button>
+      </section>
+    </main>
+  );
+}
+
+const s: Record<string, React.CSSProperties> = {
+  page: {
+    maxWidth: 900,
+    margin: "0 auto",
+    padding: 24,
+    fontFamily: "Arial",
+  },
+
+  card: {
+    display: "grid",
+    gap: 10,
+    border: "1px solid #e2e8f0",
+    borderRadius: 14,
+    padding: 20,
+  },
+
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+    gap: 10,
+  },
+
+  label: {
+    fontWeight: 700,
+    marginTop: 5,
+  },
+
+  input: {
+    padding: 11,
+    border: "1px solid #cbd5e1",
+    borderRadius: 8,
+  },
+
+  textarea: {
+    minHeight: 85,
+    padding: 10,
+    border: "1px solid #cbd5e1",
+    borderRadius: 8,
+  },
+
+  button: {
+    padding: 12,
+    border: 0,
+    borderRadius: 8,
+    background: "#176b87",
+    color: "#fff",
+    fontWeight: 700,
+  },
+};
+
+
+
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\login\page.tsx ================
+
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+export default function DoctorLoginRedirect() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/login");
+  }, [router]);
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+      }}
+    >
+      Opening Doctor Login...
+    </main>
+  );
+}
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\payment\page.tsx ================
+
+"use client";
+
+import { useState } from "react";
+
+export default function PaymentPage() {
+  const [patient, setPatient] = useState("");
+  const [service, setService] = useState("consultation");
+  const [mode, setMode] = useState("UPI");
+  const [reference, setReference] = useState("");
+  const [status, setStatus] = useState("Paid");
+
+  const fee = service === "psychotherapy" ? 2000 : 500;
+
+  function savePayment() {
+    if (!patient) {
+      alert("Patient name is required.");
+      return;
+    }
+
+    const payment = {
+      id: Date.now().toString(),
+      patient,
+      service:
+        service === "psychotherapy"
+          ? "Psychotherapy 30–45 min"
+          : "Video Consultation",
+      fee,
+      mode,
+      reference,
+      status,
+      date: new Date().toLocaleString(),
+    };
+
+    const old = JSON.parse(
+      localStorage.getItem("nmb_payments") || "[]"
+    );
+
+    localStorage.setItem(
+      "nmb_payments",
+      JSON.stringify([payment, ...old])
+    );
+
+    alert("Payment saved.");
+  }
+
+  return (
+    <main style={s.page}>
+      <div className="no-print">
+        <h1>Payment & Receipt</h1>
+      </div>
+
+      <section style={s.receipt}>
+        <div style={s.heading}>
+          <h2>NEURO MIND BLOOM</h2>
+          <strong>Consultation Receipt</strong>
+        </div>
+
+        <label style={s.label}>Patient Name</label>
+        <input
+          style={s.input}
+          value={patient}
+          onChange={(e) => setPatient(e.target.value)}
+        />
+
+        <label style={s.label}>Service</label>
+        <select
+          style={s.input}
+          value={service}
+          onChange={(e) => setService(e.target.value)}
+        >
+          <option value="consultation">
+            Video Consultation — ₹500
+          </option>
+          <option value="psychotherapy">
+            Psychotherapy 30–45 min — ₹2000
+          </option>
+        </select>
+
+        <div style={s.total}>
+          <span>Amount</span>
+          <strong>₹{fee}</strong>
+        </div>
+
+        <label style={s.label}>Payment Mode</label>
+        <select
+          style={s.input}
+          value={mode}
+          onChange={(e) => setMode(e.target.value)}
+        >
+          <option>UPI</option>
+          <option>Cash</option>
+          <option>Bank Transfer</option>
+          <option>Card</option>
+          <option>Other</option>
+        </select>
+
+        <label style={s.label}>Transaction / Reference No.</label>
+        <input
+          style={s.input}
+          value={reference}
+          onChange={(e) => setReference(e.target.value)}
+        />
+
+        <label style={s.label}>Status</label>
+        <select
+          style={s.input}
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        >
+          <option>Paid</option>
+          <option>Pending</option>
+        </select>
+
+        <div style={s.date}>
+          Date: {new Date().toLocaleString()}
+        </div>
+
+        <div className="no-print" style={s.buttons}>
+          <button style={s.button} onClick={savePayment}>
+            Save Payment
+          </button>
+
+          <button
+            style={s.button}
+            onClick={() => window.print()}
+          >
+            Print Receipt
+          </button>
+        </div>
+      </section>
+
+      <style jsx global>{`
+        @media print {
+          .no-print {
+            display: none !important;
+          }
+
+          @page {
+            size: A4;
+            margin: 15mm;
+          }
+        }
+      `}</style>
+    </main>
+  );
+}
+
+const s: Record<string, React.CSSProperties> = {
+  page: {
+    maxWidth: 720,
+    margin: "0 auto",
+    padding: 24,
+    fontFamily: "Arial",
+  },
+
+  receipt: {
+    display: "grid",
+    gap: 10,
+    border: "1px solid #e2e8f0",
+    borderRadius: 14,
+    padding: 24,
+  },
+
+  heading: {
+    textAlign: "center",
+    borderBottom: "2px solid #176b87",
+    paddingBottom: 12,
+    marginBottom: 8,
+  },
+
+  label: {
+    fontWeight: 700,
+  },
+
+  input: {
+    padding: 11,
+    border: "1px solid #cbd5e1",
+    borderRadius: 8,
+  },
+
+  total: {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: 26,
+    background: "#f1f5f9",
+    padding: 15,
+    borderRadius: 9,
+    margin: "8px 0",
+  },
+
+  date: {
+    marginTop: 10,
+  },
+
+  buttons: {
+    display: "flex",
+    gap: 10,
+    marginTop: 12,
+  },
+
+  button: {
+    flex: 1,
+    padding: 12,
+    border: 0,
+    borderRadius: 8,
+    background: "#176b87",
+    color: "#fff",
+    fontWeight: 700,
+  },
+};
+
+
+
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\prescription\page.tsx ================
+
+"use client";
+
+import { useMemo, useState } from "react";
+import { medicines } from "../../../data/medicines";
+
+type RxItem = {
+  generic: string;
+  brand: string;
+  strength: string;
+  dose: string;
+  frequency: string;
+  timing: string;
+  food: string;
+  duration: string;
+  instruction: string;
+};
+
+type SavedPrescription = {
+  id: string;
+  date: string;
+  patientName: string;
+  age: string;
+  sex: string;
+  mobile: string;
+  diagnosis: string;
+  complaints: string;
+  history: string;
+  vitals: string;
+  rx: RxItem[];
+  investigations: string;
+  advice: string;
+  followUp: string;
+};
+
+const blankRx = (): RxItem => ({
+  generic: "",
+  brand: "",
+  strength: "",
+  dose: "1 tablet",
+  frequency: "OD",
+  timing: "Night",
+  food: "After food",
+  duration: "30 days",
+  instruction: "",
+});
+
+export default function PrescriptionPage() {
+  const [patientName, setPatientName] = useState("");
+  const [age, setAge] = useState("");
+  const [sex, setSex] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [diagnosis, setDiagnosis] = useState("");
+  const [complaints, setComplaints] = useState("");
+  const [history, setHistory] = useState("");
+  const [vitals, setVitals] = useState("");
+  const [search, setSearch] = useState("");
+  const [rx, setRx] = useState<RxItem[]>([]);
+  const [investigations, setInvestigations] = useState("");
+  const [advice, setAdvice] = useState("");
+  const [followUp, setFollowUp] = useState("");
+  const [savedMessage, setSavedMessage] = useState("");
+
+  const results = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+
+    return medicines
+      .filter((m) =>
+        [
+          m.generic,
+          m.category,
+          ...(m.brands || []),
+          ...(m.strengths || []),
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(q)
+      )
+      .slice(0, 60);
+  }, [search]);
+
+  function addMedicine(m: (typeof medicines)[number]) {
+    setRx((old) => [
+      ...old,
+      {
+        generic: m.generic,
+        brand: m.brands?.[0] || "",
+        strength: m.strengths?.[0] || "",
+        dose: "1 tablet",
+        frequency: "OD",
+        timing: "Night",
+        food: "After food",
+        duration: "30 days",
+        instruction: "",
+      },
+    ]);
+    setSearch("");
+  }
+
+  function addCustomMedicine() {
+    setRx((old) => [...old, blankRx()]);
+    setSearch("");
+  }
+
+  function updateRx(index: number, key: keyof RxItem, value: string) {
+    setRx((old) =>
+      old.map((item, i) =>
+        i === index ? { ...item, [key]: value } : item
+      )
+    );
+  }
+
+  function removeRx(index: number) {
+    setRx((old) => old.filter((_, i) => i !== index));
+  }
+
+  function savePrescription() {
+    if (!patientName.trim()) {
+      alert("Please enter patient name.");
+      return;
+    }
+
+    const record: SavedPrescription = {
+      id: Date.now().toString(),
+      date: new Date().toLocaleString(),
+      patientName,
+      age,
+      sex,
+      mobile,
+      diagnosis,
+      complaints,
+      history,
+      vitals,
+      rx,
+      investigations,
+      advice,
+      followUp,
+    };
+
+    const old = JSON.parse(
+      localStorage.getItem("nmb_prescriptions") || "[]"
+    );
+
+    localStorage.setItem(
+      "nmb_prescriptions",
+      JSON.stringify([record, ...old])
+    );
+
+    setSavedMessage("Prescription saved successfully.");
+    setTimeout(() => setSavedMessage(""), 3000);
+  }
+
+  function clearForm() {
+    if (!confirm("Clear current prescription?")) return;
+
+    setPatientName("");
+    setAge("");
+    setSex("");
+    setMobile("");
+    setDiagnosis("");
+    setComplaints("");
+    setHistory("");
+    setVitals("");
+    setSearch("");
+    setRx([]);
+    setInvestigations("");
+    setAdvice("");
+    setFollowUp("");
+    setSavedMessage("");
+  }
+
+  return (
+    <main style={s.page}>
+      <div className="no-print" style={s.topbar}>
+        <div>
+          <h1 style={{ margin: 0 }}>E-Prescription</h1>
+          <div style={s.sub}>
+            Neuro Mind Bloom · Doctor Prescription Module
+          </div>
+        </div>
+
+        <div style={s.actions}>
+          <button style={s.secondary} onClick={clearForm}>
+            New Prescription
+          </button>
+          <button style={s.primary} onClick={savePrescription}>
+            Save
+          </button>
+          <button style={s.primary} onClick={() => window.print()}>
+            Print / PDF
+          </button>
+        </div>
+      </div>
+
+      {savedMessage && (
+        <div className="no-print" style={s.success}>
+          {savedMessage}
+        </div>
+      )}
+
+      <section style={s.printHeader}>
+        <h2 style={{ marginBottom: 4 }}>NEURO MIND BLOOM</h2>
+        <strong>Dr. Kuldeep Budania · MD Psychiatry</strong>
+        <div>Mental Health · De-addiction · Sexual Disorders</div>
+      </section>
+
+      <section style={s.card}>
+        <h2>Patient Details</h2>
+
+        <div style={s.grid4}>
+          <Field label="Patient Name">
+            <input
+              style={s.input}
+              value={patientName}
+              onChange={(e) => setPatientName(e.target.value)}
+            />
+          </Field>
+
+          <Field label="Age">
+            <input
+              style={s.input}
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+            />
+          </Field>
+
+          <Field label="Sex">
+            <select
+              style={s.input}
+              value={sex}
+              onChange={(e) => setSex(e.target.value)}
+            >
+              <option value="">Select</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </Field>
+
+          <Field label="Mobile">
+            <input
+              style={s.input}
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+            />
+          </Field>
+        </div>
+
+        <Field label="Diagnosis">
+          <input
+            style={s.input}
+            value={diagnosis}
+            onChange={(e) => setDiagnosis(e.target.value)}
+            placeholder="Diagnosis / provisional diagnosis"
+          />
+        </Field>
+
+        <div style={s.grid2}>
+          <Field label="Chief Complaints">
+            <textarea
+              style={s.textarea}
+              value={complaints}
+              onChange={(e) => setComplaints(e.target.value)}
+            />
+          </Field>
+
+          <Field label="Relevant History / Examination">
+            <textarea
+              style={s.textarea}
+              value={history}
+              onChange={(e) => setHistory(e.target.value)}
+            />
+          </Field>
+        </div>
+
+        <Field label="Vitals / Clinical Notes">
+          <input
+            style={s.input}
+            value={vitals}
+            onChange={(e) => setVitals(e.target.value)}
+            placeholder="BP, pulse, weight, relevant examination..."
+          />
+        </Field>
+      </section>
+
+      <section className="no-print" style={s.card}>
+        <h2>Medicine Search</h2>
+
+        <div style={s.searchRow}>
+          <input
+            style={s.input}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search generic, brand, strength or category..."
+          />
+
+          <button style={s.secondary} onClick={addCustomMedicine}>
+            + Custom Medicine
+          </button>
+        </div>
+
+        {search && (
+          <div style={s.results}>
+            {results.length > 0 ? (
+              results.map((m, index) => (
+                <button
+                  key={`${m.generic}-${index}`}
+                  style={s.med}
+                  onClick={() => addMedicine(m)}
+                >
+                  <strong>{m.generic}</strong>
+                  <span>{m.category}</span>
+
+                  {!!m.brands?.length && (
+                    <small>Brands: {m.brands.join(", ")}</small>
+                  )}
+
+                  {!!m.strengths?.length && (
+                    <small>
+                      Strengths: {m.strengths.join(", ")}
+                    </small>
+                  )}
+                </button>
+              ))
+            ) : (
+              <div style={s.empty}>
+                No exact medicine found. Use “Custom Medicine”.
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      <section style={s.card}>
+        <h2>Rx</h2>
+
+        {rx.length === 0 && (
+          <div style={s.empty}>No medicine added yet.</div>
+        )}
+
+        {rx.map((item, index) => (
+          <div key={index} style={s.rxCard}>
+            <div style={s.rxTop}>
+              <strong>Rx {index + 1}</strong>
+
+              <button
+                className="no-print"
+                style={s.remove}
+                onClick={() => removeRx(index)}
+              >
+                Remove
+              </button>
+            </div>
+
+            <div style={s.grid4}>
+              <Field label="Generic">
+                <input
+                  style={s.input}
+                  value={item.generic}
+                  onChange={(e) =>
+                    updateRx(index, "generic", e.target.value)
+                  }
+                />
+              </Field>
+
+              <Field label="Brand">
+                <input
+                  style={s.input}
+                  value={item.brand}
+                  onChange={(e) =>
+                    updateRx(index, "brand", e.target.value)
+                  }
+                />
+              </Field>
+
+              <Field label="Strength">
+                <input
+                  style={s.input}
+                  value={item.strength}
+                  onChange={(e) =>
+                    updateRx(index, "strength", e.target.value)
+                  }
+                />
+              </Field>
+
+              <Field label="Dose">
+                <input
+                  style={s.input}
+                  value={item.dose}
+                  onChange={(e) =>
+                    updateRx(index, "dose", e.target.value)
+                  }
+                />
+              </Field>
+
+              <Field label="Frequency">
+                <select
+                  style={s.input}
+                  value={item.frequency}
+                  onChange={(e) =>
+                    updateRx(index, "frequency", e.target.value)
+                  }
+                >
+                  <option>OD</option>
+                  <option>BD</option>
+                  <option>TDS</option>
+                  <option>QID</option>
+                  <option>HS</option>
+                  <option>SOS</option>
+                  <option>STAT</option>
+                  <option>1-0-0</option>
+                  <option>0-1-0</option>
+                  <option>0-0-1</option>
+                  <option>1-0-1</option>
+                  <option>1-1-1</option>
+                  <option>1/2-0-1/2</option>
+                </select>
+              </Field>
+
+              <Field label="Timing">
+                <select
+                  style={s.input}
+                  value={item.timing}
+                  onChange={(e) =>
+                    updateRx(index, "timing", e.target.value)
+                  }
+                >
+                  <option>Morning</option>
+                  <option>Afternoon</option>
+                  <option>Evening</option>
+                  <option>Night</option>
+                  <option>Morning & Night</option>
+                  <option>As required</option>
+                </select>
+              </Field>
+
+              <Field label="Food">
+                <select
+                  style={s.input}
+                  value={item.food}
+                  onChange={(e) =>
+                    updateRx(index, "food", e.target.value)
+                  }
+                >
+                  <option>After food</option>
+                  <option>Before food</option>
+                  <option>With food</option>
+                  <option>Irrespective of food</option>
+                </select>
+              </Field>
+
+              <Field label="Duration">
+                <input
+                  style={s.input}
+                  value={item.duration}
+                  onChange={(e) =>
+                    updateRx(index, "duration", e.target.value)
+                  }
+                />
+              </Field>
+            </div>
+
+            <Field label="Special Instructions">
+              <input
+                style={s.input}
+                value={item.instruction}
+                onChange={(e) =>
+                  updateRx(index, "instruction", e.target.value)
+                }
+                placeholder="Tapering / titration / monitoring / PRN instructions..."
+              />
+            </Field>
+          </div>
+        ))}
+      </section>
+
+      <section style={s.card}>
+        <div style={s.grid2}>
+          <Field label="Investigations">
+            <textarea
+              style={s.textarea}
+              value={investigations}
+              onChange={(e) => setInvestigations(e.target.value)}
+              placeholder="CBC, LFT, RFT, TFT, HbA1c, ECG, lithium level..."
+            />
+          </Field>
+
+          <Field label="Advice">
+            <textarea
+              style={s.textarea}
+              value={advice}
+              onChange={(e) => setAdvice(e.target.value)}
+              placeholder="Sleep hygiene, abstinence, psychotherapy, exercise..."
+            />
+          </Field>
+        </div>
+
+        <Field label="Follow-up">
+          <input
+            style={s.input}
+            value={followUp}
+            onChange={(e) => setFollowUp(e.target.value)}
+            placeholder="e.g. After 2 weeks / 15-09-2026"
+          />
+        </Field>
+      </section>
+
+      <section style={s.signature}>
+        <div>
+          Date: {new Date().toLocaleDateString()}
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <strong>Dr. Kuldeep Budania</strong>
+          <br />
+          MD Psychiatry
+          <br />
+          Signature
+        </div>
+      </section>
+
+      <div className="no-print" style={s.warning}>
+        Verify indication, dose, interactions, allergies, pregnancy status,
+        renal/hepatic function and current prescribing information before
+        issuing the prescription.
+      </div>
+
+      <style jsx global>{`
+        @media print {
+          .no-print {
+            display: none !important;
+          }
+
+          body {
+            background: white !important;
+          }
+
+          @page {
+            size: A4;
+            margin: 12mm;
+          }
+        }
+      `}</style>
+    </main>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label style={s.field}>
+      <span style={s.label}>{label}</span>
+      {children}
+    </label>
+  );
+}
+
+const s: Record<string, React.CSSProperties> = {
+  page: {
+    maxWidth: 1150,
+    margin: "0 auto",
+    padding: 24,
+    fontFamily: "Arial, sans-serif",
+  },
+
+  topbar: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 20,
+    alignItems: "center",
+    marginBottom: 20,
+    flexWrap: "wrap",
+  },
+
+  sub: {
+    color: "#64748b",
+    marginTop: 4,
+  },
+
+  actions: {
+    display: "flex",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+
+  printHeader: {
+    textAlign: "center",
+    marginBottom: 18,
+    borderBottom: "2px solid #176b87",
+    paddingBottom: 12,
+  },
+
+  card: {
+    border: "1px solid #e2e8f0",
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 18,
+    background: "#fff",
+  },
+
+  field: {
+    display: "grid",
+    gap: 5,
+    marginBottom: 10,
+  },
+
+  label: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#334155",
+  },
+
+  input: {
+    width: "100%",
+    boxSizing: "border-box",
+    border: "1px solid #cbd5e1",
+    borderRadius: 8,
+    padding: "10px 11px",
+    background: "#fff",
+  },
+
+  textarea: {
+    width: "100%",
+    minHeight: 90,
+    resize: "vertical",
+    boxSizing: "border-box",
+    border: "1px solid #cbd5e1",
+    borderRadius: 8,
+    padding: 10,
+  },
+
+  grid4: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+    gap: 10,
+  },
+
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+    gap: 12,
+  },
+
+  searchRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    gap: 10,
+  },
+
+  results: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
+    gap: 8,
+    maxHeight: 420,
+    overflowY: "auto",
+    marginTop: 12,
+  },
+
+  med: {
+    textAlign: "left",
+    display: "flex",
+    flexDirection: "column",
+    gap: 3,
+    border: "1px solid #dbe3ea",
+    borderRadius: 9,
+    padding: 10,
+    background: "#f8fafc",
+    cursor: "pointer",
+  },
+
+  rxCard: {
+    borderTop: "1px solid #e2e8f0",
+    paddingTop: 14,
+    marginTop: 14,
+  },
+
+  rxTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+
+  primary: {
+    border: 0,
+    borderRadius: 9,
+    background: "#176b87",
+    color: "#fff",
+    padding: "10px 15px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+
+  secondary: {
+    border: "1px solid #176b87",
+    borderRadius: 9,
+    background: "#fff",
+    color: "#176b87",
+    padding: "10px 15px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+
+  remove: {
+    border: 0,
+    background: "transparent",
+    color: "#b91c1c",
+    cursor: "pointer",
+  },
+
+  success: {
+    padding: 12,
+    background: "#dcfce7",
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+
+  empty: {
+    color: "#64748b",
+    padding: 12,
+  },
+
+  signature: {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "24px 10px",
+  },
+
+  warning: {
+    fontSize: 12,
+    color: "#64748b",
+    borderTop: "1px solid #ddd",
+    paddingTop: 10,
+  },
+};
+
+
+
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\page.tsx ================
+
+import Link from "next/link";
+
+export default function DoctorDashboard() {
+  const cards = [
+    ["Appointments","/doctor/appointments"],
+    ["E-Prescription","/doctor/prescription"],
+    ["Follow-up","/doctor/follow-up"],
+    ["Payment","/doctor/payment"]
+  ];
+
+  return (
+    <main style={{padding:30,maxWidth:1100,margin:"auto"}}>
+      <h1>Doctor Dashboard</h1>
+      <p>Manage online consultation workflow from one place.</p>
+
+      <div style={{
+        display:"grid",
+        gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",
+        gap:18,
+        marginTop:25
+      }}>
+        {cards.map(([name,url]) => (
+          <Link key={url} href={url} style={{
+            display:"block",
+            padding:26,
+            border:"1px solid #ddd",
+            borderRadius:16,
+            textDecoration:"none",
+            color:"#123",
+            background:"white",
+            boxShadow:"0 5px 18px rgba(0,0,0,.06)"
+          }}>
+            <h2>{name}</h2>
+            <p>Open →</p>
+          </Link>
+        ))}
+      </div>
+    </main>
+  );
+}
+
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\login\page.tsx ================
+
+"use client";
+
+import { FormEvent, useState } from "react";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import { auth } from "../../lib/firebase";
+
+export default function LoginPage() {
+  const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleLogin(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    setMessage("");
+    setLoading(true);
+
+    try {
+      await signInWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
+      );
+
+      router.replace("/doctor");
+    } catch (error: any) {
+      console.error(error);
+      setMessage("Login failed. Please check email and password.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function forgotPassword() {
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail) {
+      setMessage("Please enter your email first.");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, cleanEmail);
+      setMessage("Password reset email sent.");
+    } catch (error: any) {
+      console.error(error);
+      setMessage("Could not send password reset email.");
+    }
+  }
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#f3f7f7",
+        display: "grid",
+        placeItems: "center",
+        padding: 20,
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      <form
+        onSubmit={handleLogin}
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          background: "white",
+          padding: 30,
+          borderRadius: 18,
+          boxShadow: "0 15px 40px rgba(0,0,0,0.10)",
+        }}
+      >
+        <h1
+          style={{
+            marginTop: 0,
+            color: "#124c52",
+          }}
+        >
+          Doctor Login
+        </h1>
+
+        <p style={{ color: "#64748b" }}>
+          Neuro Mind Bloom Doctor Dashboard
+        </p>
+
+        <label
+          style={{
+            display: "block",
+            marginTop: 18,
+            fontWeight: 700,
+          }}
+        >
+          Email
+        </label>
+
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{
+            width: "100%",
+            boxSizing: "border-box",
+            marginTop: 7,
+            padding: 13,
+            borderRadius: 9,
+            border: "1px solid #cbd5e1",
+          }}
+        />
+
+        <label
+          style={{
+            display: "block",
+            marginTop: 18,
+            fontWeight: 700,
+          }}
+        >
+          Password
+        </label>
+
+        <input
+          type="password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{
+            width: "100%",
+            boxSizing: "border-box",
+            marginTop: 7,
+            padding: 13,
+            borderRadius: 9,
+            border: "1px solid #cbd5e1",
+          }}
+        />
+
+        {message && (
+          <div
+            style={{
+              marginTop: 15,
+              padding: 11,
+              background: "#f1f5f9",
+              borderRadius: 8,
+            }}
+          >
+            {message}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: "100%",
+            border: 0,
+            marginTop: 20,
+            padding: 14,
+            borderRadius: 10,
+            background: "#116169",
+            color: "white",
+            fontWeight: 800,
+            cursor: "pointer",
+          }}
+        >
+          {loading ? "Signing in..." : "Login"}
+        </button>
+
+        <button
+          type="button"
+          onClick={forgotPassword}
+          style={{
+            width: "100%",
+            marginTop: 10,
+            padding: 12,
+            border: 0,
+            background: "transparent",
+            color: "#116169",
+            cursor: "pointer",
+            fontWeight: 700,
+          }}
+        >
+          Forgot Password?
+        </button>
+      </form>
+    </main>
+  );
+}
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\page.tsx ================
+
+"use client";
+
+import Image from "next/image";
+import { FormEvent, useMemo, useState } from "react";
+
+const services = [
+ ["Depression", "Mood, motivation and emotional well-being"],
+ ["Anxiety Disorders", "Anxiety, panic, phobias and stress"],
+ ["OCD", "Obsessions, compulsions and related concerns"],
+ ["Bipolar Disorder", "Mood episodes and long-term management"],
+ ["Schizophrenia", "Psychosis and related mental health conditions"],
+ ["Sleep Disorders", "Insomnia and sleep-related difficulties"],
+ ["Addiction Psychiatry", "Alcohol, tobacco, cannabis, gaming and gambling"],
+ ["Sexual Disorders", "Confidential psychiatric evaluation and care"],
+ ["Child & Adolescent Psychiatry", "Emotional and behavioural concerns"],
+ ["Geriatric Psychiatry", "Mental health care for older adults"],
+ ["Psychotherapy", "CBT, REBT and supportive psychotherapy"],
+ ["Couple & Family Therapy", "Relationship and family-focused support"],
+];
+
+const faqs = [
+ ["Is the consultation online?", "Yes. The current service is video consultation only."],
+ ["What is the psychiatric consultation fee?", "The psychiatric consultation fee is 500."],
+ ["What is the psychotherapy fee?", "A psychotherapy session is 2000."],
+ ["How will I receive the video link?", "The clinic will confirm your slot and share the consultation link on WhatsApp."],
+ ["Will I receive a prescription?", "A digital prescription may be provided when clinically appropriate."],
+ ["Is my information confidential?", "Yes. Personal and clinical information is handled with privacy and confidentiality."],
+];
+
+export default function Home() {
+ const [menuOpen, setMenuOpen] = useState(false);
+ const [faqOpen, setFaqOpen] = useState<number | null>(0);
+ const [form, setForm] = useState({ name: "", phone: "", service: "Psychiatric Consultation 500", date: "", time: "", concern: "" });
+
+ const whatsappBase = "https://wa.me/919376315331";
+ const appointmentMessage = useMemo(() => {
+ return encodeURIComponent(
+ `Hello Dr. Kuldeep Budania,\n\nI want to book an online appointment.\n\nName: ${form.name}\nMobile: ${form.phone}\nService: ${form.service}\nPreferred Date: ${form.date || "Not selected"}\nPreferred Time: ${form.time || "Not selected"}\nBrief Concern: ${form.concern || "Not provided"}`
+ );
+ }, [form]);
+
+ function submitBooking(event: FormEvent<HTMLFormElement>) {
+ event.preventDefault();
+ window.open(`${whatsappBase}?text=${appointmentMessage}`, "_blank", "noopener,noreferrer");
+ }
+
+ return (
+ <main>
+ <header className="siteHeader">
+ <div className="navWrap container">
+ <a className="brand" href="#home" aria-label="Neuro Mind Bloom home">
+ <span className="brandMark">N</span>
+ <span><strong>Neuro Mind Bloom</strong><small>Psychiatry Psychology Wellness</small></span>
+ </a>
+ <button className="menuBtn" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu"></button>
+ 
+ <nav className={menuOpen ? "nav open" : "nav"}>
+ <a href="#about">About</a>
+ <a href="#services">Services</a>
+ <a href="#consultations">Consultations</a>
+ <a href="/doctor">Doctor Login</a>
+ <a className="navCta" href="#booking">Book Appointment</a>
+</nav>
+ </div>
+ </header>
+
+ <section id="home" className="hero">
+ <div className="heroGlow one" /><div className="heroGlow two" />
+ <div className="container heroGrid">
+ <div className="heroCopy">
+ <span className="eyebrow"> Confidential Online Mental Health Care</span>
+ <h1>Your Mental Health <em>Matters</em></h1>
+ <p>Compassionate, confidential and evidence-based online psychiatric care from the comfort of your home.</p>
+ <div className="heroActions">
+ <a className="btn primary" href="#booking">Book Video Consultation</a>
+ <a className="btn secondary" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book an online consultation.")}`} target="_blank" rel="noreferrer">WhatsApp Now</a>
+ </div>
+ <div className="trustRow">
+ <div><b>100%</b><span>Confidential</span></div>
+ <div><b>MD</b><span>Psychiatry</span></div>
+ <div><b>Online</b><span>Convenient</span></div>
+ </div>
+ </div>
+ <div className="portraitWrap">
+ <div className="portraitHalo" />
+ <Image src="/dr-kuldeep.png" alt="Dr. Kuldeep Budania, MD Psychiatry" width={900} height={1200} priority className="portrait" />
+ <div className="doctorBadge"><strong>Dr. Kuldeep Budania</strong><span>MD Psychiatry</span><small>Ajmer, Rajasthan</small></div>
+ </div>
+ </div>
+ </section>
+
+ <section id="about" className="section light">
+ <div className="container aboutGrid">
+ <div><span className="sectionLabel">ABOUT THE DOCTOR</span><h2>Professional care with dignity and empathy</h2><p className="lead">Dr. Kuldeep Budania provides online psychiatric consultation and psychotherapy with a personalized, respectful and confidential approach.</p></div>
+ <div className="featureGrid">
+ {["Confidential care", "Evidence-based approach", "Personalized treatment", "Easy online access", "Digital prescription", "Follow-up guidance"].map((item) => <div className="featureCard" key={item}> {item}</div>)}
+ </div>
+ </div>
+ </section>
+
+ <section id="consultations" className="section">
+ <div className="container"><div className="sectionHead"><span className="sectionLabel">ONLINE CONSULTATIONS</span><h2>Choose your consultation</h2></div>
+ <div className="pricingGrid">
+ <article className="priceCard teal"><div className="roundIcon"></div><h3>Psychiatric Consultation</h3><div className="price">Rs. 500</div><a className="btn primary full" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book a Psychiatric Consultation for 500.")}`} target="_blank" rel="noreferrer">Book on WhatsApp</a></article>
+ <article className="priceCard blue"><div className="roundIcon"></div><h3>Psychotherapy Session</h3><div className="price">Rs. 2000</div><a className="btn blueBtn full" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book a Psychotherapy Session for 2000.")}`} target="_blank" rel="noreferrer">Book on WhatsApp</a></article>
+ </div>
+ </div>
+ </section>
+
+ <section id="services" className="section light">
+ <div className="container"><div className="sectionHead"><span className="sectionLabel">AREAS OF CARE</span><h2>Mental health services</h2></div>
+ <div className="servicesGrid">{services.map(([title, desc]) => <article className="serviceCard" key={title}><span className="serviceIcon"></span><div><h3>{title}</h3><p>{desc}</p></div></article>)}</div>
+ </div>
+ </section>
+
+ <section
+ id="booking"
+ style={{
+ padding: "70px 16px",
+ background: "#f4f8f7",
+ }}
+>
+ <div
+ style={{
+ maxWidth: "1180px",
+ margin: "0 auto",
+ }}
+ >
+ <div
+ style={{
+ textAlign: "center",
+ marginBottom: "28px",
+ }}
+ >
+ <div
+ style={{
+ fontSize: "13px",
+ fontWeight: 800,
+ letterSpacing: "2px",
+ color: "#17656b",
+ marginBottom: "8px",
+ }}
+ >
+ BOOK AN APPOINTMENT
+ </div>
+
+ <h2
+ style={{
+ margin: 0,
+ fontSize: "clamp(30px, 5vw, 48px)",
+ color: "#173f44",
+ }}
+ >
+ Request your preferred date and time
+ </h2>
+
+ <p
+ style={{
+ color: "#64748b",
+ maxWidth: "700px",
+ margin: "14px auto 0",
+ lineHeight: 1.6,
+ }}
+ >
+ Submit your appointment request. It will be saved directly
+ to the Doctor Dashboard. WhatsApp is also available after booking.
+ </p>
+ </div>
+
+ <div
+ style={{
+ maxWidth: "1000px",
+ margin: "0 auto",
+ background: "#ffffff",
+ borderRadius: "22px",
+ overflow: "hidden",
+ boxShadow: "0 18px 50px rgba(0,0,0,0.10)",
+ }}
+ >
+ <iframe
+ src="/book-appointment"
+ title="Book Appointment - Neuro Mind Bloom"
+ style={{
+ width: "100%",
+ height: "920px",
+ border: "0",
+ display: "block",
+ background: "#ffffff",
+ }}
+ />
+ </div>
+ </div>
+</section>
+
+ <section id="faq" className="section light"><div className="container narrow"><div className="sectionHead"><span className="sectionLabel">FAQ</span><h2>Common questions</h2></div>
+ <div className="faqList">{faqs.map(([q,a],i)=><div className="faqItem" key={q}><button onClick={()=>setFaqOpen(faqOpen===i?null:i)}><span>{q}</span><b>{faqOpen===i?"":"+"}</b></button>{faqOpen===i&&<p>{a}</p>}</div>)}</div>
+ </div></section>
+
+ <section
+ id="social"
+ style={{
+ padding: "70px 20px",
+ background: "#f4f8f7",
+ }}
+>
+ <div
+ style={{
+ maxWidth: "1100px",
+ margin: "0 auto",
+ textAlign: "center",
+ }}
+ >
+ <p
+ style={{
+ color: "#17656b",
+ fontWeight: 800,
+ letterSpacing: "2px",
+ fontSize: "13px",
+ }}
+ >
+ CONNECT WITH US
+ </p>
+
+ <h2
+ style={{
+ fontSize: "clamp(30px,5vw,46px)",
+ margin: "8px 0 14px",
+ color: "#173f44",
+ }}
+ >
+ Follow Neuro Mind Bloom
+ </h2>
+
+ <p
+ style={{
+ color: "#64748b",
+ marginBottom: "32px",
+ }}
+ >
+ Mental health awareness, educational videos, updates and online consultation.
+ </p>
+
+ <div
+ style={{
+ display: "flex",
+ flexWrap: "wrap",
+ justifyContent: "center",
+ gap: "14px",
+ }}
+ >
+
+ <a
+ href="https://www.youtube.com/results?search_query=Neuro+Mind+Bloom+Dr+Kuldeep+Budania"
+ target="_blank"
+ rel="noopener noreferrer"
+ style={{
+ padding: "14px 24px",
+ borderRadius: "12px",
+ background: "#ff0000",
+ color: "#fff",
+ textDecoration: "none",
+ fontWeight: 800,
+ }}
+ >
+ YouTube
+ </a>
+
+ <a
+ href="https://www.facebook.com/search/top?q=Neuro%20Mind%20Bloom"
+ target="_blank"
+ rel="noopener noreferrer"
+ style={{
+ padding: "14px 24px",
+ borderRadius: "12px",
+ background: "#1877f2",
+ color: "#fff",
+ textDecoration: "none",
+ fontWeight: 800,
+ }}
+ >
+ Facebook
+ </a>
+
+ <a
+ href="https://www.instagram.com/"
+ target="_blank"
+ rel="noopener noreferrer"
+ style={{
+ padding: "14px 24px",
+ borderRadius: "12px",
+ background: "#833ab4",
+ color: "#fff",
+ textDecoration: "none",
+ fontWeight: 800,
+ }}
+ >
+ Instagram
+ </a>
+
+ <a
+ href="https://wa.me/919376315331"
+ target="_blank"
+ rel="noopener noreferrer"
+ style={{
+ padding: "14px 24px",
+ borderRadius: "12px",
+ background: "#25d366",
+ color: "#fff",
+ textDecoration: "none",
+ fontWeight: 800,
+ }}
+ >
+ WhatsApp Business
+ </a>
+
+ </div>
+
+ <p
+ style={{
+ marginTop: "24px",
+ fontSize: "13px",
+ color: "#64748b",
+ }}
+ >
+ Neuro Mind Bloom Psychiatry Psychology Wellness
+ </p>
+
+ </div>
+</section>
+<footer id="contact" className="footer"><div className="container footerGrid"><div><h3>Neuro Mind Bloom</h3><p>Psychiatry Psychology Wellness</p><p>Dr. Kuldeep Budania, MD Psychiatry</p></div><div><h4>Contact</h4><a href="tel:+918107639481">Call: +91 8107639481</a><a href="https://wa.me/919376315331" target="_blank" rel="noreferrer">WhatsApp: +91 9376315331</a><a href="mailto:drkuldeepbudania23@gmail.com">drkuldeepbudania23@gmail.com</a><span>Ajmer, Rajasthan</span></div><div><h4>Services</h4><a href="#consultations">Psychiatric Consultation</a><a href="#consultations">Psychotherapy</a><a href="#services">Sexual Disorders</a><a href="#services">Addiction Psychiatry</a></div></div><div className="copyright"> 2026 Neuro Mind Bloom. All rights reserved.</div></footer>
+
+ <a className="floatingWhatsApp" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book an online consultation.")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp">WhatsApp</a>
+ </main>
+ );
+}
+
+
+
+
+
+
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\doctor\layout.tsx ================
+
+"use client";
+
+import { ReactNode, useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { usePathname, useRouter } from "next/navigation";
+import { auth } from "../../lib/firebase";
+
+export default function DoctorLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    if (pathname === "/doctor/login") {
+      setChecking(false);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.replace("/login");
+      } else {
+        setChecking(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [pathname, router]);
+
+  if (pathname === "/doctor/login") {
+    return <>{children}</>;
+  }
+
+  if (checking) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "grid",
+          placeItems: "center",
+          fontFamily: "Arial, sans-serif",
+        }}
+      >
+        Checking doctor login...
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
+================ C:\Users\kuldeep budania\Downloads\NEURO-MIND-BLOOM-FINAL\app\layout.tsx ================
+
+import SeoStructuredData from "./SeoStructuredData";
+import DoctorLoginButton from "./components/DoctorLoginButton";
+import type { Metadata } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Neuro Mind Bloom | Dr. Kuldeep Budania, MD Psychiatry",
+  description: "Consult Dr Kuldeep Budania, MD Psychiatry. Psychiatry and de-addiction services in Rajasthan with online psychiatric consultation across India for anxiety, depression, OCD, bipolar disorder, schizophrenia, sleep and other mental health concerns.",
+  keywords: [
+    "psychiatrist in Rajasthan",
+    "best psychiatrist in Rajasthan",
+    "psychiatrist Rajasthan",
+    "mental health doctor Rajasthan",
+    "de addiction psychiatrist Rajasthan",
+    "de addiction doctor Rajasthan",
+    "nasha mukti doctor Rajasthan",
+
+    "psychiatrist Ajmer",
+    "psychiatrist in Ajmer",
+    "psychiatrist Jaipur",
+    "psychiatrist in Jaipur",
+    "psychiatrist Kota",
+    "psychiatrist in Kota",
+    "psychiatrist Jodhpur",
+    "psychiatrist Udaipur",
+
+    "Dr Kuldeep Budania",
+    "Dr Kuldeep Budania psychiatrist",
+    "Neuro Mind Bloom",
+
+    "online psychiatrist India",
+    "online psychiatrist consultation India",
+    "psychiatrist online India",
+    "online psychiatry consultation",
+    "online mental health consultation India",
+    "online de addiction consultation India",
+
+    "anxiety treatment Rajasthan",
+    "depression treatment Rajasthan",
+    "OCD treatment Rajasthan",
+    "bipolar disorder psychiatrist Rajasthan",
+    "schizophrenia treatment Rajasthan",
+    "sleep disorder psychiatrist Rajasthan",
+    "sexual disorder psychiatrist Rajasthan",
+    "psychotherapy Rajasthan"
+  ],
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en">
+      <body>
+        <SeoStructuredData />{children}        <DoctorLoginButton />
+      </body>
+    </html>
+  );
+}
+
+
+
+
