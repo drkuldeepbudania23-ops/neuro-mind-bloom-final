@@ -3,7 +3,6 @@
 export default function DoctorDashboard() {
   const cards = [
     ["Appointments","/doctor/appointments"],
-    ["Video Consultation","/doctor/video"],
     ["E-Prescription","/doctor/prescription"],
     ["Follow-up","/doctor/follow-up"],
     ["Payment","/doctor/payment"]
@@ -32,13 +31,12 @@ export default function DoctorDashboard() {
             boxShadow:"0 5px 18px rgba(0,0,0,.06)"
           }}>
             <h2>{name}</h2>
-            <p>Open â†’</p>
+            <p>Open ΓåÆ</p>
           </Link>
         ))}
       </div>
     </main>
   );
 }
-
 
 
