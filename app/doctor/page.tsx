@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 
 export default function DoctorDashboard() {
   const cards = [
@@ -31,7 +31,7 @@ export default function DoctorDashboard() {
             boxShadow:"0 5px 18px rgba(0,0,0,.06)"
           }}>
             <h2>{name}</h2>
-            <p>Open ΓåÆ</p>
+            <p>Open →</p>
           </Link>
         ))}
       </div>
