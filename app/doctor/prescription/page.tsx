@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { medicines } from "../../../data/medicines";
@@ -175,7 +175,7 @@ export default function PrescriptionPage() {
         <div>
           <h1 style={{ margin: 0 }}>E-Prescription</h1>
           <div style={s.sub}>
-            Neuro Mind Bloom · Doctor Prescription Module
+            Neuro Mind Bloom Â· Doctor Prescription Module
           </div>
         </div>
 
@@ -200,8 +200,8 @@ export default function PrescriptionPage() {
 
       <section style={s.printHeader}>
         <h2 style={{ marginBottom: 4 }}>NEURO MIND BLOOM</h2>
-        <strong>Dr. Kuldeep Budania · MD Psychiatry</strong>
-        <div>Mental Health · De-addiction · Sexual Disorders</div>
+        <strong>Dr. Kuldeep Budania Â· MD Psychiatry</strong>
+        <div>Mental Health Â· De-addiction Â· Sexual Disorders</div>
       </section>
 
       <section style={s.card}>
@@ -324,7 +324,7 @@ export default function PrescriptionPage() {
               ))
             ) : (
               <div style={s.empty}>
-                No exact medicine found. Use “Custom Medicine”.
+                No exact medicine found. Use â€œCustom Medicineâ€.
               </div>
             )}
           </div>
@@ -540,7 +540,52 @@ export default function PrescriptionPage() {
           }
         }
       `}</style>
-    </main>
+    
+{/* NMB_FINAL_SIGNATURE_START */}
+<div
+  className="nmb-final-signature"
+  style={{
+    marginTop: "24px",
+    width: "100%",
+    display: "flex",
+    justifyContent: "flex-end",
+    pageBreakInside: "avoid",
+    breakInside: "avoid"
+  }}
+>
+  <div
+    style={{
+      width: "220px",
+      textAlign: "center"
+    }}
+  >
+    <img
+      src="/doctor-signature.png"
+      alt="Dr. Kuldeep Budania Signature"
+      style={{
+        display: "block",
+        width: "170px",
+        height: "80px",
+        objectFit: "contain",
+        margin: "0 auto 2px auto"
+      }}
+    />
+
+    <div style={{ fontWeight: 700 }}>
+      Dr. Kuldeep Budania
+    </div>
+
+    <div style={{ fontSize: "12px" }}>
+      MD Psychiatry
+    </div>
+
+    <div style={{ fontSize: "12px", fontWeight: 600 }}>
+      Registration No. 30526
+    </div>
+  </div>
+</div>
+{/* NMB_FINAL_SIGNATURE_END */}
+</main>
   );
 }
 
@@ -736,6 +781,7 @@ const s: Record<string, React.CSSProperties> = {
     paddingTop: 10,
   },
 };
+
 
 
 
