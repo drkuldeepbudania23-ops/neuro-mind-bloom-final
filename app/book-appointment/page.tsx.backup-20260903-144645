@@ -7,7 +7,7 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 export default function BookAppointmentPage() {
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
-  const [service, setService] = useState("Psychiatric Consultation - \u20B9500");
+  const [service, setService] = useState("Psychiatric Consultation - â‚¹500");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [concern, setConcern] = useState("");
@@ -67,7 +67,7 @@ export default function BookAppointmentPage() {
 
       setName("");
       setMobile("");
-      setService("Psychiatric Consultation - \u20B9500");
+      setService("Psychiatric Consultation - â‚¹500");
       setDate("");
       setTime("");
       setConcern("");
@@ -180,8 +180,8 @@ export default function BookAppointmentPage() {
               onChange={(e) => setService(e.target.value)}
               style={inputStyle}
             >
-              <option value={"Psychiatric Consultation - \u20B9500"}>Psychiatric Consultation - {"\u20B9"}500</option>
-              <option value={"Psychotherapy Session - \u20B92000"}>Psychotherapy Session - {"\u20B9"}2000</option>
+              <option>Psychiatric Consultation - â‚¹500</option>
+              <option>Psychotherapy Session - â‚¹2000</option>
             </select>
           </label>
 

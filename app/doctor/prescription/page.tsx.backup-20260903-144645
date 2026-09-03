@@ -548,10 +548,6 @@ export default function PrescriptionPage() {
         </div>
       </section>
 
-      <div style={s.medicoLegalWarning}>
-        NOT VALID FOR MEDICOLEGAL PURPOSE
-      </div>
-
       <div className="no-print" style={s.warning}>
         Verify indication, dose, interactions, allergies, pregnancy status,
         renal/hepatic function and current prescribing information before
@@ -777,17 +773,6 @@ const s: Record<string, React.CSSProperties> = {
     color: "#64748b",
     borderTop: "1px solid #ddd",
     paddingTop: 10,
-  },
-
-  medicoLegalWarning: {
-    marginTop: 4,
-    paddingTop: 10,
-    borderTop: "1px solid #cbd5e1",
-    textAlign: "center",
-    fontSize: 12,
-    fontWeight: 800,
-    letterSpacing: "0.5px",
-    color: "#991b1b",
   },
 };
 
