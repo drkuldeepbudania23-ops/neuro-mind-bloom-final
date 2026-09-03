@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { medicines } from "../../../data/medicines";
 
 type RxItem = {
@@ -59,7 +59,11 @@ export default function PrescriptionPage() {
   const [advice, setAdvice] = useState("");
   const [followUp, setFollowUp] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
-  const sealDataUrl = "/doctor-seal-signature.jpg";
+  const [sealDataUrl, setSealDataUrl] = useState("");
+
+  useEffect(() => {
+    setSealDataUrl(localStorage.getItem("nmb_prescription_seal") || "");
+  }, []);
 
   const results = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -114,6 +118,22 @@ export default function PrescriptionPage() {
       },
     ]);
     setSearch("");
+  }
+
+  function handleSealUpload(file?: File) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const value = String(reader.result || "");
+      setSealDataUrl(value);
+      localStorage.setItem("nmb_prescription_seal", value);
+    };
+    reader.readAsDataURL(file);
   }
 
   function addCustomMedicine() {
@@ -199,6 +219,15 @@ export default function PrescriptionPage() {
         </div>
 
         <div style={s.actions}>
+          <label style={s.secondary}>
+            Upload Seal / Signature
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => handleSealUpload(e.target.files?.[0])}
+            />
+          </label>
           <button style={s.secondary} onClick={clearForm}>
             New Prescription
           </button>
