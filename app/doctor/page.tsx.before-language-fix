@@ -1,0 +1,42 @@
+﻿import Link from "next/link";
+
+export default function DoctorDashboard() {
+  const cards = [
+    ["Appointments","/doctor/appointments"],
+    ["E-Prescription","/doctor/prescription"],
+    ["Follow-up","/doctor/follow-up"],
+    ["Payment","/doctor/payment"]
+  ];
+
+  return (
+    <main style={{padding:30,maxWidth:1100,margin:"auto"}}>
+      <h1>Doctor Dashboard</h1>
+      <p>Manage online consultation workflow from one place.</p>
+
+      <div style={{
+        display:"grid",
+        gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",
+        gap:18,
+        marginTop:25
+      }}>
+        {cards.map(([name,url]) => (
+          <Link key={url} href={url} style={{
+            display:"block",
+            padding:26,
+            border:"1px solid #ddd",
+            borderRadius:16,
+            textDecoration:"none",
+            color:"#123",
+            background:"white",
+            boxShadow:"0 5px 18px rgba(0,0,0,.06)"
+          }}>
+            <h2>{name}</h2>
+            <p>Open ΓåÆ</p>
+          </Link>
+        ))}
+      </div>
+    </main>
+  );
+}
+
+

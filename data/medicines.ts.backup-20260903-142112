@@ -1,4 +1,4 @@
-﻿export type Medicine = {
+export type Medicine = {
   generic: string;
   brands: string[];
   category: string;
@@ -33,8 +33,7 @@ export const medicines: Medicine[] = [
   // OTHER ANTIDEPRESSANTS
   { generic:"Mirtazapine", brands:["Mirtaz","Remeron","Mirnite"], category:"NaSSA", strengths:["7.5 mg","15 mg","30 mg","45 mg"] },
   { generic:"Bupropion", brands:["Bupron","Zupion","Wellbutrin"], category:"NDRI", strengths:["75 mg","100 mg SR","150 mg XL","300 mg XL"] },
-  { generic:"Vortioxetine", brands:["Voxigain","Voxitin","Vortiray","Vortica","Vortexa","Voroxo","Brintellix","Vortidif"], category:"Multimodal antidepressant", strengths:["5 mg","10 mg","20 mg"] },
-  { generic:"Bupropion + Dextromethorphan HBr", brands:["Auvelia ER"], category:"Multimodal antidepressant", strengths:["105 mg + 45 mg"] },
+  { generic:"Vortioxetine", brands:["Brintellix","Vortidif"], category:"Multimodal antidepressant", strengths:["5 mg","10 mg","20 mg"] },
   { generic:"Agomelatine", brands:["Agoprex","Valdoxan"], category:"Melatonergic antidepressant", strengths:["25 mg"] },
   { generic:"Trazodone", brands:["Trazon","Desyrel"], category:"SARI", strengths:["25 mg","50 mg","100 mg"] },
   { generic:"Vilazodone", brands:["Vilano","Viibryd"], category:"Serotonergic antidepressant", strengths:["10 mg","20 mg","40 mg"] },
@@ -47,9 +46,7 @@ export const medicines: Medicine[] = [
   { generic:"Quetiapine", brands:["Qutan","Seroquel","Quitipin"], category:"Atypical antipsychotic", strengths:["25 mg","50 mg","100 mg","200 mg","300 mg","400 mg XR"] },
   { generic:"Aripiprazole", brands:["Arip MT","Abilify","Aripra"], category:"Atypical antipsychotic", strengths:["2 mg","5 mg","10 mg","15 mg","20 mg","30 mg"] },
   { generic:"Brexpiprazole", brands:["Rexulti"], category:"Atypical antipsychotic", strengths:["0.5 mg","1 mg","2 mg","3 mg","4 mg"] },
-  { generic:"Cariprazine", brands:["Carinia","Vraylar"], category:"Atypical antipsychotic", strengths:["1.5 mg","3 mg","4.5 mg","6 mg"] },
-  { generic:"Lumateperone", brands:["Lumavibe"], category:"Atypical antipsychotic", strengths:["42 mg"] },
-  { generic:"Endoxifen", brands:["Zonalta"], category:"Mood stabilizer / antimanic", strengths:["8 mg"] },
+  { generic:"Cariprazine", brands:["Vraylar"], category:"Atypical antipsychotic", strengths:["1.5 mg","3 mg","4.5 mg","6 mg"] },
   { generic:"Ziprasidone", brands:["Zipsydon","Geodon"], category:"Atypical antipsychotic", strengths:["20 mg","40 mg","60 mg","80 mg"] },
   { generic:"Amisulpride", brands:["Solian","Sulpitac"], category:"Atypical antipsychotic", strengths:["50 mg","100 mg","200 mg","400 mg"] },
   { generic:"Sulpiride", brands:[], category:"Benzamide antipsychotic", strengths:["50 mg","200 mg"] },
@@ -100,7 +97,6 @@ export const medicines: Medicine[] = [
   { generic:"Eszopiclone", brands:["Lunesta"], category:"Hypnotic", strengths:["1 mg","2 mg","3 mg"] },
   { generic:"Ramelteon", brands:["Rozerem"], category:"Melatonin receptor agonist", strengths:["8 mg"] },
   { generic:"Melatonin", brands:["Meloset","Circadin"], category:"Sleep agent", strengths:["2 mg","3 mg","5 mg","10 mg"] },
-  { generic:"Lemborexant", brands:["Dayvigo"], category:"Orexin antagonist", strengths:["5 mg","10 mg"] },
   { generic:"Suvorexant", brands:["Belsomra"], category:"Orexin antagonist", strengths:["5 mg","10 mg","15 mg","20 mg"] },
   { generic:"Daridorexant", brands:["Quviviq"], category:"Orexin antagonist", strengths:["25 mg","50 mg"] },
 
@@ -249,4 +245,3 @@ export const medicines: Medicine[] = [
 
 export const medicineCategories =
   Array.from(new Set(medicines.map((m) => m.category))).sort();
-
