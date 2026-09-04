@@ -1,7 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { medicines } from "../../../data/medicines";
+import { auth } from "../../../lib/firebase";
+import {
+  PhoneAuthProvider,
+  RecaptchaVerifier,
+  linkWithCredential,
+  reauthenticateWithCredential,
+} from "firebase/auth";
 
 type RxItem = {
   generic: string;
@@ -30,6 +37,9 @@ type SavedPrescription = {
   investigations: string;
   advice: string;
   followUp: string;
+  signedAt?: string;
+  prescriptionId?: string;
+  isTeleconsultation?: boolean;
 };
 
 const blankRx = (): RxItem => ({
@@ -59,7 +69,141 @@ export default function PrescriptionPage() {
   const [advice, setAdvice] = useState("");
   const [followUp, setFollowUp] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
-  const sealDataUrl = "/doctor-seal-signature.jpg";
+  const [otp, setOtp] = useState("");
+  const [verificationId, setVerificationId] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpBusy, setOtpBusy] = useState(false);
+  const [signedAt, setSignedAt] = useState("");
+  const [prescriptionId, setPrescriptionId] = useState("");
+  const [signedSnapshot, setSignedSnapshot] = useState("");
+  const [isTeleconsultation, setIsTeleconsultation] = useState(false);
+  const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
+
+  const DOCTOR_ESIGN_PHONE = "+918058283090";
+
+  const prescriptionSnapshot = useMemo(
+    () =>
+      JSON.stringify({
+        patientName,
+        age,
+        sex,
+        mobile,
+        diagnosis,
+        complaints,
+        history,
+        vitals,
+        rx,
+        investigations,
+        advice,
+        followUp,
+      }),
+    [
+      patientName, age, sex, mobile, diagnosis, complaints, history, vitals,
+      rx, investigations, advice, followUp,
+    ]
+  );
+
+  const isESigned =
+    signedSnapshot !== "" && signedSnapshot === prescriptionSnapshot;
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const type = (params.get("type") || params.get("mode") || params.get("consultation") || "").toLowerCase();
+    const tele =
+      params.get("teleconsultation") === "1" ||
+      type === "video" ||
+      type === "teleconsultation" ||
+      Boolean(params.get("appointmentId"));
+    setIsTeleconsultation(tele);
+
+    return () => {
+      try { recaptchaRef.current?.clear(); } catch {}
+      recaptchaRef.current = null;
+    };
+  }, []);
+
+  async function sendESignOtp() {
+    if (!patientName.trim()) {
+      alert("Please enter patient name before e-signing.");
+      return;
+    }
+    if (!auth.currentUser) {
+      alert("Doctor login is required before e-signing.");
+      return;
+    }
+
+    try {
+      setOtpBusy(true);
+      try { recaptchaRef.current?.clear(); } catch {}
+      recaptchaRef.current = new RecaptchaVerifier(auth, "esign-recaptcha", { size: "invisible" });
+      const provider = new PhoneAuthProvider(auth);
+      const id = await provider.verifyPhoneNumber(DOCTOR_ESIGN_PHONE, recaptchaRef.current);
+      setVerificationId(id);
+      setOtpSent(true);
+      setOtp("");
+      alert("OTP sent to the registered doctor mobile.");
+    } catch (error) {
+      console.error(error);
+      try { recaptchaRef.current?.clear(); } catch {}
+      recaptchaRef.current = null;
+      alert(error instanceof Error ? error.message : "Unable to send OTP.");
+    } finally {
+      setOtpBusy(false);
+    }
+  }
+
+  async function verifyAndESign() {
+    if (!verificationId || otp.trim().length !== 6) {
+      alert("Please enter the 6-digit OTP.");
+      return;
+    }
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Doctor login is required before e-signing.");
+      return;
+    }
+
+    try {
+      setOtpBusy(true);
+      const credential = PhoneAuthProvider.credential(verificationId, otp.trim());
+      const phoneLinked = user.providerData.some((p) => p.providerId === "phone");
+      if (phoneLinked) {
+        await reauthenticateWithCredential(user, credential);
+      } else {
+        await linkWithCredential(user, credential);
+      }
+
+      const now = new Date();
+      const pid =
+        "NMB-" +
+        now.getFullYear() +
+        String(now.getMonth() + 1).padStart(2, "0") +
+        String(now.getDate()).padStart(2, "0") +
+        "-" +
+        String(now.getTime()).slice(-8);
+
+      setSignedAt(now.toLocaleString());
+      setPrescriptionId(pid);
+      setSignedSnapshot(prescriptionSnapshot);
+      setOtp("");
+      setOtpSent(false);
+      setVerificationId("");
+      alert("Prescription electronically signed successfully.");
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : "OTP verification failed.");
+    } finally {
+      setOtpBusy(false);
+    }
+  }
+
+  function handlePrint() {
+    if (!isESigned) {
+      alert("Please e-sign the prescription with OTP before Print / PDF.");
+      return;
+    }
+    window.print();
+  }
 
   const results = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -154,6 +298,9 @@ export default function PrescriptionPage() {
       investigations,
       advice,
       followUp,
+      signedAt: isESigned ? signedAt : undefined,
+      prescriptionId: isESigned ? prescriptionId : undefined,
+      isTeleconsultation,
     };
 
     const old = JSON.parse(
@@ -186,6 +333,12 @@ export default function PrescriptionPage() {
     setAdvice("");
     setFollowUp("");
     setSavedMessage("");
+    setOtp("");
+    setVerificationId("");
+    setOtpSent(false);
+    setSignedAt("");
+    setPrescriptionId("");
+    setSignedSnapshot("");
   }
 
   return (
@@ -194,7 +347,7 @@ export default function PrescriptionPage() {
         <div>
           <h1 style={{ margin: 0 }}>E-Prescription</h1>
           <div style={s.sub}>
-            Neuro Mind Bloom · Doctor Prescription Module
+            Neuro Mind Bloom Â· Doctor Prescription Module
           </div>
         </div>
 
@@ -205,7 +358,7 @@ export default function PrescriptionPage() {
           <button style={s.primary} onClick={savePrescription}>
             Save
           </button>
-          <button style={s.primary} onClick={() => window.print()}>
+          <button style={s.primary} onClick={handlePrint}>
             Print / PDF
           </button>
         </div>
@@ -217,10 +370,53 @@ export default function PrescriptionPage() {
         </div>
       )}
 
+      <div id="esign-recaptcha" />
+
+      <section className="no-print" style={s.card}>
+        <h2 style={{ marginTop: 0 }}>E-Sign Prescription</h2>
+        <div style={{ color: "#475569", marginBottom: 12 }}>
+          OTP verification on registered doctor mobile
+        </div>
+
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <button style={s.primary} onClick={sendESignOtp} disabled={otpBusy}>
+            {otpBusy ? "Please wait..." : "Send OTP"}
+          </button>
+
+          {otpSent && (
+            <>
+              <input
+                style={{ ...s.input, maxWidth: 180 }}
+                value={otp}
+                inputMode="numeric"
+                placeholder="6-digit OTP"
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              />
+              <button style={s.primary} onClick={verifyAndESign} disabled={otpBusy}>
+                Verify & E-Sign
+              </button>
+            </>
+          )}
+
+          {isESigned && (
+            <strong style={{ color: "#15803d" }}>Electronically Signed ✓</strong>
+          )}
+
+          {!isESigned && signedSnapshot && (
+            <strong style={{ color: "#b45309" }}>Prescription edited — re-sign required</strong>
+          )}
+        </div>
+      </section>
+
       <section style={s.printHeader}>
         <h2 style={{ marginBottom: 4 }}>NEURO MIND BLOOM</h2>
-        <strong>Dr. Kuldeep Budania · MD Psychiatry</strong>
-        <div>Mental Health · De-addiction · Sexual Disorders</div>
+        <strong>Dr. Kuldeep Budania Â· MD Psychiatry</strong>
+        <div>Mental Health Â· De-addiction Â· Sexual Disorders</div>
+        {isTeleconsultation && (
+          <div style={{ fontSize: 10, marginTop: 4, letterSpacing: "0.5px" }}>
+            Teleconsultation
+          </div>
+        )}
       </section>
 
       <section style={s.card}>
@@ -344,7 +540,7 @@ export default function PrescriptionPage() {
               ))
             ) : (
               <div style={s.empty}>
-                No exact medicine found. Use “Custom Medicine”.
+                No exact medicine found. Use â€œCustom Medicineâ€.
               </div>
             )}
           </div>
@@ -526,24 +722,21 @@ export default function PrescriptionPage() {
       </section>
 
       <section style={s.signature}>
-        <div>
-          Date: {new Date().toLocaleDateString()}
-        </div>
-        <div style={{ textAlign: "right", minWidth: 260 }}>
-          {sealDataUrl ? (
-            <img
-              src={sealDataUrl}
-              alt="Doctor seal and signature"
-              style={s.sealImage}
-            />
-          ) : (
+        <div>Date: {new Date().toLocaleDateString()}</div>
+        <div style={{ textAlign: "right", minWidth: 290 }}>
+          {isESigned ? (
             <>
-              <strong>Dr. Kuldeep Budania</strong>
-              <br />
-              MD Psychiatry
-              <br />
-              Signature
+              <strong>Electronically Signed</strong><br />
+              <strong>Dr. Kuldeep Budania</strong><br />
+              MD Psychiatry<br />
+              Registration No. 30526<br />
+              <span style={{ fontSize: 11 }}>Date/Time: {signedAt}</span><br />
+              <span style={{ fontSize: 11 }}>Prescription ID: {prescriptionId}</span>
             </>
+          ) : (
+            <span className="no-print" style={{ color: "#b45309", fontWeight: 700 }}>
+              Not electronically signed
+            </span>
           )}
         </div>
       </section>
@@ -765,12 +958,6 @@ const s: Record<string, React.CSSProperties> = {
     padding: "24px 10px",
   },
 
-  sealImage: {
-    width: 260,
-    maxWidth: "100%",
-    height: "auto",
-    objectFit: "contain",
-  },
 
   warning: {
     fontSize: 12,
