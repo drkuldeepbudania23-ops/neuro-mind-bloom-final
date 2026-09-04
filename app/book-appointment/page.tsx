@@ -3,6 +3,7 @@
 import { auth, db } from "../../lib/firebase";
 import { FormEvent, useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { complaintOptions, complaintLabel } from "../data/psychiatrySearch";
 
 export default function BookAppointmentPage() {
   const [name, setName] = useState("");
@@ -11,9 +12,33 @@ export default function BookAppointmentPage() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [concern, setConcern] = useState("");
+  const [complaintSearch, setComplaintSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+
+  const complaintResults = complaintSearch.trim()
+    ? complaintOptions
+        .filter((item) => {
+          const q = complaintSearch.trim().toLowerCase();
+          return (
+            item.en.toLowerCase().includes(q) ||
+            item.hi.includes(complaintSearch.trim()) ||
+            item.tags.some((tag) => tag.includes(q))
+          );
+        })
+        .slice(0, 12)
+    : [];
+
+  function addComplaint(text: string) {
+    setConcern((old) => {
+      const clean = old.trim();
+      if (!clean) return text;
+      if (clean.includes(text)) return old;
+      return clean + "; " + text;
+    });
+    setComplaintSearch("");
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -214,11 +239,53 @@ export default function BookAppointmentPage() {
           </div>
 
           <label style={labelStyle}>
-            Brief concern
+            Complaint / परेशानी खोजें
+            <input
+              value={complaintSearch}
+              onChange={(e) => setComplaintSearch(e.target.value)}
+              placeholder="जैसे: नींद, घबराहट, उदासी / sleep, anxiety, sadness"
+              style={inputStyle}
+            />
+          </label>
+
+          {complaintResults.length > 0 && (
+            <div
+              style={{
+                display: "grid",
+                gap: 8,
+                marginTop: -8,
+                marginBottom: 16,
+                maxHeight: 260,
+                overflowY: "auto",
+              }}
+            >
+              {complaintResults.map((item, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => addComplaint(complaintLabel(item))}
+                  style={{
+                    textAlign: "left",
+                    border: "1px solid #dbe3ea",
+                    background: "#f8fafc",
+                    borderRadius: 10,
+                    padding: "10px 12px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <strong>{item.hi}</strong>
+                  <div style={{ fontSize: 13, marginTop: 2 }}>{item.en}</div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <label style={labelStyle}>
+            Brief concern / अपनी परेशानी
             <textarea
               value={concern}
               onChange={(e) => setConcern(e.target.value)}
-              placeholder="Write briefly about the concern"
+              placeholder="ऊपर से चुनें या अपनी भाषा में लिखें / Select above or write in your own words"
               rows={4}
               style={{
                 ...inputStyle,

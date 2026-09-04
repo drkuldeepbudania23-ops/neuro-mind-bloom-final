@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { medicines } from "../../../data/medicines";
+import { psychiatryBrands } from "../../../data/psychiatryBrands";
+import { complaintOptions, complaintLabel, diagnosisOptions, diagnosisLabel } from "../../data/psychiatrySearch";
 import { auth } from "../../../lib/firebase";
 type RxItem = {
   generic: string;
@@ -53,6 +55,8 @@ export default function PrescriptionPage() {
   const [sex, setSex] = useState("");
   const [mobile, setMobile] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
+  const [diagnosisSearch, setDiagnosisSearch] = useState("");
+  const [complaintSearch, setComplaintSearch] = useState("");
   const [complaints, setComplaints] = useState("");
   const [history, setHistory] = useState("");
   const [vitals, setVitals] = useState("");
@@ -90,6 +94,58 @@ export default function PrescriptionPage() {
       rx, investigations, advice, followUp,
     ]
   );
+
+  const diagnosisResults = useMemo(() => {
+    const q = diagnosisSearch.trim().toLowerCase();
+    if (!q) return [];
+    return diagnosisOptions
+      .filter((item) =>
+        item.name.toLowerCase().includes(q) ||
+        item.icd10.toLowerCase().includes(q) ||
+        item.icd11.toLowerCase().includes(q) ||
+        item.keywords.toLowerCase().includes(q) ||
+        item.tags.some((tag) => tag.includes(q))
+      )
+      .slice(0, 12);
+  }, [diagnosisSearch]);
+
+  const selectedDiagnosis = useMemo(
+    () => diagnosisOptions.find((item) => diagnosis.includes(item.name)),
+    [diagnosis]
+  );
+
+  const complaintResults = useMemo(() => {
+    const q = complaintSearch.trim().toLowerCase();
+    if (!q) return [];
+    const selectedTags = selectedDiagnosis?.tags || [];
+    return complaintOptions
+      .filter((item) => {
+        const textMatch =
+          item.en.toLowerCase().includes(q) ||
+          item.hi.includes(complaintSearch.trim()) ||
+          item.tags.some((tag) => tag.includes(q));
+        const diagnosisMatch =
+          selectedTags.length === 0 ||
+          item.tags.some((tag) => selectedTags.includes(tag));
+        return textMatch && diagnosisMatch;
+      })
+      .slice(0, 14);
+  }, [complaintSearch, selectedDiagnosis]);
+
+  function chooseDiagnosis(item: (typeof diagnosisOptions)[number]) {
+    setDiagnosis(diagnosisLabel(item));
+    setDiagnosisSearch("");
+  }
+
+  function addClinicalComplaint(text: string) {
+    setComplaints((old) => {
+      const clean = old.trim();
+      if (!clean) return text;
+      if (clean.includes(text)) return old;
+      return clean + "; " + text;
+    });
+    setComplaintSearch("");
+  }
 
   const isESigned =
     signedSnapshot !== "" && signedSnapshot === prescriptionSnapshot;
@@ -166,6 +222,47 @@ export default function PrescriptionPage() {
       return;
     }
     window.print();
+  }
+
+  const psychBrandResults = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+    return psychiatryBrands
+      .filter((item) =>
+        item.brand.toLowerCase().includes(q) ||
+        item.generic.toLowerCase().includes(q) ||
+        item.strength.toLowerCase().includes(q) ||
+        item.company.toLowerCase().includes(q) ||
+        item.category.toLowerCase().includes(q)
+      )
+      .sort((a, b) => {
+        const ab = a.brand.toLowerCase();
+        const bb = b.brand.toLowerCase();
+        const ag = a.generic.toLowerCase();
+        const bg = b.generic.toLowerCase();
+        const as = ab === q ? 0 : ab.startsWith(q) ? 1 : ag === q ? 2 : ag.startsWith(q) ? 3 : 4;
+        const bs = bb === q ? 0 : bb.startsWith(q) ? 1 : bg === q ? 2 : bg.startsWith(q) ? 3 : 4;
+        return as - bs || a.brand.localeCompare(b.brand);
+      })
+      .slice(0, 80);
+  }, [search]);
+
+  function addPsychBrand(item: (typeof psychiatryBrands)[number]) {
+    setRx((old) => [
+      ...old,
+      {
+        generic: item.generic,
+        brand: item.brand,
+        strength: item.strength,
+        dose: "1 tablet",
+        frequency: "OD",
+        timing: "Night",
+        food: "After food",
+        duration: "30 days",
+        instruction: "",
+      },
+    ]);
+    setSearch("");
   }
 
   const results = useMemo(() => {
@@ -431,8 +528,69 @@ export default function PrescriptionPage() {
           />
         </Field>
 
+        <div className="no-print" style={{ marginBottom: 12 }}>
+          <Field label="Diagnosis Search — ICD-10 / ICD-11 / clinical keywords">
+            <input
+              style={s.input}
+              value={diagnosisSearch}
+              onChange={(e) => setDiagnosisSearch(e.target.value)}
+              placeholder="e.g. depression, F32, 6A70, panic, OCD..."
+            />
+          </Field>
+
+          {diagnosisResults.length > 0 && (
+            <div style={s.results}>
+              {diagnosisResults.map((item) => (
+                <button
+                  key={item.name}
+                  type="button"
+                  style={s.med}
+                  onClick={() => chooseDiagnosis(item)}
+                >
+                  <strong>{item.name}</strong>
+                  <span>ICD-10: {item.icd10} | ICD-11: {item.icd11}</span>
+                  <small>Clinical keywords: {item.keywords}</small>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div style={{ fontSize: 11, color: "#64748b", marginTop: 6 }}>
+            Clinical keywords are concise reference summaries, not verbatim textbook criteria.
+          </div>
+        </div>
+
         <div style={s.grid2}>
           <Field label="Chief Complaints">
+            <div className="no-print" style={{ marginBottom: 8 }}>
+              <input
+                style={s.input}
+                value={complaintSearch}
+                onChange={(e) => setComplaintSearch(e.target.value)}
+                placeholder={
+                  selectedDiagnosis
+                    ? "Search complaints related to selected diagnosis..."
+                    : "Search complaint: sleep, worry, voices, alcohol, etc."
+                }
+              />
+
+              {complaintResults.length > 0 && (
+                <div style={{ ...s.results, maxHeight: 220 }}>
+                  {complaintResults.map((item, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      style={s.med}
+                      onClick={() => addClinicalComplaint(complaintLabel(item))}
+                    >
+                      <strong>{item.en}</strong>
+                      <span>{item.hi}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <textarea
               style={s.textarea}
               value={complaints}
@@ -467,7 +625,7 @@ export default function PrescriptionPage() {
             style={s.input}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search generic, brand, strength or category..."
+            placeholder="Search brand or generic; psychiatry results show brand + exact strength..."
           />
 
           <button style={s.secondary} onClick={addCustomMedicine}>
@@ -477,7 +635,19 @@ export default function PrescriptionPage() {
 
         {search && (
           <div style={s.results}>
-            {results.length > 0 ? (
+            {psychBrandResults.length > 0 ? (
+              psychBrandResults.map((item, index) => (
+                <button
+                  key={`psych-${item.brand}-${item.strength}-${index}`}
+                  style={s.med}
+                  onClick={() => addPsychBrand(item)}
+                >
+                  <strong>{item.brand} {item.strength}</strong>
+                  <span>{item.generic}</span>
+                  <small>{item.company} · {item.category}</small>
+                </button>
+              ))
+            ) : results.length > 0 ? (
               results.map(({ medicine: m, matchedBrand }, index) => (
                 <button
                   key={`${m.generic}-${matchedBrand || "generic"}-${index}`}
