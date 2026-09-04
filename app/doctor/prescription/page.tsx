@@ -127,26 +127,49 @@ export default function PrescriptionPage() {
       alert("Please enter patient name before e-signing.");
       return;
     }
-    if (!auth.currentUser) {
-      alert("Doctor login is required before e-signing.");
+
+    const user = auth.currentUser;
+
+    if (!user) {
+      alert("Doctor login required before e-signing.");
       return;
     }
 
     try {
       setOtpBusy(true);
-      try { recaptchaRef.current?.clear(); } catch {}
-      recaptchaRef.current = new RecaptchaVerifier(auth, "esign-recaptcha", { size: "invisible" });
+
+      // IMPORTANT:
+      // reCAPTCHA ko same element me baar-baar render nahi karna.
+      // Ek hi verifier create karke reuse karenge.
+      if (!recaptchaRef.current) {
+        recaptchaRef.current = new RecaptchaVerifier(
+          auth,
+          "esign-recaptcha",
+          {
+            size: "invisible",
+          }
+        );
+      }
+
       const provider = new PhoneAuthProvider(auth);
-      const id = await provider.verifyPhoneNumber(DOCTOR_ESIGN_PHONE, recaptchaRef.current);
+
+      const id = await provider.verifyPhoneNumber(
+        DOCTOR_ESIGN_PHONE,
+        recaptchaRef.current
+      );
+
       setVerificationId(id);
       setOtpSent(true);
       setOtp("");
-      alert("OTP sent to the registered doctor mobile.");
-    } catch (error) {
+
+      alert("OTP sent to registered doctor mobile.");
+    } catch (error: any) {
       console.error(error);
-      try { recaptchaRef.current?.clear(); } catch {}
-      recaptchaRef.current = null;
-      alert(error instanceof Error ? error.message : "Unable to send OTP.");
+
+      alert(
+        error?.message ||
+          "Unable to send OTP. Please wait a few seconds and try again."
+      );
     } finally {
       setOtpBusy(false);
     }
