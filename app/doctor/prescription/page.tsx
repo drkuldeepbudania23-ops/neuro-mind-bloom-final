@@ -370,7 +370,7 @@ export default function PrescriptionPage() {
         <div>
           <h1 style={{ margin: 0 }}>E-Prescription</h1>
           <div style={s.sub}>
-            Neuro Mind Bloom Â· Doctor Prescription Module
+            Neuro Mind Bloom · Doctor Prescription Module
           </div>
         </div>
 
@@ -433,8 +433,8 @@ export default function PrescriptionPage() {
 
       <section style={s.printHeader}>
         <h2 style={{ marginBottom: 4 }}>NEURO MIND BLOOM</h2>
-        <strong>Dr. Kuldeep Budania Â· MD Psychiatry</strong>
-        <div>Mental Health Â· De-addiction Â· Sexual Disorders</div>
+        <strong>Dr. Kuldeep Budania · MD Psychiatry</strong>
+        <div>Mental Health · De-addiction · Sexual Disorders</div>
         {isTeleconsultation && (
           <div style={{ fontSize: 10, marginTop: 4, letterSpacing: "0.5px" }}>
             Teleconsultation
