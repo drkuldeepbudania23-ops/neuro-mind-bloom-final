@@ -1,15 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { medicines } from "../../../data/medicines";
 import { auth } from "../../../lib/firebase";
-import {
-  PhoneAuthProvider,
-  RecaptchaVerifier,
-  linkWithCredential,
-  reauthenticateWithCredential,
-} from "firebase/auth";
-
 type RxItem = {
   generic: string;
   brand: string;
@@ -69,17 +62,12 @@ export default function PrescriptionPage() {
   const [advice, setAdvice] = useState("");
   const [followUp, setFollowUp] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
-  const [otp, setOtp] = useState("");
-  const [verificationId, setVerificationId] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpBusy, setOtpBusy] = useState(false);
+  const [esignPin, setEsignPin] = useState("");
+  const [pinBusy, setPinBusy] = useState(false);
   const [signedAt, setSignedAt] = useState("");
   const [prescriptionId, setPrescriptionId] = useState("");
   const [signedSnapshot, setSignedSnapshot] = useState("");
   const [isTeleconsultation, setIsTeleconsultation] = useState(false);
-  const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
-
-  const DOCTOR_ESIGN_PHONE = "+918058283090";
 
   const prescriptionSnapshot = useMemo(
     () =>
@@ -115,85 +103,38 @@ export default function PrescriptionPage() {
       type === "teleconsultation" ||
       Boolean(params.get("appointmentId"));
     setIsTeleconsultation(tele);
-
-    return () => {
-      try { recaptchaRef.current?.clear(); } catch {}
-      recaptchaRef.current = null;
-    };
   }, []);
 
-  async function sendESignOtp() {
+  async function verifyPinAndESign() {
     if (!patientName.trim()) {
       alert("Please enter patient name before e-signing.");
       return;
     }
 
-    const user = auth.currentUser;
-
-    if (!user) {
-      alert("Doctor login required before e-signing.");
-      return;
-    }
-
-    try {
-      setOtpBusy(true);
-
-      // IMPORTANT:
-      // reCAPTCHA ko same element me baar-baar render nahi karna.
-      // Ek hi verifier create karke reuse karenge.
-      if (!recaptchaRef.current) {
-        recaptchaRef.current = new RecaptchaVerifier(
-          auth,
-          "esign-recaptcha",
-          {
-            size: "invisible",
-          }
-        );
-      }
-
-      const provider = new PhoneAuthProvider(auth);
-
-      const id = await provider.verifyPhoneNumber(
-        DOCTOR_ESIGN_PHONE,
-        recaptchaRef.current
-      );
-
-      setVerificationId(id);
-      setOtpSent(true);
-      setOtp("");
-
-      alert("OTP sent to registered doctor mobile.");
-    } catch (error: any) {
-      console.error(error);
-
-      alert(
-        error?.message ||
-          "Unable to send OTP. Please wait a few seconds and try again."
-      );
-    } finally {
-      setOtpBusy(false);
-    }
-  }
-
-  async function verifyAndESign() {
-    if (!verificationId || otp.trim().length !== 6) {
-      alert("Please enter the 6-digit OTP.");
-      return;
-    }
-    const user = auth.currentUser;
-    if (!user) {
+    if (!auth.currentUser) {
       alert("Doctor login is required before e-signing.");
       return;
     }
 
+    if (!/^\d{8}$/.test(esignPin.trim())) {
+      alert("Please enter your 8-digit E-Sign PIN.");
+      return;
+    }
+
     try {
-      setOtpBusy(true);
-      const credential = PhoneAuthProvider.credential(verificationId, otp.trim());
-      const phoneLinked = user.providerData.some((p) => p.providerId === "phone");
-      if (phoneLinked) {
-        await reauthenticateWithCredential(user, credential);
-      } else {
-        await linkWithCredential(user, credential);
+      setPinBusy(true);
+
+      const response = await fetch("/api/esign/verify-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: esignPin.trim() }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || !data?.ok) {
+        alert(data?.error || "Incorrect E-Sign PIN.");
+        return;
       }
 
       const now = new Date();
@@ -208,21 +149,20 @@ export default function PrescriptionPage() {
       setSignedAt(now.toLocaleString());
       setPrescriptionId(pid);
       setSignedSnapshot(prescriptionSnapshot);
-      setOtp("");
-      setOtpSent(false);
-      setVerificationId("");
+      setEsignPin("");
+
       alert("Prescription electronically signed successfully.");
     } catch (error) {
       console.error(error);
-      alert(error instanceof Error ? error.message : "OTP verification failed.");
+      alert("Unable to verify E-Sign PIN.");
     } finally {
-      setOtpBusy(false);
+      setPinBusy(false);
     }
   }
 
   function handlePrint() {
     if (!isESigned) {
-      alert("Please e-sign the prescription with OTP before Print / PDF.");
+      alert("Please verify E-Sign PIN before Print / PDF.");
       return;
     }
     window.print();
@@ -356,9 +296,7 @@ export default function PrescriptionPage() {
     setAdvice("");
     setFollowUp("");
     setSavedMessage("");
-    setOtp("");
-    setVerificationId("");
-    setOtpSent(false);
+    setEsignPin("");
     setSignedAt("");
     setPrescriptionId("");
     setSignedSnapshot("");
@@ -392,41 +330,41 @@ export default function PrescriptionPage() {
           {savedMessage}
         </div>
       )}
-
-      <div id="esign-recaptcha" />
-
       <section className="no-print" style={s.card}>
         <h2 style={{ marginTop: 0 }}>E-Sign Prescription</h2>
         <div style={{ color: "#475569", marginBottom: 12 }}>
-          OTP verification on registered doctor mobile
+          Secure doctor PIN verification — no SMS required
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-          <button style={s.primary} onClick={sendESignOtp} disabled={otpBusy}>
-            {otpBusy ? "Please wait..." : "Send OTP"}
-          </button>
+          <input
+            style={{ ...s.input, maxWidth: 210 }}
+            type="password"
+            inputMode="numeric"
+            autoComplete="off"
+            value={esignPin}
+            placeholder="8-digit E-Sign PIN"
+            onChange={(e) =>
+              setEsignPin(e.target.value.replace(/\D/g, "").slice(0, 8))
+            }
+          />
 
-          {otpSent && (
-            <>
-              <input
-                style={{ ...s.input, maxWidth: 180 }}
-                value={otp}
-                inputMode="numeric"
-                placeholder="6-digit OTP"
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              />
-              <button style={s.primary} onClick={verifyAndESign} disabled={otpBusy}>
-                Verify & E-Sign
-              </button>
-            </>
-          )}
+          <button
+            style={s.primary}
+            onClick={verifyPinAndESign}
+            disabled={pinBusy}
+          >
+            {pinBusy ? "Verifying..." : "Verify PIN & E-Sign"}
+          </button>
 
           {isESigned && (
             <strong style={{ color: "#15803d" }}>Electronically Signed ✓</strong>
           )}
 
           {!isESigned && signedSnapshot && (
-            <strong style={{ color: "#b45309" }}>Prescription edited — re-sign required</strong>
+            <strong style={{ color: "#b45309" }}>
+              Prescription edited — re-sign required
+            </strong>
           )}
         </div>
       </section>
@@ -563,7 +501,7 @@ export default function PrescriptionPage() {
               ))
             ) : (
               <div style={s.empty}>
-                No exact medicine found. Use â€œCustom Medicineâ€.
+                No exact medicine found. Use “Custom Medicine”.
               </div>
             )}
           </div>
