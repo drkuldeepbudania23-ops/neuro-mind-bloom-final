@@ -86,5 +86,39 @@ export const psychiatryBrands: PsychiatryBrand[] = [
   { brand:"Clonotril 0.5", generic:"Clonazepam", strength:"0.5 mg", company:"Torrent", category:"Anxiolytic" },
   { brand:"Clonotril 1", generic:"Clonazepam", strength:"1 mg", company:"Torrent", category:"Anxiolytic" },
   { brand:"Clonotril 2", generic:"Clonazepam", strength:"2 mg", company:"Torrent", category:"Anxiolytic" },
-  { brand:"Esperal 250", generic:"Disulfiram", strength:"250 mg", company:"Torrent", category:"Alcohol de-addiction" }
+  { brand:"Esperal 250", generic:"Disulfiram", strength:"250 mg", company:"Torrent", category:"Alcohol de-addiction" },
+
+  // Tobacco cessation / nicotine replacement (brand-first search)
+  { brand:"Champix 0.5", generic:"Varenicline", strength:"0.5 mg", company:"Pfizer", category:"Tobacco cessation" },
+  { brand:"Champix 1", generic:"Varenicline", strength:"1 mg", company:"Pfizer", category:"Tobacco cessation" },
+  { brand:"Nicotex Gum 2", generic:"Nicotine polacrilex gum", strength:"2 mg", company:"Cipla Health", category:"Nicotine replacement therapy" },
+  { brand:"Nicotex Gum 4", generic:"Nicotine polacrilex gum", strength:"4 mg", company:"Cipla Health", category:"Nicotine replacement therapy" },
+  { brand:"Nicotex Patch 7", generic:"Nicotine transdermal patch", strength:"7 mg/24 h", company:"Cipla Health", category:"Nicotine replacement therapy" },
+  { brand:"Nicotex Patch 14", generic:"Nicotine transdermal patch", strength:"14 mg/24 h", company:"Cipla Health", category:"Nicotine replacement therapy" },
+  { brand:"Nicotex Patch 21", generic:"Nicotine transdermal patch", strength:"21 mg/24 h", company:"Cipla Health", category:"Nicotine replacement therapy" },
+  { brand:"Nicotex Lozenge 1", generic:"Nicotine lozenge", strength:"1 mg", company:"Cipla Health", category:"Nicotine replacement therapy" },
+  { brand:"Nicotex Lozenge 2", generic:"Nicotine lozenge", strength:"2 mg", company:"Cipla Health", category:"Nicotine replacement therapy" },
+
+  // Long-acting / depot antipsychotics
+  { brand:"Haldol Decanoate", generic:"Haloperidol decanoate injection", strength:"50 mg/mL", company:"Janssen", category:"LAI / depot antipsychotic" },
+  { brand:"Modecate", generic:"Fluphenazine decanoate injection", strength:"25 mg/mL", company:"Brand varies by market", category:"LAI / depot antipsychotic" },
+  { brand:"Fluanxol Depot", generic:"Flupentixol decanoate injection", strength:"20 mg/mL", company:"Lundbeck", category:"LAI / depot antipsychotic" },
+  { brand:"Clopixol Depot", generic:"Zuclopenthixol decanoate injection", strength:"200 mg/mL", company:"Lundbeck", category:"LAI / depot antipsychotic" },
+  { brand:"Risperdal Consta 25", generic:"Risperidone long-acting injection", strength:"25 mg", company:"Janssen", category:"LAI / depot antipsychotic" },
+  { brand:"Risperdal Consta 37.5", generic:"Risperidone long-acting injection", strength:"37.5 mg", company:"Janssen", category:"LAI / depot antipsychotic" },
+  { brand:"Risperdal Consta 50", generic:"Risperidone long-acting injection", strength:"50 mg", company:"Janssen", category:"LAI / depot antipsychotic" },
+  { brand:"Invega Sustenna", generic:"Paliperidone palmitate injection", strength:"monthly prefilled syringe", company:"Janssen", category:"LAI / depot antipsychotic" },
+  { brand:"Invega Trinza", generic:"Paliperidone palmitate 3-month injection", strength:"3-month prefilled syringe", company:"Janssen", category:"LAI / depot antipsychotic" },
+  { brand:"ZypAdhera", generic:"Olanzapine pamoate long-acting injection", strength:"210/300/405 mg", company:"Lilly", category:"LAI / depot antipsychotic" },
+  { brand:"Abilify Maintena", generic:"Aripiprazole monohydrate long-acting injection", strength:"300/400 mg", company:"Otsuka", category:"LAI / depot antipsychotic" },
+
+  // Acute psychiatric and benzodiazepine injections
+  { brand:"Serenace Injection", generic:"Haloperidol injection", strength:"5 mg/mL", company:"RPG Life Sciences", category:"Psychiatric injection" },
+  { brand:"Zyprexa IM", generic:"Olanzapine IM injection", strength:"10 mg/vial", company:"Lilly", category:"Psychiatric injection" },
+  { brand:"Largactil Injection", generic:"Chlorpromazine injection", strength:"25 mg/mL", company:"Brand varies by market", category:"Psychiatric injection" },
+  { brand:"Phenergan Injection", generic:"Promethazine injection", strength:"25 mg/mL", company:"Brand varies by market", category:"Psychiatric adjunct injection" },
+  { brand:"Ativan Injection", generic:"Lorazepam injection", strength:"2/4 mg/mL", company:"Brand varies by market", category:"Benzodiazepine injection" },
+  { brand:"Calmpose Injection", generic:"Diazepam injection", strength:"5 mg/mL", company:"Sun Pharma", category:"Benzodiazepine injection" },
+  { brand:"Mezolam Injection", generic:"Midazolam injection", strength:"1/5 mg/mL", company:"Neon Laboratories", category:"Benzodiazepine injection" },
+
 ];

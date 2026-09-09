@@ -1,0 +1,23 @@
+NEURO MIND BLOOM - GOOGLE SEO SETUP
+Updated: 09 Sep 2026
+
+Included in this build:
+- India-focused SEO title and description
+- Canonical URL
+- Google crawler directives
+- Open Graph/Twitter metadata
+- MedicalBusiness + Physician + Online Psychiatry Service structured data
+- India/Rajasthan/Ajmer targeting
+- sitemap.xml route
+- robots.txt route
+
+After deployment:
+1. Open Google Search Console for neuromindbloom.com.
+2. Submit: https://neuromindbloom.com/sitemap.xml
+3. URL Inspection -> https://neuromindbloom.com -> Request indexing.
+4. Also inspect/request indexing for https://neuromindbloom.com/book-appointment
+
+GOOGLE REVIEWS
+Do not publish fabricated/AI-generated patient reviews. Use genuine patient experiences only.
+Google Business Profile -> Ask for reviews / Get more reviews -> Copy review link.
+Once that exact review link is available, it can be added as a Review us on Google button/QR without changing the rest of the site.

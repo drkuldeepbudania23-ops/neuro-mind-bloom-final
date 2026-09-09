@@ -1,4 +1,4 @@
-﻿export type Medicine = {
+export type Medicine = {
   generic: string;
   brands: string[];
   category: string;
@@ -72,7 +72,7 @@ export const medicines: Medicine[] = [
   { generic:"Flupentixol decanoate", brands:["Fluanxol Depot"], category:"LAI antipsychotic", strengths:["20 mg/mL","40 mg/2mL"] },
   { generic:"Zuclopenthixol decanoate", brands:["Clopixol Depot"], category:"LAI antipsychotic", strengths:["200 mg/mL"] },
   { generic:"Risperidone LAI", brands:["Risperdal Consta"], category:"LAI antipsychotic", strengths:["25 mg","37.5 mg","50 mg"] },
-  { generic:"Paliperidone palmitate", brands:["Invega Sustenna","Xeplion","Trinza"], category:"LAI antipsychotic", strengths:["25 mg","50 mg","75 mg","100 mg","150 mg"] },
+  { generic:"Paliperidone palmitate", brands:["Invega Sustenna","Xeplion","Invega Trinza"], category:"LAI antipsychotic", strengths:["monthly and 3-month formulations; strength varies by product"] },
   { generic:"Aripiprazole LAI", brands:["Abilify Maintena","Aristada"], category:"LAI antipsychotic", strengths:["300 mg","400 mg"] },
 
   // MOOD STABILIZERS
@@ -244,7 +244,28 @@ export const medicines: Medicine[] = [
   { generic:"Tadalafil", brands:["Tazzle","Cialis"], category:"PDE5 inhibitor", strengths:["5 mg","10 mg","20 mg"] },
   { generic:"Dapoxetine", brands:["Priligy"], category:"Premature ejaculation", strengths:["30 mg","60 mg"] },
   { generic:"Finasteride", brands:["Finax"], category:"5-alpha reductase inhibitor", strengths:["1 mg","5 mg"] },
-  { generic:"Tamsulosin", brands:["Urimax"], category:"Alpha blocker", strengths:["0.4 mg"] }
+  { generic:"Tamsulosin", brands:["Urimax"], category:"Alpha blocker", strengths:["0.4 mg"] },
+
+  // TOBACCO CESSATION / NICOTINE REPLACEMENT
+  { generic:"Varenicline", brands:["Champix"], category:"Tobacco cessation", strengths:["0.5 mg","1 mg"] },
+  { generic:"Nicotine polacrilex gum", brands:["Nicotex","Nicorette"], category:"Nicotine replacement therapy", strengths:["2 mg","4 mg"] },
+  { generic:"Nicotine transdermal patch", brands:["Nicotex Patch","Nicoderm CQ"], category:"Nicotine replacement therapy", strengths:["7 mg/24 h","14 mg/24 h","21 mg/24 h"] },
+  { generic:"Nicotine lozenge", brands:["Nicotex Lozenge","Nicorette Lozenge"], category:"Nicotine replacement therapy", strengths:["1 mg","2 mg","4 mg"] },
+
+  // ADDITIONAL LONG-ACTING ANTIPSYCHOTIC
+  { generic:"Olanzapine pamoate long-acting injection", brands:["ZypAdhera","Zyprexa Relprevv"], category:"LAI antipsychotic", strengths:["210 mg","300 mg","405 mg"] },
+
+  // ACUTE PSYCHIATRIC / EMERGENCY INJECTIONS
+  { generic:"Haloperidol injection", brands:["Haldol","Serenace Injection"], category:"Psychiatric injection", strengths:["5 mg/mL"] },
+  { generic:"Olanzapine IM injection", brands:["Zyprexa IM"], category:"Psychiatric injection", strengths:["10 mg/vial"] },
+  { generic:"Chlorpromazine injection", brands:["Largactil Injection"], category:"Psychiatric injection", strengths:["25 mg/mL"] },
+  { generic:"Promethazine injection", brands:["Phenergan Injection"], category:"Psychiatric adjunct injection", strengths:["25 mg/mL"] },
+
+  // BENZODIAZEPINE INJECTIONS
+  { generic:"Lorazepam injection", brands:["Ativan Injection"], category:"Benzodiazepine injection", strengths:["2 mg/mL","4 mg/mL"] },
+  { generic:"Diazepam injection", brands:["Calmpose Injection","Valium Injection"], category:"Benzodiazepine injection", strengths:["5 mg/mL"] },
+  { generic:"Midazolam injection", brands:["Mezolam Injection","Dormicum Injection"], category:"Benzodiazepine injection", strengths:["1 mg/mL","5 mg/mL"] },
+
 ];
 
 export const medicineCategories =
