@@ -4,10 +4,10 @@ export default function SeoStructuredData() {
     "@graph": [
       {
         "@type": "MedicalBusiness",
-        "@id": "https://neuromindbloom.com/#clinic",
+        "@id": "https://www.neuromindbloom.com/#clinic",
         name: "Neuro Mind Bloom",
-        url: "https://neuromindbloom.com",
-        image: "https://neuromindbloom.com/dr-kuldeep.png",
+        url: "https://www.neuromindbloom.com",
+        image: "https://www.neuromindbloom.com/dr-kuldeep.png",
         telephone: "+91-9376315331",
         email: "drkuldeepbudania23@gmail.com",
         priceRange: "₹₹",
@@ -22,35 +22,35 @@ export default function SeoStructuredData() {
       },
       {
         "@type": "Physician",
-        "@id": "https://neuromindbloom.com/#doctor",
+        "@id": "https://www.neuromindbloom.com/#doctor",
         name: "Dr. Kuldeep Budania",
         jobTitle: "Psychiatrist",
         description: "MD Psychiatry providing online psychiatric consultation and psychotherapy.",
         medicalSpecialty: "Psychiatric",
-        url: "https://neuromindbloom.com",
-        image: "https://neuromindbloom.com/dr-kuldeep.png",
+        url: "https://www.neuromindbloom.com",
+        image: "https://www.neuromindbloom.com/dr-kuldeep.png",
         telephone: "+91-9376315331",
-        worksFor: { "@id": "https://neuromindbloom.com/#clinic" },
+        worksFor: { "@id": "https://www.neuromindbloom.com/#clinic" },
         areaServed: { "@type": "Country", name: "India" },
         knowsAbout: ["Depression", "Anxiety Disorders", "Obsessive Compulsive Disorder", "Bipolar Disorder", "Schizophrenia", "Addiction Psychiatry", "Sleep Disorders", "Child and Adolescent Psychiatry", "Geriatric Psychiatry", "Psychotherapy"]
       },
       {
         "@type": "Service",
-        "@id": "https://neuromindbloom.com/#online-psychiatry",
+        "@id": "https://www.neuromindbloom.com/#online-psychiatry",
         name: "Online Psychiatry Consultation",
         serviceType: "Online Psychiatry Consultation",
-        provider: { "@id": "https://neuromindbloom.com/#doctor" },
+        provider: { "@id": "https://www.neuromindbloom.com/#doctor" },
         areaServed: { "@type": "Country", name: "India" },
-        offers: { "@type": "Offer", price: "500", priceCurrency: "INR", url: "https://neuromindbloom.com/book-appointment" },
-        availableChannel: { "@type": "ServiceChannel", serviceUrl: "https://neuromindbloom.com/book-appointment" }
+        offers: { "@type": "Offer", price: "500", priceCurrency: "INR", url: "https://www.neuromindbloom.com/book-appointment" },
+        availableChannel: { "@type": "ServiceChannel", serviceUrl: "https://www.neuromindbloom.com/book-appointment" }
       },
       {
         "@type": "WebSite",
-        "@id": "https://neuromindbloom.com/#website",
-        url: "https://neuromindbloom.com",
+        "@id": "https://www.neuromindbloom.com/#website",
+        url: "https://www.neuromindbloom.com",
         name: "Neuro Mind Bloom",
         inLanguage: ["en-IN", "hi-IN"],
-        publisher: { "@id": "https://neuromindbloom.com/#clinic" }
+        publisher: { "@id": "https://www.neuromindbloom.com/#clinic" }
       }
     ]
   };

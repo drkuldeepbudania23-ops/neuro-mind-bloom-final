@@ -3,7 +3,7 @@ import DoctorLoginButton from "./components/DoctorLoginButton";
 import type { Metadata } from "next";
 import "./globals.css";
 
-const siteUrl = "https://neuromindbloom.com";
+const siteUrl = "https://www.neuromindbloom.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     "online mental health consultation India", "psychiatrist Rajasthan", "psychiatrist Ajmer",
     "psychiatrist Jaipur", "psychiatrist Kota", "de addiction psychiatrist Rajasthan",
     "anxiety treatment online India", "depression treatment online India", "OCD psychiatrist India",
-    "addiction psychiatrist India", "psychotherapy online India", "Dr Kuldeep Budania psychiatrist",
+    "addiction psychiatrist India", "psychotherapy online India", "sex specialist India", "sex specialist Ajmer", "sexual health psychiatrist India", "sexual disorders psychiatrist", "performance anxiety treatment", "Dr Kuldeep Budania psychiatrist",
     "Neuro Mind Bloom"
   ],
   alternates: { canonical: siteUrl },
