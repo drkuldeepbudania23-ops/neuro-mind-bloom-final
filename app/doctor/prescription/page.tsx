@@ -56,11 +56,6 @@ export default function PrescriptionPage() {
 
   const [nmbPaymentClearance, setNmbPaymentClearance] =
     useState<any>(null);
-
-  const [nmbEsignPin, setNmbEsignPin] = useState("");
-  const [nmbPinVerified, setNmbPinVerified] =
-    useState(false);
-
   const [patientName, setPatientName] = useState("");
   const [age, setAge] = useState("");
   const [sex, setSex] = useState("");
@@ -79,6 +74,10 @@ export default function PrescriptionPage() {
   const [savedMessage, setSavedMessage] = useState("");
   const [esignPin, setEsignPin] = useState("");
   const [pinBusy, setPinBusy] = useState(false);
+  const [resetPinOpen, setResetPinOpen] = useState(false);
+  const [newEsignPin, setNewEsignPin] = useState("");
+  const [confirmEsignPin, setConfirmEsignPin] = useState("");
+  const [resetPinBusy, setResetPinBusy] = useState(false);
   const [signedAt, setSignedAt] = useState("");
   const [prescriptionId, setPrescriptionId] = useState("");
   const [signedSnapshot, setSignedSnapshot] = useState("");
@@ -236,10 +235,11 @@ export default function PrescriptionPage() {
     try {
       setPinBusy(true);
 
+      const idToken = await auth.currentUser.getIdToken();
       const response = await fetch("/api/esign/verify-pin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin: esignPin.trim() }),
+        body: JSON.stringify({ pin: esignPin.trim(), idToken }),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -270,6 +270,27 @@ export default function PrescriptionPage() {
     } finally {
       setPinBusy(false);
     }
+  }
+
+  async function resetEsignPin() {
+    if (!auth.currentUser) { alert("Doctor login is required."); return; }
+    if (!/^\d{8}$/.test(newEsignPin)) { alert("New E-PIN must be exactly 8 digits."); return; }
+    if (newEsignPin !== confirmEsignPin) { alert("New PIN and Confirm PIN do not match."); return; }
+    try {
+      setResetPinBusy(true);
+      const idToken = await auth.currentUser.getIdToken();
+      const response = await fetch("/api/esign/reset-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: newEsignPin, idToken }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data?.ok) { alert(data?.error || "Unable to reset E-PIN."); return; }
+      setNewEsignPin(""); setConfirmEsignPin(""); setEsignPin(""); setResetPinOpen(false);
+      setSignedAt(""); setPrescriptionId(""); setSignedSnapshot("");
+      alert("E-PIN reset successfully.");
+    } catch (error) { console.error(error); alert("Unable to reset E-PIN."); }
+    finally { setResetPinBusy(false); }
   }
 
   function handlePrint() {
@@ -767,6 +788,11 @@ export default function PrescriptionPage() {
           >
             {pinBusy ? "Verifying..." : "Verify PIN & E-Sign"}
           </button>
+          <button type="button" style={s.secondary}
+            onClick={() => setResetPinOpen((old) => !old)}
+            disabled={pinBusy || resetPinBusy}>
+            {resetPinOpen ? "Cancel Reset" : "Reset E-PIN"}
+          </button>
 
           {isESigned && (
             <strong style={{ color: "#15803d" }}>Electronically Signed ✓</strong>
@@ -778,6 +804,20 @@ export default function PrescriptionPage() {
             </strong>
           )}
         </div>
+        {resetPinOpen && (
+          <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #e2e8f0", display: "grid", gap: 10, maxWidth: 460 }}>
+            <strong>Set New 8-digit E-PIN</strong>
+            <input style={s.input} type="password" inputMode="numeric" autoComplete="new-password"
+              value={newEsignPin} placeholder="New 8-digit E-PIN"
+              onChange={(e) => setNewEsignPin(e.target.value.replace(/\D/g, "").slice(0, 8))} />
+            <input style={s.input} type="password" inputMode="numeric" autoComplete="new-password"
+              value={confirmEsignPin} placeholder="Confirm new E-PIN"
+              onChange={(e) => setConfirmEsignPin(e.target.value.replace(/\D/g, "").slice(0, 8))} />
+            <button type="button" style={s.primary} onClick={resetEsignPin} disabled={resetPinBusy}>
+              {resetPinBusy ? "Resetting..." : "Save New E-PIN"}
+            </button>
+          </div>
+        )}
       </section>
 
       <section style={s.printHeader}>
@@ -1204,115 +1244,14 @@ export default function PrescriptionPage() {
             background: white !important;
           }
 
-          section {
-            break-inside: auto !important;
-            page-break-inside: auto !important;
-          }
-
           @page {
             size: A4;
-            margin: 7mm;
+            margin: 12mm;
           }
         }
       `}</style>
     
-      <div
-        className="no-print"
-        style={{
-          marginTop: 18,
-          padding: 16,
-          border: "1px solid #cbd5e1",
-          borderRadius: 12
-        }}
-      >
-        <b>E-Sign with 8-digit E-PIN</b>
-
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            marginTop: 10,
-            flexWrap: "wrap"
-          }}
-        >
-          <input
-            type="password"
-            inputMode="numeric"
-            maxLength={8}
-            placeholder="8-digit E-PIN"
-            value={nmbEsignPin}
-            onChange={(e) =>
-              setNmbEsignPin(
-                e.target.value.replace(/\D/g, "").slice(0, 8)
-              )
-            }
-            style={{
-              padding: 10,
-              border: "1px solid #cbd5e1",
-              borderRadius: 8
-            }}
-          />
-
-          <button
-            type="button"
-            disabled={!nmbPaymentClearance}
-            onClick={async () => {
-              if (!/^\d{8}$/.test(nmbEsignPin)) {
-                alert("8-digit E-PIN enter karein.");
-                return;
-              }
-
-              const bytes =
-                new TextEncoder().encode(nmbEsignPin);
-
-              const digest =
-                await crypto.subtle.digest(
-                  "SHA-256",
-                  bytes
-                );
-
-              const hash =
-                Array.from(
-                  new Uint8Array(digest)
-                )
-                .map((b) =>
-                  b.toString(16).padStart(2, "0")
-                )
-                .join("");
-
-              if (
-                hash !==
-                "a01be0a4bdae6a5d5cce15622b5ba569c927815d5419e4cbd40741b956d6e709"
-              ) {
-                setNmbPinVerified(false);
-                alert("Incorrect E-PIN");
-                return;
-              }
-
-              setNmbPinVerified(true);
-              setNmbEsignPin("");
-              alert("E-Sign verified");
-            }}
-            style={{
-              padding: "10px 16px",
-              border: 0,
-              borderRadius: 8,
-              background: "#176b87",
-              color: "#fff",
-              fontWeight: 700
-            }}
-          >
-            Verify E-PIN
-          </button>
-
-          {nmbPinVerified && (
-            <strong style={{ color: "#15803d" }}>
-              Electronically Signed ✓
-            </strong>
-          )}
-        </div>
-      </div>
-</main>
+    </main>
   );
 }
 
