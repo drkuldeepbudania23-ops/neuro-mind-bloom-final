@@ -357,36 +357,173 @@ export default function PrescriptionPage() {
 
   const results = useMemo(() => {
     const q = search.trim().toLowerCase();
+
     if (!q) return [];
 
-    const found: Array<{
-      medicine: (typeof medicines)[number];
-      matchedBrand?: string;
-      score: number;
-    }> = [];
+    const brandRows: any[] = [];
 
-    for (const medicine of medicines) {
-      const generic = medicine.generic.toLowerCase();
-      const category = medicine.category.toLowerCase();
-      const strengths = (medicine.strengths || []).join(" ").toLowerCase();
+    medicines.forEach((m: any) => {
 
-      if (generic.includes(q) || category.includes(q) || strengths.includes(q)) {
-        const score = generic === q ? 0 : generic.startsWith(q) ? 1 : 4;
-        found.push({ medicine, score });
-      }
+      const details =
+        Array.isArray(m.brandDetails) &&
+        m.brandDetails.length > 0
 
-      for (const brand of medicine.brands || []) {
-        const b = brand.toLowerCase();
-        if (b.includes(q)) {
-          const score = b === q ? 0 : b.startsWith(q) ? 1 : 3;
-          found.push({ medicine, matchedBrand: brand, score });
-        }
-      }
-    }
+          ? m.brandDetails
 
-    return found
-      .sort((a, b) => a.score - b.score || a.medicine.generic.localeCompare(b.medicine.generic))
-      .slice(0, 60);
+          : (m.brands || []).map((brand: string) => ({
+              name: brand,
+              company: "",
+              strength: "",
+              form: m.form || "",
+            }));
+
+
+      details.forEach((b: any) => {
+
+        const strengths =
+          b.strength
+
+            ? [b.strength]
+
+            : Array.isArray(m.strengths) &&
+              m.strengths.length > 0
+
+              ? m.strengths
+
+              : [""];
+
+
+        strengths.forEach((strength: string) => {
+
+          const company = b.company || "";
+
+          const form =
+            b.form ||
+            m.form ||
+            "";
+
+          /*
+             IMPORTANT:
+
+             Keep old structure so existing addMedicine()
+             continues working unchanged.
+
+             brands[0]    = selected brand
+             strengths[0] = selected strength
+          */
+
+          const row = {
+            ...m,
+
+            brands: [
+              b.name || ""
+            ],
+
+            strengths: [
+              strength || ""
+            ],
+
+            selectedBrand:
+              b.name || "",
+
+            selectedCompany:
+              company,
+
+            selectedStrength:
+              strength || "",
+
+            selectedForm:
+              form,
+
+            company:
+              company,
+
+            form:
+              form
+          };
+
+
+          const searchable = [
+
+            m.generic || "",
+
+            m.category || "",
+
+            b.name || "",
+
+            company,
+
+            strength || "",
+
+            form
+
+          ]
+            .join(" ")
+            .toLowerCase();
+
+
+          if (searchable.includes(q)) {
+
+            brandRows.push(row);
+
+          }
+
+        });
+
+      });
+
+    });
+
+
+    const unique = Array.from(
+
+      new Map(
+
+        brandRows.map((m: any) => [
+
+          [
+
+            m.generic,
+
+            m.brands?.[0],
+
+            m.strengths?.[0],
+
+            m.selectedCompany,
+
+            m.selectedForm
+
+          ]
+
+            .join("|")
+
+            .toLowerCase(),
+
+          m
+
+        ])
+
+      ).values()
+
+    );
+
+
+    return unique
+
+      .sort((a: any,b: any) =>
+
+        `${a.generic} ${a.brands?.[0] || ""} ${a.strengths?.[0] || ""}`
+
+          .localeCompare(
+
+            `${b.generic} ${b.brands?.[0] || ""} ${b.strengths?.[0] || ""}`
+
+          )
+
+      )
+
+      .slice(0,300);
+
   }, [search]);
 
   function addMedicine(
@@ -1357,6 +1494,7 @@ const s: Record<string, React.CSSProperties> = {
     color: "#991b1b",
   },
 };
+
 
 
 
