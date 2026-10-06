@@ -56,6 +56,11 @@ export default function PrescriptionPage() {
 
   const [nmbPaymentClearance, setNmbPaymentClearance] =
     useState<any>(null);
+
+  const [nmbEsignPin, setNmbEsignPin] = useState("");
+  const [nmbPinVerified, setNmbPinVerified] =
+    useState(false);
+
   const [patientName, setPatientName] = useState("");
   const [age, setAge] = useState("");
   const [sex, setSex] = useState("");
@@ -74,10 +79,6 @@ export default function PrescriptionPage() {
   const [savedMessage, setSavedMessage] = useState("");
   const [esignPin, setEsignPin] = useState("");
   const [pinBusy, setPinBusy] = useState(false);
-  const [resetPinOpen, setResetPinOpen] = useState(false);
-  const [newEsignPin, setNewEsignPin] = useState("");
-  const [confirmEsignPin, setConfirmEsignPin] = useState("");
-  const [resetPinBusy, setResetPinBusy] = useState(false);
   const [signedAt, setSignedAt] = useState("");
   const [prescriptionId, setPrescriptionId] = useState("");
   const [signedSnapshot, setSignedSnapshot] = useState("");
@@ -235,11 +236,10 @@ export default function PrescriptionPage() {
     try {
       setPinBusy(true);
 
-      const idToken = await auth.currentUser.getIdToken();
       const response = await fetch("/api/esign/verify-pin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin: esignPin.trim(), idToken }),
+        body: JSON.stringify({ pin: esignPin.trim() }),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -269,49 +269,6 @@ export default function PrescriptionPage() {
       alert("Unable to verify E-Sign PIN.");
     } finally {
       setPinBusy(false);
-    }
-  }
-
-  async function resetEsignPin() {
-    if (!auth.currentUser) {
-      alert("Doctor login is required before resetting E-Sign PIN.");
-      return;
-    }
-    if (!/^\d{8}$/.test(newEsignPin)) {
-      alert("New E-Sign PIN must be exactly 8 digits.");
-      return;
-    }
-    if (newEsignPin !== confirmEsignPin) {
-      alert("New PIN and Confirm PIN do not match.");
-      return;
-    }
-
-    try {
-      setResetPinBusy(true);
-      const idToken = await auth.currentUser.getIdToken();
-      const response = await fetch("/api/esign/reset-pin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin: newEsignPin, idToken }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data?.ok) {
-        alert(data?.error || "Unable to reset E-Sign PIN.");
-        return;
-      }
-      setNewEsignPin("");
-      setConfirmEsignPin("");
-      setEsignPin("");
-      setResetPinOpen(false);
-      setSignedAt("");
-      setPrescriptionId("");
-      setSignedSnapshot("");
-      alert("E-Sign PIN reset successfully. Use the new PIN from now on.");
-    } catch (error) {
-      console.error(error);
-      alert("Unable to reset E-Sign PIN.");
-    } finally {
-      setResetPinBusy(false);
     }
   }
 
@@ -811,15 +768,6 @@ export default function PrescriptionPage() {
             {pinBusy ? "Verifying..." : "Verify PIN & E-Sign"}
           </button>
 
-          <button
-            type="button"
-            style={s.secondary}
-            onClick={() => setResetPinOpen((old) => !old)}
-            disabled={pinBusy || resetPinBusy}
-          >
-            {resetPinOpen ? "Cancel Reset" : "Reset E-PIN"}
-          </button>
-
           {isESigned && (
             <strong style={{ color: "#15803d" }}>Electronically Signed ✓</strong>
           )}
@@ -830,54 +778,6 @@ export default function PrescriptionPage() {
             </strong>
           )}
         </div>
-
-        {resetPinOpen && (
-          <div
-            style={{
-              marginTop: 14,
-              paddingTop: 14,
-              borderTop: "1px solid #e2e8f0",
-              display: "grid",
-              gap: 10,
-              maxWidth: 460
-            }}
-          >
-            <strong>Set New 8-digit E-PIN</strong>
-            <input
-              style={s.input}
-              type="password"
-              inputMode="numeric"
-              autoComplete="new-password"
-              value={newEsignPin}
-              placeholder="New 8-digit E-PIN"
-              onChange={(e) =>
-                setNewEsignPin(e.target.value.replace(/\D/g, "").slice(0, 8))
-              }
-            />
-            <input
-              style={s.input}
-              type="password"
-              inputMode="numeric"
-              autoComplete="new-password"
-              value={confirmEsignPin}
-              placeholder="Confirm new E-PIN"
-              onChange={(e) =>
-                setConfirmEsignPin(e.target.value.replace(/\D/g, "").slice(0, 8))
-              }
-            />
-            <button
-              type="button"
-              style={s.primary}
-              onClick={resetEsignPin}
-              disabled={resetPinBusy}
-            >
-              {resetPinBusy ? "Resetting..." : "Save New E-PIN"}
-            </button>
-            <small style={{ color: "#64748b" }}>
-              Reset is available only while the doctor is logged in.
-            </small>
-          </div>
-        )}
       </section>
 
       <section style={s.printHeader}>
@@ -891,7 +791,7 @@ export default function PrescriptionPage() {
         )}
       </section>
 
-      <section className="print-compact-card" style={s.card}>
+      <section style={s.card}>
         <h2>Patient Details</h2>
 
         <div style={s.grid4}>
@@ -1088,7 +988,7 @@ export default function PrescriptionPage() {
         )}
       </section>
 
-      <section className="print-rx-card" style={s.card}>
+      <section className="rx-editor no-print" style={s.card}>
         <h2>Rx</h2>
 
         {rx.length === 0 && (
@@ -1098,7 +998,7 @@ export default function PrescriptionPage() {
         {rx.map((item, index) => (
           <div key={index} style={s.rxCard}>
             <div style={s.rxTop}>
-              <strong>{index + 1}. {item.brand || item.generic}{item.strength ? ` ${item.strength}` : ""}</strong>
+              <strong>Rx {index + 1}</strong>
 
               <button
                 className="no-print"
@@ -1233,7 +1133,28 @@ export default function PrescriptionPage() {
         ))}
       </section>
 
-      <section className="print-compact-card" style={s.card}>
+      <section className="print-only print-rx-summary" style={s.card}>
+        <h2 style={{ marginTop: 0 }}>Rx</h2>
+        {rx.length === 0 ? (
+          <div>No medicine added.</div>
+        ) : (
+          <div>
+            {rx.map((item, index) => (
+              <div key={index} className="print-rx-row">
+                <strong>{index + 1}. {item.brand || item.generic}{item.strength ? ` ${item.strength}` : ""}</strong>
+                <span>
+                  {[item.dose, item.frequency, item.timing, item.food, item.duration]
+                    .filter(Boolean)
+                    .join(" · ")}
+                  {item.instruction ? ` · ${item.instruction}` : ""}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="print-clinical-tail" style={s.card}>
         <div style={s.grid2}>
           <Field label="Investigations">
             <textarea
@@ -1264,7 +1185,7 @@ export default function PrescriptionPage() {
         </Field>
       </section>
 
-      <section style={s.signature}>
+      <section className="print-signature" style={s.signature}>
         <div>Date: {new Date().toLocaleDateString()}</div>
         <div style={{ textAlign: "right", minWidth: 290 }}>
           {isESigned ? (
@@ -1295,16 +1216,24 @@ export default function PrescriptionPage() {
       </div>
 
       <style jsx global>{`
+        .print-only {
+          display: none;
+        }
+
         @media print {
           .no-print {
             display: none !important;
           }
 
+          .print-only {
+            display: block !important;
+          }
+
           html, body {
-            background: white !important;
+            background: #fff !important;
             margin: 0 !important;
             padding: 0 !important;
-            font-size: 10px !important;
+            font-size: 9.5px !important;
           }
 
           main {
@@ -1314,42 +1243,166 @@ export default function PrescriptionPage() {
             padding: 0 !important;
           }
 
-          .print-compact-card,
-          .print-rx-card {
-            padding: 8px !important;
-            margin-bottom: 7px !important;
-            border-radius: 6px !important;
+          h1, h2, h3, p {
+            margin-top: 0 !important;
+          }
+
+          section {
             break-inside: avoid;
             page-break-inside: avoid;
           }
 
-          .print-compact-card h2,
-          .print-rx-card h2 {
-            margin: 0 0 5px 0 !important;
-            font-size: 14px !important;
+          .print-rx-summary {
+            padding: 6px 8px !important;
+            margin: 5px 0 !important;
+            border-radius: 5px !important;
           }
 
-          .print-rx-card > div {
-            margin-top: 5px !important;
-            padding-top: 5px !important;
+          .print-rx-summary h2 {
+            font-size: 13px !important;
+            margin-bottom: 3px !important;
+          }
+
+          .print-rx-row {
+            display: grid !important;
+            grid-template-columns: minmax(160px, 0.9fr) 1.5fr !important;
+            gap: 8px !important;
+            align-items: baseline !important;
+            padding: 2px 0 !important;
+            border-bottom: 1px dotted #d1d5db;
+            line-height: 1.15 !important;
+          }
+
+          .print-rx-row:last-child {
+            border-bottom: 0;
+          }
+
+          .print-clinical-tail {
+            padding: 6px 8px !important;
+            margin: 5px 0 !important;
+            border-radius: 5px !important;
           }
 
           input, textarea, select {
-            padding: 4px 5px !important;
+            padding: 2px 4px !important;
             min-height: 0 !important;
-            font-size: 10px !important;
+            font-size: 9px !important;
+            line-height: 1.1 !important;
           }
 
           textarea {
-            height: 42px !important;
+            height: 28px !important;
+            min-height: 28px !important;
+          }
+
+          .print-signature {
+            padding: 8px 6px !important;
+            line-height: 1.15 !important;
           }
 
           @page {
-            size: A4;
-            margin: 7mm;
+            size: A4 portrait;
+            margin: 6mm;
           }
         }
       `}</style>
+    
+      <div
+        className="no-print"
+        style={{
+          marginTop: 18,
+          padding: 16,
+          border: "1px solid #cbd5e1",
+          borderRadius: 12
+        }}
+      >
+        <b>E-Sign with 8-digit E-PIN</b>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginTop: 10,
+            flexWrap: "wrap"
+          }}
+        >
+          <input
+            type="password"
+            inputMode="numeric"
+            maxLength={8}
+            placeholder="8-digit E-PIN"
+            value={nmbEsignPin}
+            onChange={(e) =>
+              setNmbEsignPin(
+                e.target.value.replace(/\D/g, "").slice(0, 8)
+              )
+            }
+            style={{
+              padding: 10,
+              border: "1px solid #cbd5e1",
+              borderRadius: 8
+            }}
+          />
+
+          <button
+            type="button"
+            disabled={!nmbPaymentClearance}
+            onClick={async () => {
+              if (!/^\d{8}$/.test(nmbEsignPin)) {
+                alert("8-digit E-PIN enter karein.");
+                return;
+              }
+
+              const bytes =
+                new TextEncoder().encode(nmbEsignPin);
+
+              const digest =
+                await crypto.subtle.digest(
+                  "SHA-256",
+                  bytes
+                );
+
+              const hash =
+                Array.from(
+                  new Uint8Array(digest)
+                )
+                .map((b) =>
+                  b.toString(16).padStart(2, "0")
+                )
+                .join("");
+
+              if (
+                hash !==
+                "a01be0a4bdae6a5d5cce15622b5ba569c927815d5419e4cbd40741b956d6e709"
+              ) {
+                setNmbPinVerified(false);
+                alert("Incorrect E-PIN");
+                return;
+              }
+
+              setNmbPinVerified(true);
+              setNmbEsignPin("");
+              alert("E-Sign verified");
+            }}
+            style={{
+              padding: "10px 16px",
+              border: 0,
+              borderRadius: 8,
+              background: "#176b87",
+              color: "#fff",
+              fontWeight: 700
+            }}
+          >
+            Verify E-PIN
+          </button>
+
+          {nmbPinVerified && (
+            <strong style={{ color: "#15803d" }}>
+              Electronically Signed ✓
+            </strong>
+          )}
+        </div>
+      </div>
 </main>
   );
 }
