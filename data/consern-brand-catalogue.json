@@ -1,0 +1,402 @@
+[
+  {
+    "brand": "AZENAP-10/15/30",
+    "generic": "Oxazepam",
+    "strength": "10/15/30 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "BETAPRO-10/20/40",
+    "generic": "Propranolol",
+    "strength": "10/20/40 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "BETAPRO-DZ",
+    "generic": "Propranolol & Diazepam",
+    "strength": "20 + 2.5 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "BETAPRO 20/40 ET",
+    "generic": "Propranolol & Etizolam",
+    "strength": "20/40 + 0.5 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "BETAPRO-SR 40/60/80",
+    "generic": "Propranolol (SR)",
+    "strength": "40/60/80 mg",
+    "form": "Capsule",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "CLONAX-0.25/0.5/1/2",
+    "generic": "Clonazepam",
+    "strength": "0.25/0.5/1/2 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "CLONAX-MD 0.25/0.5/1/2",
+    "generic": "Clonazepam (Mouth Dissolving)",
+    "strength": "0.25/0.5/1/2 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "CLONAX-M/PLUS/DS/FORTE",
+    "generic": "Clonazepam & Propranolol",
+    "strength": "0.25/0.5 + 10/20 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "COPAX-0.25/0.5",
+    "generic": "Alprazolam",
+    "strength": "0.25/0.5 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "COPAX-SR 0.5/1/1.5/SL-0.5",
+    "generic": "Alprazolam (As SR & SL)",
+    "strength": "0.5/1/1.5 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "ETIZEST-0.25/0.5/1",
+    "generic": "Etizolam",
+    "strength": "0.25/0.5/1 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "ETIZEST-MD 0.25/0.5/1/ER-1.5",
+    "generic": "Etizolam (As MD & ER)",
+    "strength": "0.25/0.5/1/1.5 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "ETIZEST-PLUS/FORTE/DS",
+    "generic": "Etizolam & Escitalopram",
+    "strength": "0.5/1 + 5/10 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "LORAX-0.5/1/2/3",
+    "generic": "Lorazepam",
+    "strength": "0.5/1/2/3 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "SEZAM-5/10/20",
+    "generic": "Clobazam",
+    "strength": "5/10/20 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "TOFISERN-50/100",
+    "generic": "Tofisopam",
+    "strength": "50/100 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Anxiety"
+  },
+  {
+    "brand": "COMBAC-20/40/60",
+    "generic": "Duloxetine",
+    "strength": "20/40/60 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "COMBAC-20-ME",
+    "generic": "Methycolbalamin",
+    "strength": "20 mg + 500 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "COTRIP-10/25/50/75",
+    "generic": "Amitriptyline",
+    "strength": "10/25/50/75",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "COTRIP-H/PLUS/FORTE",
+    "generic": "Amitriptyline & Chlordiazepoxide",
+    "strength": "25 + 5/10",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "COZAC-10/20/40/60/T",
+    "generic": "Fluoxetine",
+    "strength": "10/20/40/60 mg",
+    "form": "Capsule & Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "COZAC-AZ",
+    "generic": "Fluoxetine & Alprazolam",
+    "strength": "20 + 0.25 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "DEPILOX-50/100",
+    "generic": "Amoxapine",
+    "strength": "50/100 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "DESTEYN-ER 50/ER 100",
+    "generic": "Desvenlafaxine (ER)",
+    "strength": "50/100 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "DEXANIL-5/10/20",
+    "generic": "Escitalopram",
+    "strength": "5/10/20",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "DEXANIL-FORTE",
+    "generic": "Escitalopram Oxalate & Clonazepam",
+    "strength": "20 + 0.5 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "DEXANIL-L/M/H/PLUS",
+    "generic": "Escitalopram Oxalate/Escitalopram & Clonazepam",
+    "strength": "5/10 + 0.25/0.5",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "FLUTRAC-M",
+    "generic": "Flupentixol & Melitracen",
+    "strength": "0.5 + 10 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "NASDEP-7.5/15/30/45",
+    "generic": "Mirtazapine",
+    "strength": "7.5/15/30/45 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "NASDEP-MD-7.5/15",
+    "generic": "Mirtazapine(MD)",
+    "strength": "7.5/15 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "OBSENIL-10/25/50/SR-75",
+    "generic": "Clomipramine",
+    "strength": "10/25/50/SR-75 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "OCIVOX-50/100/CR-100",
+    "generic": "Fluvoxamine",
+    "strength": "50/100/SR-100",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "UNIDEP-SR-150/300",
+    "generic": "Bupropion",
+    "strength": "150/300 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "VENORAX-25/37.5/75",
+    "generic": "Venlafaxine",
+    "strength": "25/37.5/75",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "VENORAX-SR-37.5/75/150",
+    "generic": "Venlafaxine(SR)",
+    "strength": "37.5/75/150(SR)",
+    "form": "Tablet & Capsule",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "XEPAR-10/20/30/40",
+    "generic": "Paroxetine",
+    "strength": "10/20/30/40 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "XEPAR-SR-12.5/25/37.5",
+    "generic": "Paroxetine",
+    "strength": "12.5/25/37.5(SR) mg",
+    "form": "Tablet & Capsules",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "XEPAR-SR-PLUS/FORTE",
+    "generic": "Paroxetine(ER) & Clonazepam(IR)",
+    "strength": "12.5/25 + 0.5 mg",
+    "form": "Capsule",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "ZOLINE-25/50",
+    "generic": "Sertraline",
+    "strength": "25/50/100 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Depressants"
+  },
+  {
+    "brand": "AMPICON-50/100/200",
+    "generic": "Amisulpride",
+    "strength": "50/100/200 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Psychotics"
+  },
+  {
+    "brand": "AMPICON-300/400",
+    "generic": "Amisulpride",
+    "strength": "300/400 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Psychotics"
+  },
+  {
+    "brand": "ARIPICON-5/10/15/20/30",
+    "generic": "Amisulpride",
+    "strength": "5/10/15/20/30 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Psychotics"
+  },
+  {
+    "brand": "CONSERN-2.5/5/7.5/10/15/20",
+    "generic": "Olanzapine",
+    "strength": "2.5/5/7.5/10/15/20 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Psychotics"
+  },
+  {
+    "brand": "LURASIC-40/80",
+    "generic": "Lurasidone",
+    "strength": "40/80 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Psychotics"
+  },
+  {
+    "brand": "PSYCLOZE-25/50/100/200",
+    "generic": "Clozapine",
+    "strength": "25/50/100/200 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Psychotics"
+  },
+  {
+    "brand": "PSYQUIT-25/50/100/200/300",
+    "generic": "Quetiapine",
+    "strength": "25/50/100/200/300 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Psychotics"
+  },
+  {
+    "brand": "PSYQUIT-SR-50/100/200",
+    "generic": "Quetiapine (SR)",
+    "strength": "50/100/200 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Psychotics"
+  },
+  {
+    "brand": "RISCON-1/2/3/4",
+    "generic": "Risperidone",
+    "strength": "1/2/3/4",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Psychotics"
+  },
+  {
+    "brand": "RISCON-0.5 MD",
+    "generic": "Risperidone (MD)",
+    "strength": "0.5 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Psychotics"
+  },
+  {
+    "brand": "RISCON-H/PLUS/FORTE",
+    "generic": "Risperidone & Trihexyphenidyl",
+    "strength": "2/3/4 + 2 mg",
+    "form": "Tablet",
+    "company": "Consern Pharma",
+    "category": "Anti-Psychotics"
+  }
+]

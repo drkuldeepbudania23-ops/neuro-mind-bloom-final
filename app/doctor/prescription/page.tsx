@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { medicines } from "../../../data/medicines";
 import { officialBrandRows } from "../../../data/official-brand-catalogue";
+import { consernBrandRows } from "../../../data/consern-brand-catalogue";
 import { psychiatryBrands } from "../../../data/psychiatryBrands";
 import { complaintOptions, diagnosisOptions, diagnosisLabel } from "../../data/psychiatrySearch";
 import { auth, db } from "../../../lib/firebase";
@@ -372,7 +373,15 @@ export default function PrescriptionPage() {
       company: r.company || ""
     }));
 
-    const searchableMedicines: any[] = [...medicines, ...officialMedicines];
+    const consernMedicines: any[] = consernBrandRows.map((r: any) => ({
+      generic:r.generic, category:r.category || "Other",
+      strengths:r.strength ? [r.strength] : [""],
+      brands:[r.brand],
+      brandDetails:[{name:r.brand,company:r.company,strength:r.strength,form:r.form}],
+      form:r.form || "", company:r.company
+    }));
+
+    const searchableMedicines: any[] = [...medicines, ...officialMedicines, ...consernMedicines];
 
     const q = search.trim().toLowerCase();
 
@@ -1512,6 +1521,7 @@ const s: Record<string, React.CSSProperties> = {
     color: "#991b1b",
   },
 };
+
 
 
 
