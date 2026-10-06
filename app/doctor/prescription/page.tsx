@@ -891,7 +891,7 @@ export default function PrescriptionPage() {
         )}
       </section>
 
-      <section style={s.card}>
+      <section className="print-compact-card" style={s.card}>
         <h2>Patient Details</h2>
 
         <div style={s.grid4}>
@@ -1088,7 +1088,7 @@ export default function PrescriptionPage() {
         )}
       </section>
 
-      <section style={s.card}>
+      <section className="print-rx-card" style={s.card}>
         <h2>Rx</h2>
 
         {rx.length === 0 && (
@@ -1098,7 +1098,7 @@ export default function PrescriptionPage() {
         {rx.map((item, index) => (
           <div key={index} style={s.rxCard}>
             <div style={s.rxTop}>
-              <strong>Rx {index + 1}</strong>
+              <strong>{index + 1}. {item.brand || item.generic}{item.strength ? ` ${item.strength}` : ""}</strong>
 
               <button
                 className="no-print"
@@ -1233,7 +1233,7 @@ export default function PrescriptionPage() {
         ))}
       </section>
 
-      <section style={s.card}>
+      <section className="print-compact-card" style={s.card}>
         <div style={s.grid2}>
           <Field label="Investigations">
             <textarea
@@ -1300,13 +1300,53 @@ export default function PrescriptionPage() {
             display: none !important;
           }
 
-          body {
+          html, body {
             background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 10px !important;
+          }
+
+          main {
+            max-width: none !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+
+          .print-compact-card,
+          .print-rx-card {
+            padding: 8px !important;
+            margin-bottom: 7px !important;
+            border-radius: 6px !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+
+          .print-compact-card h2,
+          .print-rx-card h2 {
+            margin: 0 0 5px 0 !important;
+            font-size: 14px !important;
+          }
+
+          .print-rx-card > div {
+            margin-top: 5px !important;
+            padding-top: 5px !important;
+          }
+
+          input, textarea, select {
+            padding: 4px 5px !important;
+            min-height: 0 !important;
+            font-size: 10px !important;
+          }
+
+          textarea {
+            height: 42px !important;
           }
 
           @page {
             size: A4;
-            margin: 12mm;
+            margin: 7mm;
           }
         }
       `}</style>
