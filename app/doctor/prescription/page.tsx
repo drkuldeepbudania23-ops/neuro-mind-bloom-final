@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { medicines } from "../../../data/medicines";
@@ -307,7 +307,7 @@ export default function PrescriptionPage() {
       "Your e-prescription from Neuro Mind Bloom is ready.",
       prescriptionId ? `Prescription ID: ${prescriptionId}` : "",
       "Please find the prescription PDF attached.",
-      "â€” Neuro Mind Bloom"
+      "— Neuro Mind Bloom"
     ].filter(Boolean).join("\n");
 
     // Browsers do not allow silently attaching a local PDF to WhatsApp.
@@ -716,7 +716,7 @@ export default function PrescriptionPage() {
         <div>
           <h1 style={{ margin: 0 }}>E-Prescription</h1>
           <div style={s.sub}>
-            Neuro Mind Bloom Â· Doctor Prescription Module
+            Neuro Mind Bloom · Doctor Prescription Module
           </div>
         </div>
 
@@ -744,7 +744,7 @@ export default function PrescriptionPage() {
       <section className="no-print" style={s.card}>
         <h2 style={{ marginTop: 0 }}>E-Sign Prescription</h2>
         <div style={{ color: "#475569", marginBottom: 12 }}>
-          Secure doctor PIN verification â€” no SMS required
+          Secure doctor PIN verification — no SMS required
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
@@ -769,12 +769,12 @@ export default function PrescriptionPage() {
           </button>
 
           {isESigned && (
-            <strong style={{ color: "#15803d" }}>Electronically Signed âœ“</strong>
+            <strong style={{ color: "#15803d" }}>Electronically Signed ✓</strong>
           )}
 
           {!isESigned && signedSnapshot && (
             <strong style={{ color: "#b45309" }}>
-              Prescription edited â€” re-sign required
+              Prescription edited — re-sign required
             </strong>
           )}
         </div>
@@ -782,8 +782,8 @@ export default function PrescriptionPage() {
 
       <section style={s.printHeader}>
         <h2 style={{ marginBottom: 4 }}>NEURO MIND BLOOM</h2>
-        <strong>Dr. Kuldeep Budania Â· MD Psychiatry</strong>
-        <div>Mental Health Â· De-addiction Â· Sexual Disorders</div>
+        <strong>Dr. Kuldeep Budania · MD Psychiatry</strong>
+        <div>Mental Health · De-addiction · Sexual Disorders</div>
         {isTeleconsultation && (
           <div style={{ fontSize: 10, marginTop: 4, letterSpacing: "0.5px" }}>
             Teleconsultation
@@ -843,7 +843,7 @@ export default function PrescriptionPage() {
         </Field>
 
         <div className="no-print" style={{ marginBottom: 12 }}>
-          <Field label="Diagnosis Search â€” ICD-10 / ICD-11 / clinical keywords">
+          <Field label="Diagnosis Search — ICD-10 / ICD-11 / clinical keywords">
             <input
               style={s.input}
               value={diagnosisSearch}
@@ -949,43 +949,39 @@ export default function PrescriptionPage() {
 
         {search && (
           <div style={s.results}>
-            {psychBrandResults.length > 0 ? (
+            {results.length > 0 ? (
+              results.map((m: any, index: number) => {
+                const brand = m.selectedBrand || m.brands?.[0] || m.generic;
+                const strength = m.selectedStrength || m.strengths?.[0] || "";
+                const company = m.selectedCompany || m.company || m.brandDetails?.[0]?.company || "";
+                const form = m.selectedForm || m.form || m.brandDetails?.[0]?.form || "";
+                return (
+                  <button
+                    key={`${m.generic}-${brand}-${strength}-${company}-${index}`}
+                    style={s.med}
+                    onClick={() => addMedicine(m, brand)}
+                  >
+                    <strong>{brand}{strength ? ` ${strength}` : ""}</strong>
+                    <span>{m.generic}</span>
+                    <small>{[company, form, m.category].filter(Boolean).join(" · ")}</small>
+                  </button>
+                );
+              })
+            ) : psychBrandResults.length > 0 ? (
               psychBrandResults.map((item, index) => (
                 <button
-                  key={`psych-${item.brand}-${item.strength}-${index}`}
+                  key={`${item.brand}-${item.strength}-${index}`}
                   style={s.med}
                   onClick={() => addPsychBrand(item)}
                 >
                   <strong>{item.brand} {item.strength}</strong>
                   <span>{item.generic}</span>
-                  <small>{item.company} Â· {item.category}</small>
-                </button>
-              ))
-            ) : results.length > 0 ? (
-              results.map(({ medicine: m, matchedBrand }, index) => (
-                <button
-                  key={`${m.generic}-${matchedBrand || "generic"}-${index}`}
-                  style={s.med}
-                  onClick={() => addMedicine(m, matchedBrand)}
-                >
-                  <strong>{matchedBrand || m.generic}</strong>
-                  {matchedBrand && <span>Salt: {m.generic}</span>}
-                  <span>{m.category}</span>
-
-                  {!matchedBrand && !!m.brands?.length && (
-                    <small>Brands: {m.brands.join(", ")}</small>
-                  )}
-
-                  {!!m.strengths?.length && (
-                    <small>
-                      Strengths: {m.strengths.join(", ")}
-                    </small>
-                  )}
+                  <small>{item.company} · {item.category}</small>
                 </button>
               ))
             ) : (
               <div style={s.empty}>
-                No exact medicine found. Use â€œCustom Medicineâ€.
+                No exact medicine found. Use “Custom Medicine”.
               </div>
             )}
           </div>
