@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { medicines } from "../../../data/medicines";
@@ -51,6 +51,14 @@ const blankRx = (): RxItem => ({
 });
 
 export default function PrescriptionPage() {
+
+  const [nmbPaymentClearance, setNmbPaymentClearance] =
+    useState<any>(null);
+
+  const [nmbEsignPin, setNmbEsignPin] = useState("");
+  const [nmbPinVerified, setNmbPinVerified] =
+    useState(false);
+
   const [patientName, setPatientName] = useState("");
   const [age, setAge] = useState("");
   const [sex, setSex] = useState("");
@@ -152,6 +160,14 @@ export default function PrescriptionPage() {
     signedSnapshot !== "" && signedSnapshot === prescriptionSnapshot;
 
   useEffect(() => {
+    try {
+      const p =
+        localStorage.getItem("nmb_payment_clearance");
+
+      if (p) {
+        setNmbPaymentClearance(JSON.parse(p));
+      }
+    } catch {}
     const params = new URLSearchParams(window.location.search);
     const appointmentId = params.get("appointmentId") || "";
     const type = (params.get("type") || params.get("mode") || params.get("consultation") || "").toLowerCase();
@@ -289,7 +305,7 @@ export default function PrescriptionPage() {
       "Your e-prescription from Neuro Mind Bloom is ready.",
       prescriptionId ? `Prescription ID: ${prescriptionId}` : "",
       "Please find the prescription PDF attached.",
-      "— Neuro Mind Bloom"
+      "â€” Neuro Mind Bloom"
     ].filter(Boolean).join("\n");
 
     // Browsers do not allow silently attaching a local PDF to WhatsApp.
@@ -475,11 +491,68 @@ export default function PrescriptionPage() {
 
   return (
     <main style={s.page}>
+      {!nmbPaymentClearance && (
+        <div
+          className="no-print"
+          style={{
+            padding: 16,
+            marginBottom: 16,
+            border: "1px solid #f59e0b",
+            borderRadius: 12,
+            background: "#fffbeb"
+          }}
+        >
+          <b>Payment clearance required before E-Prescription.</b>
+
+          <div style={{ marginTop: 10 }}>
+            <button
+              type="button"
+              onClick={() => {
+                window.location.href =
+                  "/doctor/payment?next=/doctor/prescription";
+              }}
+              style={{
+                padding: "10px 16px",
+                border: 0,
+                borderRadius: 8,
+                background: "#176b87",
+                color: "#fff",
+                fontWeight: 700
+              }}
+            >
+              Payment / Discount / Exempt
+            </button>
+          </div>
+        </div>
+      )}
+
+      {nmbPaymentClearance && (
+        <div
+          className="no-print"
+          style={{
+            padding: 12,
+            marginBottom: 16,
+            border: "1px solid #bbf7d0",
+            borderRadius: 10,
+            background: "#f0fdf4"
+          }}
+        >
+          <b>Payment Clearance:</b>{" "}
+          {nmbPaymentClearance.status}
+          {" | ₹"}
+          {nmbPaymentClearance.finalAmount}
+
+          {nmbPaymentClearance.reason
+            ? " | " + nmbPaymentClearance.reason
+            : ""}
+        </div>
+      )}
+
       <div className="no-print" style={s.topbar}>
         <div>
           <h1 style={{ margin: 0 }}>E-Prescription</h1>
           <div style={s.sub}>
-            Neuro Mind Bloom · Doctor Prescription Module
+            Neuro Mind Bloom Â· Doctor Prescription Module
           </div>
         </div>
 
@@ -507,7 +580,7 @@ export default function PrescriptionPage() {
       <section className="no-print" style={s.card}>
         <h2 style={{ marginTop: 0 }}>E-Sign Prescription</h2>
         <div style={{ color: "#475569", marginBottom: 12 }}>
-          Secure doctor PIN verification — no SMS required
+          Secure doctor PIN verification â€” no SMS required
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
@@ -532,12 +605,12 @@ export default function PrescriptionPage() {
           </button>
 
           {isESigned && (
-            <strong style={{ color: "#15803d" }}>Electronically Signed ✓</strong>
+            <strong style={{ color: "#15803d" }}>Electronically Signed âœ“</strong>
           )}
 
           {!isESigned && signedSnapshot && (
             <strong style={{ color: "#b45309" }}>
-              Prescription edited — re-sign required
+              Prescription edited â€” re-sign required
             </strong>
           )}
         </div>
@@ -545,8 +618,8 @@ export default function PrescriptionPage() {
 
       <section style={s.printHeader}>
         <h2 style={{ marginBottom: 4 }}>NEURO MIND BLOOM</h2>
-        <strong>Dr. Kuldeep Budania · MD Psychiatry</strong>
-        <div>Mental Health · De-addiction · Sexual Disorders</div>
+        <strong>Dr. Kuldeep Budania Â· MD Psychiatry</strong>
+        <div>Mental Health Â· De-addiction Â· Sexual Disorders</div>
         {isTeleconsultation && (
           <div style={{ fontSize: 10, marginTop: 4, letterSpacing: "0.5px" }}>
             Teleconsultation
@@ -606,7 +679,7 @@ export default function PrescriptionPage() {
         </Field>
 
         <div className="no-print" style={{ marginBottom: 12 }}>
-          <Field label="Diagnosis Search — ICD-10 / ICD-11 / clinical keywords">
+          <Field label="Diagnosis Search â€” ICD-10 / ICD-11 / clinical keywords">
             <input
               style={s.input}
               value={diagnosisSearch}
@@ -721,7 +794,7 @@ export default function PrescriptionPage() {
                 >
                   <strong>{item.brand} {item.strength}</strong>
                   <span>{item.generic}</span>
-                  <small>{item.company} · {item.category}</small>
+                  <small>{item.company} Â· {item.category}</small>
                 </button>
               ))
             ) : results.length > 0 ? (
@@ -748,7 +821,7 @@ export default function PrescriptionPage() {
               ))
             ) : (
               <div style={s.empty}>
-                No exact medicine found. Use “Custom Medicine”.
+                No exact medicine found. Use â€œCustom Medicineâ€.
               </div>
             )}
           </div>
@@ -977,7 +1050,104 @@ export default function PrescriptionPage() {
           }
         }
       `}</style>
-    </main>
+    
+      <div
+        className="no-print"
+        style={{
+          marginTop: 18,
+          padding: 16,
+          border: "1px solid #cbd5e1",
+          borderRadius: 12
+        }}
+      >
+        <b>E-Sign with 8-digit E-PIN</b>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginTop: 10,
+            flexWrap: "wrap"
+          }}
+        >
+          <input
+            type="password"
+            inputMode="numeric"
+            maxLength={8}
+            placeholder="8-digit E-PIN"
+            value={nmbEsignPin}
+            onChange={(e) =>
+              setNmbEsignPin(
+                e.target.value.replace(/\D/g, "").slice(0, 8)
+              )
+            }
+            style={{
+              padding: 10,
+              border: "1px solid #cbd5e1",
+              borderRadius: 8
+            }}
+          />
+
+          <button
+            type="button"
+            disabled={!nmbPaymentClearance}
+            onClick={async () => {
+              if (!/^\d{8}$/.test(nmbEsignPin)) {
+                alert("8-digit E-PIN enter karein.");
+                return;
+              }
+
+              const bytes =
+                new TextEncoder().encode(nmbEsignPin);
+
+              const digest =
+                await crypto.subtle.digest(
+                  "SHA-256",
+                  bytes
+                );
+
+              const hash =
+                Array.from(
+                  new Uint8Array(digest)
+                )
+                .map((b) =>
+                  b.toString(16).padStart(2, "0")
+                )
+                .join("");
+
+              if (
+                hash !==
+                "a01be0a4bdae6a5d5cce15622b5ba569c927815d5419e4cbd40741b956d6e709"
+              ) {
+                setNmbPinVerified(false);
+                alert("Incorrect E-PIN");
+                return;
+              }
+
+              setNmbPinVerified(true);
+              setNmbEsignPin("");
+              alert("E-Sign verified");
+            }}
+            style={{
+              padding: "10px 16px",
+              border: 0,
+              borderRadius: 8,
+              background: "#176b87",
+              color: "#fff",
+              fontWeight: 700
+            }}
+          >
+            Verify E-PIN
+          </button>
+
+          {nmbPinVerified && (
+            <strong style={{ color: "#15803d" }}>
+              Electronically Signed ✓
+            </strong>
+          )}
+        </div>
+      </div>
+</main>
   );
 }
 
@@ -1187,6 +1357,7 @@ const s: Record<string, React.CSSProperties> = {
     color: "#991b1b",
   },
 };
+
 
 
 
