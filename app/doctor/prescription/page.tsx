@@ -988,7 +988,7 @@ export default function PrescriptionPage() {
         )}
       </section>
 
-      <section className="rx-editor no-print" style={s.card}>
+      <section style={s.card}>
         <h2>Rx</h2>
 
         {rx.length === 0 && (
@@ -1133,28 +1133,7 @@ export default function PrescriptionPage() {
         ))}
       </section>
 
-      <section className="print-only print-rx-summary" style={s.card}>
-        <h2 style={{ marginTop: 0 }}>Rx</h2>
-        {rx.length === 0 ? (
-          <div>No medicine added.</div>
-        ) : (
-          <div>
-            {rx.map((item, index) => (
-              <div key={index} className="print-rx-row">
-                <strong>{index + 1}. {item.brand || item.generic}{item.strength ? ` ${item.strength}` : ""}</strong>
-                <span>
-                  {[item.dose, item.frequency, item.timing, item.food, item.duration]
-                    .filter(Boolean)
-                    .join(" · ")}
-                  {item.instruction ? ` · ${item.instruction}` : ""}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="print-clinical-tail" style={s.card}>
+      <section style={s.card}>
         <div style={s.grid2}>
           <Field label="Investigations">
             <textarea
@@ -1185,7 +1164,7 @@ export default function PrescriptionPage() {
         </Field>
       </section>
 
-      <section className="print-signature" style={s.signature}>
+      <section style={s.signature}>
         <div>Date: {new Date().toLocaleDateString()}</div>
         <div style={{ textAlign: "right", minWidth: 290 }}>
           {isESigned ? (
@@ -1216,93 +1195,23 @@ export default function PrescriptionPage() {
       </div>
 
       <style jsx global>{`
-        .print-only {
-          display: none;
-        }
-
         @media print {
           .no-print {
             display: none !important;
           }
 
-          .print-only {
-            display: block !important;
-          }
-
-          html, body {
-            background: #fff !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            font-size: 9.5px !important;
-          }
-
-          main {
-            max-width: none !important;
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-
-          h1, h2, h3, p {
-            margin-top: 0 !important;
+          body {
+            background: white !important;
           }
 
           section {
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-
-          .print-rx-summary {
-            padding: 6px 8px !important;
-            margin: 5px 0 !important;
-            border-radius: 5px !important;
-          }
-
-          .print-rx-summary h2 {
-            font-size: 13px !important;
-            margin-bottom: 3px !important;
-          }
-
-          .print-rx-row {
-            display: grid !important;
-            grid-template-columns: minmax(160px, 0.9fr) 1.5fr !important;
-            gap: 8px !important;
-            align-items: baseline !important;
-            padding: 2px 0 !important;
-            border-bottom: 1px dotted #d1d5db;
-            line-height: 1.15 !important;
-          }
-
-          .print-rx-row:last-child {
-            border-bottom: 0;
-          }
-
-          .print-clinical-tail {
-            padding: 6px 8px !important;
-            margin: 5px 0 !important;
-            border-radius: 5px !important;
-          }
-
-          input, textarea, select {
-            padding: 2px 4px !important;
-            min-height: 0 !important;
-            font-size: 9px !important;
-            line-height: 1.1 !important;
-          }
-
-          textarea {
-            height: 28px !important;
-            min-height: 28px !important;
-          }
-
-          .print-signature {
-            padding: 8px 6px !important;
-            line-height: 1.15 !important;
+            break-inside: auto !important;
+            page-break-inside: auto !important;
           }
 
           @page {
-            size: A4 portrait;
-            margin: 6mm;
+            size: A4;
+            margin: 7mm;
           }
         }
       `}</style>
