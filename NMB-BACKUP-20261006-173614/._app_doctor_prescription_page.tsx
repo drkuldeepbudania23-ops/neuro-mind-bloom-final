@@ -2,12 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { medicines } from "../../../data/medicines";
-import { officialBrandRows } from "../../../data/official-brand-catalogue";
-import { consernBrandRows } from "../../../data/consern-brand-catalogue";
 import { psychiatryBrands } from "../../../data/psychiatryBrands";
 import { complaintOptions, diagnosisOptions, diagnosisLabel } from "../../data/psychiatrySearch";
 import { auth, db } from "../../../lib/firebase";
-import { addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 type RxItem = {
   generic: string;
   brand: string;
@@ -53,14 +51,6 @@ const blankRx = (): RxItem => ({
 });
 
 export default function PrescriptionPage() {
-
-  const [nmbPaymentClearance, setNmbPaymentClearance] =
-    useState<any>(null);
-
-  const [nmbEsignPin, setNmbEsignPin] = useState("");
-  const [nmbPinVerified, setNmbPinVerified] =
-    useState(false);
-
   const [patientName, setPatientName] = useState("");
   const [age, setAge] = useState("");
   const [sex, setSex] = useState("");
@@ -162,14 +152,6 @@ export default function PrescriptionPage() {
     signedSnapshot !== "" && signedSnapshot === prescriptionSnapshot;
 
   useEffect(() => {
-    try {
-      const p =
-        localStorage.getItem("nmb_payment_clearance");
-
-      if (p) {
-        setNmbPaymentClearance(JSON.parse(p));
-      }
-    } catch {}
     const params = new URLSearchParams(window.location.search);
     const appointmentId = params.get("appointmentId") || "";
     const type = (params.get("type") || params.get("mode") || params.get("consultation") || "").toLowerCase();
@@ -262,9 +244,8 @@ export default function PrescriptionPage() {
       setPrescriptionId(pid);
       setSignedSnapshot(prescriptionSnapshot);
       setEsignPin("");
-      await persistPrescription(now.toLocaleString(), pid);
 
-      alert("Prescription electronically signed successfully and patient record saved.");
+      alert("Prescription electronically signed successfully.");
     } catch (error) {
       console.error(error);
       alert("Unable to verify E-Sign PIN.");
@@ -359,199 +340,37 @@ export default function PrescriptionPage() {
   }
 
   const results = useMemo(() => {
-    const officialMedicines: any[] = officialBrandRows.map((r: any) => ({
-      generic: r.generic,
-      category: r.category || "Other",
-      strengths: r.strength ? [r.strength] : [""],
-      brands: [r.brand],
-      brandDetails: [{
-        name: r.brand,
-        company: r.company,
-        strength: r.strength,
-        form: r.form
-      }],
-      form: r.form || "",
-      company: r.company || ""
-    }));
-
-    const consernMedicines: any[] = consernBrandRows.map((r: any) => ({
-      generic:r.generic, category:r.category || "Other",
-      strengths:r.strength ? [r.strength] : [""],
-      brands:[r.brand],
-      brandDetails:[{name:r.brand,company:r.company,strength:r.strength,form:r.form}],
-      form:r.form || "", company:r.company
-    }));
-
-    const searchableMedicines: any[] = [...medicines, ...officialMedicines, ...consernMedicines];
-
     const q = search.trim().toLowerCase();
-
     if (!q) return [];
 
-    const brandRows: any[] = [];
-
-    searchableMedicines.forEach((m: any) => {
-
-      const details =
-        Array.isArray(m.brandDetails) &&
-        m.brandDetails.length > 0
-
-          ? m.brandDetails
-
-          : (m.brands || []).map((brand: string) => ({
-              name: brand,
-              company: "",
-              strength: "",
-              form: m.form || "",
-            }));
-
-
-      details.forEach((b: any) => {
-
-        const strengths =
-          b.strength
-
-            ? [b.strength]
-
-            : Array.isArray(m.strengths) &&
-              m.strengths.length > 0
-
-              ? m.strengths
-
-              : [""];
-
-
-        strengths.forEach((strength: string) => {
-
-          const company = b.company || "";
-
-          const form =
-            b.form ||
-            m.form ||
-            "";
-
-          /*
-             IMPORTANT:
-
-             Keep old structure so existing addMedicine()
-             continues working unchanged.
-
-             brands[0]    = selected brand
-             strengths[0] = selected strength
-          */
-
-          const row = {
-            ...m,
-
-            brands: [
-              b.name || ""
-            ],
-
-            strengths: [
-              strength || ""
-            ],
-
-            selectedBrand:
-              b.name || "",
-
-            selectedCompany:
-              company,
-
-            selectedStrength:
-              strength || "",
-
-            selectedForm:
-              form,
-
-            company:
-              company,
-
-            form:
-              form
-          };
-
-
-          const searchable = [
-
-            m.generic || "",
-
-            m.category || "",
-
-            b.name || "",
-
-            company,
-
-            strength || "",
-
-            form
-
-          ]
-            .join(" ")
-            .toLowerCase();
-
-
-          if (searchable.includes(q)) {
-
-            brandRows.push(row);
-
-          }
-
-        });
-
-      });
-
-    });
-
-
-    const unique = Array.from(
-
-      new Map(
-
-        brandRows.map((m: any) => [
-
-          [
-
-            m.generic,
-
-            m.brands?.[0],
-
-            m.strengths?.[0],
-
-            m.selectedCompany,
-
-            m.selectedForm
-
-          ]
-
-            .join("|")
-
-            .toLowerCase(),
-
-          m
-
-        ])
-
-      ).values()
-
-    );
-
-
-    return unique
-
-      .sort((a: any,b: any) =>
-
-        `${a.generic} ${a.brands?.[0] || ""} ${a.strengths?.[0] || ""}`
-
-          .localeCompare(
-
-            `${b.generic} ${b.brands?.[0] || ""} ${b.strengths?.[0] || ""}`
-
-          )
-
-      )
-
-      .slice(0,300);
-
+    const found: Array<{
+      medicine: (typeof medicines)[number];
+      matchedBrand?: string;
+      score: number;
+    }> = [];
+
+    for (const medicine of medicines) {
+      const generic = medicine.generic.toLowerCase();
+      const category = medicine.category.toLowerCase();
+      const strengths = (medicine.strengths || []).join(" ").toLowerCase();
+
+      if (generic.includes(q) || category.includes(q) || strengths.includes(q)) {
+        const score = generic === q ? 0 : generic.startsWith(q) ? 1 : 4;
+        found.push({ medicine, score });
+      }
+
+      for (const brand of medicine.brands || []) {
+        const b = brand.toLowerCase();
+        if (b.includes(q)) {
+          const score = b === q ? 0 : b.startsWith(q) ? 1 : 3;
+          found.push({ medicine, matchedBrand: brand, score });
+        }
+      }
+    }
+
+    return found
+      .sort((a, b) => a.score - b.score || a.medicine.generic.localeCompare(b.medicine.generic))
+      .slice(0, 60);
   }, [search]);
 
   function addMedicine(
@@ -592,70 +411,43 @@ export default function PrescriptionPage() {
     setRx((old) => old.filter((_, i) => i !== index));
   }
 
-  async function persistPrescription(signedAtOverride?: string, prescriptionIdOverride?: string) {
+  function savePrescription() {
     if (!patientName.trim()) {
       alert("Please enter patient name.");
-      return false;
+      return;
     }
 
-    const finalSignedAt = signedAtOverride || (isESigned ? signedAt : "");
-    const finalPrescriptionId = prescriptionIdOverride || (isESigned ? prescriptionId : "");
     const record: SavedPrescription = {
-      id: finalPrescriptionId || Date.now().toString(),
+      id: Date.now().toString(),
       date: new Date().toLocaleString(),
-      patientName, age, sex, mobile, diagnosis, complaints, history, vitals, rx,
-      investigations, advice, followUp,
-      signedAt: finalSignedAt || undefined,
-      prescriptionId: finalPrescriptionId || undefined,
+      patientName,
+      age,
+      sex,
+      mobile,
+      diagnosis,
+      complaints,
+      history,
+      vitals,
+      rx,
+      investigations,
+      advice,
+      followUp,
+      signedAt: isESigned ? signedAt : undefined,
+      prescriptionId: isESigned ? prescriptionId : undefined,
       isTeleconsultation,
     };
 
-    // Keep an immediate local copy so a network problem never loses the visit.
-    const old = JSON.parse(localStorage.getItem("nmb_prescriptions") || "[]");
-    const deduped = old.filter((x: any) => x.id !== record.id && x.prescriptionId !== record.prescriptionId);
-    localStorage.setItem("nmb_prescriptions", JSON.stringify([record, ...deduped]));
+    const old = JSON.parse(
+      localStorage.getItem("nmb_prescriptions") || "[]"
+    );
 
-    // Also keep a clinic cloud record in Firestore (subject to your Firebase rules).
-    try {
-      if (auth.currentUser) {
-        await addDoc(collection(db, "prescriptions"), {
-          ...record,
-          doctorUid: auth.currentUser.uid,
-          createdAt: serverTimestamp(),
-        });
-      }
-    } catch (error) {
-      console.error("Cloud prescription save failed; local copy retained.", error);
-    }
+    localStorage.setItem(
+      "nmb_prescriptions",
+      JSON.stringify([record, ...old])
+    );
 
     setSavedMessage("Prescription saved successfully.");
     setTimeout(() => setSavedMessage(""), 3000);
-    return true;
-  }
-
-  function savePrescription() {
-    void persistPrescription();
-  }
-
-  function exportPatientRecordsExcel() {
-    const rows: SavedPrescription[] = JSON.parse(localStorage.getItem("nmb_prescriptions") || "[]");
-    if (!rows.length) {
-      alert("No saved patient records found.");
-      return;
-    }
-    const esc = (v: any) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const medicineText = (items: RxItem[]) => (items || []).map((m, i) =>
-      `${i + 1}. ${m.brand || m.generic} ${m.strength} | ${m.dose} ${m.frequency} ${m.timing} ${m.food} | ${m.duration}${m.instruction ? " | " + m.instruction : ""}`
-    ).join("; ");
-    const headers = ["Prescription ID","Date","Patient Name","Age","Sex","Mobile","Complaints","Diagnosis","History / Examination","Vitals / Notes","Medicines","Investigations","Advice","Follow-up","Consultation","E-Signed At"];
-    const body = rows.map(r => [r.prescriptionId || r.id,r.date,r.patientName,r.age,r.sex,r.mobile,r.complaints,r.diagnosis,r.history,r.vitals,medicineText(r.rx),r.investigations,r.advice,r.followUp,r.isTeleconsultation ? "Teleconsultation" : "Clinic",r.signedAt || ""]);
-    const html = `<html><head><meta charset="utf-8"></head><body><table border="1"><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join("")}</tr>${body.map(row=>`<tr>${row.map(v=>`<td>${esc(v)}</td>`).join("")}</tr>`).join("")}</table></body></html>`;
-    const blob = new Blob(["\ufeff", html], { type: "application/vnd.ms-excel;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `NeuroMindBloom_Patient_Records_${new Date().toISOString().slice(0,10)}.xls`;
-    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   }
 
   function clearForm() {
@@ -683,63 +475,6 @@ export default function PrescriptionPage() {
 
   return (
     <main style={s.page}>
-      {!nmbPaymentClearance && (
-        <div
-          className="no-print"
-          style={{
-            padding: 16,
-            marginBottom: 16,
-            border: "1px solid #f59e0b",
-            borderRadius: 12,
-            background: "#fffbeb"
-          }}
-        >
-          <b>Payment clearance required before E-Prescription.</b>
-
-          <div style={{ marginTop: 10 }}>
-            <button
-              type="button"
-              onClick={() => {
-                window.location.href =
-                  "/doctor/payment?next=/doctor/prescription";
-              }}
-              style={{
-                padding: "10px 16px",
-                border: 0,
-                borderRadius: 8,
-                background: "#176b87",
-                color: "#fff",
-                fontWeight: 700
-              }}
-            >
-              Payment / Discount / Exempt
-            </button>
-          </div>
-        </div>
-      )}
-
-      {nmbPaymentClearance && (
-        <div
-          className="no-print"
-          style={{
-            padding: 12,
-            marginBottom: 16,
-            border: "1px solid #bbf7d0",
-            borderRadius: 10,
-            background: "#f0fdf4"
-          }}
-        >
-          <b>Payment Clearance:</b>{" "}
-          {nmbPaymentClearance.status}
-          {" | ₹"}
-          {nmbPaymentClearance.finalAmount}
-
-          {nmbPaymentClearance.reason
-            ? " | " + nmbPaymentClearance.reason
-            : ""}
-        </div>
-      )}
-
       <div className="no-print" style={s.topbar}>
         <div>
           <h1 style={{ margin: 0 }}>E-Prescription</h1>
@@ -754,9 +489,6 @@ export default function PrescriptionPage() {
           </button>
           <button style={s.primary} onClick={savePrescription}>
             Save
-          </button>
-          <button style={s.secondary} onClick={exportPatientRecordsExcel}>
-            Export Patient Records (Excel)
           </button>
           <button style={s.primary} onClick={handlePrint}>
             Print / PDF
@@ -811,7 +543,7 @@ export default function PrescriptionPage() {
         </div>
       </section>
 
-      <section className="no-print" style={s.printHeader}>
+      <section style={s.printHeader}>
         <h2 style={{ marginBottom: 4 }}>NEURO MIND BLOOM</h2>
         <strong>Dr. Kuldeep Budania · MD Psychiatry</strong>
         <div>Mental Health · De-addiction · Sexual Disorders</div>
@@ -822,7 +554,7 @@ export default function PrescriptionPage() {
         )}
       </section>
 
-      <section className="no-print" style={s.card}>
+      <section style={s.card}>
         <h2>Patient Details</h2>
 
         <div style={s.grid4}>
@@ -980,34 +712,38 @@ export default function PrescriptionPage() {
 
         {search && (
           <div style={s.results}>
-            {results.length > 0 ? (
-              results.map((m: any, index: number) => {
-                const brand = m.selectedBrand || m.brands?.[0] || m.generic;
-                const strength = m.selectedStrength || m.strengths?.[0] || "";
-                const company = m.selectedCompany || m.company || m.brandDetails?.[0]?.company || "";
-                const form = m.selectedForm || m.form || m.brandDetails?.[0]?.form || "";
-                return (
-                  <button
-                    key={`${m.generic}-${brand}-${strength}-${company}-${index}`}
-                    style={s.med}
-                    onClick={() => addMedicine(m, brand)}
-                  >
-                    <strong>{brand}{strength ? ` ${strength}` : ""}</strong>
-                    <span>{m.generic}</span>
-                    <small>{[company, form, m.category].filter(Boolean).join(" · ")}</small>
-                  </button>
-                );
-              })
-            ) : psychBrandResults.length > 0 ? (
+            {psychBrandResults.length > 0 ? (
               psychBrandResults.map((item, index) => (
                 <button
-                  key={`${item.brand}-${item.strength}-${index}`}
+                  key={`psych-${item.brand}-${item.strength}-${index}`}
                   style={s.med}
                   onClick={() => addPsychBrand(item)}
                 >
                   <strong>{item.brand} {item.strength}</strong>
                   <span>{item.generic}</span>
                   <small>{item.company} · {item.category}</small>
+                </button>
+              ))
+            ) : results.length > 0 ? (
+              results.map(({ medicine: m, matchedBrand }, index) => (
+                <button
+                  key={`${m.generic}-${matchedBrand || "generic"}-${index}`}
+                  style={s.med}
+                  onClick={() => addMedicine(m, matchedBrand)}
+                >
+                  <strong>{matchedBrand || m.generic}</strong>
+                  {matchedBrand && <span>Salt: {m.generic}</span>}
+                  <span>{m.category}</span>
+
+                  {!matchedBrand && !!m.brands?.length && (
+                    <small>Brands: {m.brands.join(", ")}</small>
+                  )}
+
+                  {!!m.strengths?.length && (
+                    <small>
+                      Strengths: {m.strengths.join(", ")}
+                    </small>
+                  )}
                 </button>
               ))
             ) : (
@@ -1019,7 +755,7 @@ export default function PrescriptionPage() {
         )}
       </section>
 
-      <section className="no-print" style={s.card}>
+      <section style={s.card}>
         <h2>Rx</h2>
 
         {rx.length === 0 && (
@@ -1164,7 +900,7 @@ export default function PrescriptionPage() {
         ))}
       </section>
 
-      <section className="no-print" style={s.card}>
+      <section style={s.card}>
         <div style={s.grid2}>
           <Field label="Investigations">
             <textarea
@@ -1195,7 +931,7 @@ export default function PrescriptionPage() {
         </Field>
       </section>
 
-      <section className="no-print" style={s.signature}>
+      <section style={s.signature}>
         <div>Date: {new Date().toLocaleDateString()}</div>
         <div style={{ textAlign: "right", minWidth: 290 }}>
           {isESigned ? (
@@ -1215,41 +951,9 @@ export default function PrescriptionPage() {
         </div>
       </section>
 
-      <div className="no-print" style={s.medicoLegalWarning}>
+      <div style={s.medicoLegalWarning}>
         NOT VALID FOR MEDICOLEGAL PURPOSE
       </div>
-
-      <section className="print-only prescription-sheet">
-        <header className="rx-letterhead">
-          <div className="rx-logo">NMB</div>
-          <div className="rx-brand"><h1>NEURO MIND BLOOM</h1><div>Mind • Wellness • Recovery</div><div className="rx-web">neuromindbloom.com</div></div>
-          <div className="rx-doctor"><b>Dr. Kuldeep Budania</b><br/>MD Psychiatry<br/>Registration No. 30526{isTeleconsultation && <><br/><span>Teleconsultation</span></>}</div>
-        </header>
-        <div className="rx-rule" />
-        <div className="rx-patient-grid">
-          <div><b>Patient:</b> {patientName}</div><div><b>Age/Sex:</b> {age || "—"} / {sex || "—"}</div>
-          <div><b>Mobile:</b> {mobile || "—"}</div><div><b>Date:</b> {new Date().toLocaleDateString()}</div>
-          <div className="rx-wide"><b>Prescription ID:</b> {prescriptionId || "—"}</div>
-        </div>
-        {complaints && <div className="rx-line"><b>Complaints:</b> {complaints}</div>}
-        {diagnosis && <div className="rx-line"><b>Diagnosis:</b> {diagnosis}</div>}
-        <div className="rx-title">℞</div>
-        <div className="rx-medicines">
-          {rx.map((item, index) => (
-            <div className="rx-med-row" key={`print-${index}`}>
-              <div className="rx-num">{index + 1}.</div>
-              <div><b>{item.brand || item.generic}{item.strength ? ` ${item.strength}` : ""}</b>
-                <div className="rx-directions">{[item.dose,item.frequency,item.timing,item.food,item.duration].filter(Boolean).join(" • ")}{item.instruction ? ` • ${item.instruction}` : ""}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {investigations && <div className="rx-line"><b>Investigations:</b> {investigations}</div>}
-        {advice && <div className="rx-line"><b>Advice:</b> {advice}</div>}
-        {followUp && <div className="rx-line"><b>Follow-up:</b> {followUp}</div>}
-        <div className="rx-footer-sign"><div><b>Electronically verified prescription</b><br/><span>{signedAt}</span></div><div><b>Dr. Kuldeep Budania</b><br/>MD Psychiatry<br/>Reg. No. 30526</div></div>
-        <div className="rx-legal">NOT VALID FOR MEDICOLEGAL PURPOSE</div>
-      </section>
 
       <div className="no-print" style={s.warning}>
         Verify indication, dose, interactions, allergies, pregnancy status,
@@ -1258,25 +962,7 @@ export default function PrescriptionPage() {
       </div>
 
       <style jsx global>{`
-        .print-only { display: none; }
         @media print {
-          html, body { margin: 0 !important; padding: 0 !important; }
-          .print-only { display: block !important; }
-          .prescription-sheet { font-family: Arial, sans-serif; color: #111; font-size: 11pt; width: 100%; box-sizing: border-box; page-break-inside: avoid; }
-          .rx-letterhead { display: grid; grid-template-columns: 54px 1fr auto; gap: 12px; align-items: center; }
-          .rx-logo { width: 48px; height: 48px; border: 2px solid #176b87; border-radius: 50%; display:flex; align-items:center; justify-content:center; font-weight:800; color:#176b87; }
-          .rx-brand h1 { margin: 0; font-size: 20pt; letter-spacing: .4px; color:#176b87; }
-          .rx-brand div { font-size: 9pt; } .rx-web { margin-top:2px; }
-          .rx-doctor { text-align:right; line-height:1.35; font-size:9.5pt; }
-          .rx-rule { border-top: 2px solid #176b87; margin: 7px 0 8px; }
-          .rx-patient-grid { display:grid; grid-template-columns: 1.2fr 1fr; gap:4px 20px; font-size:10pt; } .rx-wide { grid-column:1/-1; }
-          .rx-line { margin-top: 6px; font-size:10pt; line-height:1.35; }
-          .rx-title { font-size:22pt; font-weight:700; margin:7px 0 2px; }
-          .rx-medicines { border-top:1px solid #bbb; border-bottom:1px solid #bbb; padding:4px 0; }
-          .rx-med-row { display:grid; grid-template-columns:24px 1fr; padding:5px 2px; break-inside:avoid; } .rx-num { font-weight:700; }
-          .rx-directions { font-size:9.5pt; margin-top:2px; }
-          .rx-footer-sign { display:flex; justify-content:space-between; align-items:flex-end; margin-top:14px; font-size:9pt; } .rx-footer-sign > div:last-child { text-align:right; }
-          .rx-legal { text-align:center; border-top:1px solid #bbb; margin-top:8px; padding-top:5px; font-size:8pt; font-weight:700; }
           .no-print {
             display: none !important;
           }
@@ -1287,13 +973,11 @@ export default function PrescriptionPage() {
 
           @page {
             size: A4;
-            margin: 9mm 10mm;
+            margin: 12mm;
           }
         }
       `}</style>
-    
-
-</main>
+    </main>
   );
 }
 
@@ -1503,10 +1187,6 @@ const s: Record<string, React.CSSProperties> = {
     color: "#991b1b",
   },
 };
-
-
-
-
 
 
 
