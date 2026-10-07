@@ -6,8 +6,8 @@ import { officialBrandRows } from "../../../data/official-brand-catalogue";
 import { consernBrandRows } from "../../../data/consern-brand-catalogue";
 import { psychiatryBrands } from "../../../data/psychiatryBrands";
 import { complaintOptions, diagnosisOptions, diagnosisLabel } from "../../data/psychiatrySearch";
-import { auth, db } from "../../../lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../../lib/firebase";
+import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 type RxItem = {
   generic: string;
   brand: string;
@@ -38,6 +38,8 @@ type SavedPrescription = {
   signedAt?: string;
   prescriptionId?: string;
   isTeleconsultation?: boolean;
+  paymentClearance?: any;
+  appointmentId?: string;
 };
 
 const blankRx = (): RxItem => ({
@@ -83,6 +85,10 @@ export default function PrescriptionPage() {
   const [prescriptionId, setPrescriptionId] = useState("");
   const [signedSnapshot, setSignedSnapshot] = useState("");
   const [isTeleconsultation, setIsTeleconsultation] = useState(false);
+  const [appointmentId, setAppointmentId] = useState("");
+  const [savedPatients, setSavedPatients] = useState<SavedPrescription[]>([]);
+  const [patientSearch, setPatientSearch] = useState("");
+  const [recordsBusy, setRecordsBusy] = useState(false);
 
   const prescriptionSnapshot = useMemo(
     () =>
@@ -162,30 +168,33 @@ export default function PrescriptionPage() {
     signedSnapshot !== "" && signedSnapshot === prescriptionSnapshot;
 
   useEffect(() => {
-    try {
-      const p =
-        localStorage.getItem("nmb_payment_clearance");
-
-      if (p) {
-        setNmbPaymentClearance(JSON.parse(p));
-      }
-    } catch {}
     const params = new URLSearchParams(window.location.search);
-    const appointmentId = params.get("appointmentId") || "";
+    const apptId = params.get("appointmentId") || "";
+    setAppointmentId(apptId);
+
+    try {
+      const paymentKey = apptId
+        ? `nmb_payment_clearance:${apptId}`
+        : "nmb_payment_clearance:walkin";
+      const p = localStorage.getItem(paymentKey);
+      setNmbPaymentClearance(p ? JSON.parse(p) : null);
+    } catch {
+      setNmbPaymentClearance(null);
+    }
+
     const type = (params.get("type") || params.get("mode") || params.get("consultation") || "").toLowerCase();
     const tele =
       params.get("teleconsultation") === "1" ||
       type === "video" ||
-      type === "teleconsultation" ||
-      Boolean(appointmentId);
+      type === "teleconsultation";
     setIsTeleconsultation(tele);
 
-    if (!appointmentId) return;
+    if (!apptId) return;
 
     let active = true;
     (async () => {
       try {
-        const snap = await getDoc(doc(db, "appointments", appointmentId));
+        const snap = await getDoc(doc(db, "appointments", apptId));
         if (!active || !snap.exists()) return;
         const a = snap.data() as any;
         setPatientName(String(a.patientName || a.name || ""));
@@ -193,15 +202,13 @@ export default function PrescriptionPage() {
         setSex(String(a.gender || a.sex || ""));
         setMobile(String(a.mobile || ""));
 
-        // Booking may contain bilingual preset complaints (Hindi / English).
-        // E-prescription keeps recognized preset complaints in English only.
         const rawConcern = String(a.concern || "").trim();
         if (rawConcern) {
           const englishConcern = rawConcern
             .split(";")
             .map((part: string) => {
               const bits = part.trim().split(" / ");
-              return (bits.length > 1 ? bits[bits.length - 1] : "").trim();
+              return (bits.length > 1 ? bits[bits.length - 1] : part).trim();
             })
             .filter(Boolean)
             .join("; ");
@@ -217,29 +224,124 @@ export default function PrescriptionPage() {
     };
   }, []);
 
+  async function refreshSavedPatients() {
+    setRecordsBusy(true);
+    let local: SavedPrescription[] = [];
+    try {
+      local = JSON.parse(localStorage.getItem("nmb_prescriptions") || "[]");
+    } catch {}
+
+    try {
+      const snap = await getDocs(collection(db, "patientRecords"));
+      const cloud = snap.docs.map((d) => d.data() as SavedPrescription);
+      const merged = [...cloud, ...local].filter(
+        (item, index, arr) => arr.findIndex((x) => x.id === item.id) === index
+      );
+      merged.sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+      setSavedPatients(merged);
+    } catch {
+      setSavedPatients(local);
+    } finally {
+      setRecordsBusy(false);
+    }
+  }
+
+  function loadSavedPatient(record: SavedPrescription) {
+    setPatientName(record.patientName || "");
+    setAge(record.age || "");
+    setSex(record.sex || "");
+    setMobile(record.mobile || "");
+    setDiagnosis(record.diagnosis || "");
+    setComplaints(record.complaints || "");
+    setHistory(record.history || "");
+    setVitals(record.vitals || "");
+    setRx(record.rx || []);
+    setInvestigations(record.investigations || "");
+    setAdvice(record.advice || "");
+    setFollowUp(record.followUp || "");
+    setIsTeleconsultation(false);
+    setNmbPaymentClearance(null);
+    setSignedAt("");
+    setPrescriptionId("");
+    setSignedSnapshot("");
+    setNmbPinVerified(false);
+    setSavedMessage("Patient loaded for a new follow-up visit. Payment clearance is fresh.");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function exportPatientRecordsExcel() {
+    let records: SavedPrescription[] = [];
+    try {
+      records = JSON.parse(localStorage.getItem("nmb_prescriptions") || "[]");
+    } catch {}
+    if (!records.length) {
+      alert("No saved patient records found.");
+      return;
+    }
+
+    const rows = records.map((r) => ({
+      Date: r.date,
+      "Prescription ID": r.prescriptionId || "",
+      "Patient Name": r.patientName,
+      Age: r.age,
+      Sex: r.sex,
+      Mobile: r.mobile,
+      Complaints: r.complaints,
+      Diagnosis: r.diagnosis,
+      History: r.history,
+      Vitals: r.vitals,
+      Medicines: (r.rx || []).map((m, i) =>
+        `${i + 1}. ${m.brand || m.generic} ${m.strength} | ${m.dose} | ${m.frequency} | ${m.timing} | ${m.food} | ${m.duration}${m.instruction ? " | " + m.instruction : ""}`
+      ).join(" ; "),
+      Investigations: r.investigations,
+      Advice: r.advice,
+      "Follow-up": r.followUp,
+      Consultation: r.isTeleconsultation ? "Teleconsultation" : "In-person",
+      "Payment Status": r.paymentClearance?.status || "",
+      "Payment Amount": r.paymentClearance?.finalAmount ?? "",
+      "Appointment ID": r.appointmentId || "",
+    }));
+
+    const headers = Object.keys(rows[0]);
+    const esc = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const csv = "\ufeff" + [
+      headers.map(esc).join(","),
+      ...rows.map((row: any) => headers.map((h) => esc(row[h])).join(","))
+    ].join("\r\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `NeuroMindBloom-Patient-Records-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+
   async function verifyPinAndESign() {
     if (!patientName.trim()) {
       alert("Please enter patient name before e-signing.");
       return;
     }
-if (!/^\d{8}$/.test(esignPin.trim())) {
+    if (!nmbPaymentClearance) {
+      alert("Payment clearance is required before e-signing.");
+      return;
+    }
+    if (!/^\d{8}$/.test(esignPin.trim())) {
       alert("Please enter your 8-digit E-Sign PIN.");
       return;
     }
 
     try {
       setPinBusy(true);
-
       const bytes = new TextEncoder().encode(esignPin.trim());
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       const hash = Array.from(new Uint8Array(digest))
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");
 
-      if (
-        hash !==
-        "a01be0a4bdae6a5d5cce15622b5ba569c927815d5419e4cbd40741b956d6e709"
-      ) {
+      if (hash !== "a01be0a4bdae6a5d5cce15622b5ba569c927815d5419e4cbd40741b956d6e709") {
         alert("Incorrect E-Sign PIN.");
         return;
       }
@@ -257,7 +359,7 @@ if (!/^\d{8}$/.test(esignPin.trim())) {
       setPrescriptionId(pid);
       setSignedSnapshot(prescriptionSnapshot);
       setEsignPin("");
-
+      setNmbPinVerified(true);
       alert("Prescription electronically signed successfully.");
     } catch (error) {
       console.error(error);
@@ -586,7 +688,7 @@ if (!/^\d{8}$/.test(esignPin.trim())) {
     setRx((old) => old.filter((_, i) => i !== index));
   }
 
-  function savePrescription() {
+  async function savePrescription() {
     if (!patientName.trim()) {
       alert("Please enter patient name.");
       return;
@@ -610,19 +712,26 @@ if (!/^\d{8}$/.test(esignPin.trim())) {
       signedAt: isESigned ? signedAt : undefined,
       prescriptionId: isESigned ? prescriptionId : undefined,
       isTeleconsultation,
+      paymentClearance: nmbPaymentClearance || undefined,
+      appointmentId: appointmentId || undefined,
     };
 
-    const old = JSON.parse(
-      localStorage.getItem("nmb_prescriptions") || "[]"
-    );
+    let old: SavedPrescription[] = [];
+    try {
+      old = JSON.parse(localStorage.getItem("nmb_prescriptions") || "[]");
+    } catch {}
+    localStorage.setItem("nmb_prescriptions", JSON.stringify([record, ...old]));
 
-    localStorage.setItem(
-      "nmb_prescriptions",
-      JSON.stringify([record, ...old])
-    );
+    try {
+      await setDoc(doc(db, "patientRecords", record.id), record);
+      setSavedMessage("Patient record saved on this device and cloud.");
+    } catch (error) {
+      console.error("Cloud patient record save failed", error);
+      setSavedMessage("Patient record saved on this device. Cloud sync needs Firebase permission.");
+    }
 
-    setSavedMessage("Prescription saved successfully.");
-    setTimeout(() => setSavedMessage(""), 3000);
+    setSavedPatients((prev) => [record, ...prev.filter((x) => x.id !== record.id)]);
+    setTimeout(() => setSavedMessage(""), 4000);
   }
 
   function clearForm() {
@@ -646,10 +755,68 @@ if (!/^\d{8}$/.test(esignPin.trim())) {
     setSignedAt("");
     setPrescriptionId("");
     setSignedSnapshot("");
+    setNmbPinVerified(false);
+    setNmbPaymentClearance(null);
+    setAppointmentId("");
+    try {
+      localStorage.removeItem("nmb_payment_clearance:walkin");
+    } catch {}
+    window.history.replaceState({}, "", "/doctor/prescription");
   }
+
+  const filteredPatients = savedPatients.filter((r) => {
+    const q = patientSearch.trim().toLowerCase();
+    if (!q) return true;
+    return [r.patientName, r.mobile, r.prescriptionId, r.diagnosis]
+      .some((v) => String(v || "").toLowerCase().includes(q));
+  });
 
   return (
     <main style={s.page}>
+      <section className="no-print" style={{ ...s.card, marginBottom: 16 }}>
+        <div style={{ fontWeight: 800, marginBottom: 10 }}>Doctor Workflow</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button style={s.secondary} onClick={() => window.location.href="/doctor/appointments"}>1. Appointment</button>
+          <button style={s.secondary} onClick={() => {
+            const key = appointmentId || "walkin";
+            const next = `/doctor/prescription${appointmentId ? `?appointmentId=${encodeURIComponent(appointmentId)}` : ""}`;
+            window.location.href=`/doctor/payment?paymentKey=${encodeURIComponent(key)}&next=${encodeURIComponent(next)}`;
+          }}>2. Payment</button>
+          <button style={s.secondary} onClick={() => setIsTeleconsultation(true)}>3. Video Consultation</button>
+          <button style={s.primary}>4. E-Prescription</button>
+          <button style={s.secondary} onClick={refreshSavedPatients}>5. Saved Patients / Follow-up</button>
+          <button style={s.secondary} onClick={handlePrint}>6. Print / PDF</button>
+          <button style={s.secondary} onClick={handleWhatsAppPrescription}>7. WhatsApp</button>
+          <button style={s.secondary} onClick={exportPatientRecordsExcel}>8. Excel Export</button>
+        </div>
+      </section>
+
+      <section className="no-print" style={s.card}>
+        <h2 style={{ marginTop: 0 }}>Saved Patients / Follow-up</h2>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <input
+            style={{ ...s.input, flex: 1, minWidth: 240 }}
+            value={patientSearch}
+            onChange={(e) => setPatientSearch(e.target.value)}
+            placeholder="Search by patient name, mobile, diagnosis or Prescription ID"
+          />
+          <button style={s.secondary} onClick={refreshSavedPatients}>
+            {recordsBusy ? "Loading..." : "Load Saved Patients"}
+          </button>
+          <button style={s.secondary} onClick={exportPatientRecordsExcel}>Export Patient Records (Excel)</button>
+        </div>
+        {savedPatients.length > 0 && (
+          <div style={{ ...s.results, maxHeight: 280 }}>
+            {filteredPatients.slice(0, 50).map((r) => (
+              <button key={r.id} type="button" style={s.med} onClick={() => loadSavedPatient(r)}>
+                <strong>{r.patientName} {r.age ? `· ${r.age}` : ""} {r.sex ? `· ${r.sex}` : ""}</strong>
+                <span>{r.mobile || "No mobile"} · {r.date}</span>
+                <small>{r.diagnosis || "No diagnosis"}{r.prescriptionId ? ` · ${r.prescriptionId}` : ""}</small>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
       {!nmbPaymentClearance && (
         <div
           className="no-print"
@@ -667,8 +834,10 @@ if (!/^\d{8}$/.test(esignPin.trim())) {
             <button
               type="button"
               onClick={() => {
+                const key = appointmentId || "walkin";
+                const next = `/doctor/prescription${appointmentId ? `?appointmentId=${encodeURIComponent(appointmentId)}` : ""}`;
                 window.location.href =
-                  "/doctor/payment?next=/doctor/prescription";
+                  `/doctor/payment?paymentKey=${encodeURIComponent(key)}&next=${encodeURIComponent(next)}`;
               }}
               style={{
                 padding: "10px 16px",
@@ -1189,119 +1358,88 @@ if (!/^\d{8}$/.test(esignPin.trim())) {
         issuing the prescription.
       </div>
 
+      <section className="formal-print">
+        <div style={{ textAlign: "center", borderBottom: "2px solid #111", paddingBottom: 8, marginBottom: 10 }}>
+          <div style={{ fontSize: 22, fontWeight: 800 }}>NEURO MIND BLOOM</div>
+          <div style={{ fontSize: 16, fontWeight: 700 }}>Dr. Kuldeep Budania · MD Psychiatry</div>
+          <div style={{ fontSize: 11 }}>Registration No. 30526 · www.neuromindbloom.com</div>
+          {isTeleconsultation && <div style={{ fontSize: 10, marginTop: 3 }}>Teleconsultation</div>}
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 6, fontSize: 12, marginBottom: 10 }}>
+          <div><b>Patient:</b> {patientName}</div>
+          <div><b>Age/Sex:</b> {age || "-"} / {sex || "-"}</div>
+          <div><b>Date:</b> {new Date().toLocaleDateString()}</div>
+          <div><b>Mobile:</b> {mobile || "-"}</div>
+          <div style={{ gridColumn: "span 2" }}><b>Prescription ID:</b> {prescriptionId || "-"}</div>
+        </div>
+
+        {(complaints || diagnosis) && (
+          <div style={{ fontSize: 12, marginBottom: 10 }}>
+            {complaints && <div><b>Complaints:</b> {complaints}</div>}
+            {diagnosis && <div><b>Diagnosis:</b> {diagnosis}</div>}
+          </div>
+        )}
+
+        <div style={{ fontSize: 18, fontWeight: 800, margin: "8px 0" }}>Rx</div>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: "left", borderBottom: "1px solid #555", padding: 4 }}>#</th>
+              <th style={{ textAlign: "left", borderBottom: "1px solid #555", padding: 4 }}>Medicine</th>
+              <th style={{ textAlign: "left", borderBottom: "1px solid #555", padding: 4 }}>Dose / Frequency</th>
+              <th style={{ textAlign: "left", borderBottom: "1px solid #555", padding: 4 }}>Timing / Food</th>
+              <th style={{ textAlign: "left", borderBottom: "1px solid #555", padding: 4 }}>Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rx.map((m, i) => (
+              <tr key={i}>
+                <td style={{ padding: 5, verticalAlign: "top" }}>{i + 1}.</td>
+                <td style={{ padding: 5, verticalAlign: "top" }}>
+                  <b>{m.brand || m.generic} {m.strength}</b>
+                  {m.instruction && <div style={{ fontSize: 10 }}>{m.instruction}</div>}
+                </td>
+                <td style={{ padding: 5, verticalAlign: "top" }}>{m.dose} · {m.frequency}</td>
+                <td style={{ padding: 5, verticalAlign: "top" }}>{m.timing} · {m.food}</td>
+                <td style={{ padding: 5, verticalAlign: "top" }}>{m.duration}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {(investigations || advice || followUp) && (
+          <div style={{ fontSize: 11, marginTop: 12 }}>
+            {investigations && <div><b>Investigations:</b> {investigations}</div>}
+            {advice && <div><b>Advice:</b> {advice}</div>}
+            {followUp && <div><b>Follow-up:</b> {followUp}</div>}
+          </div>
+        )}
+
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 24, fontSize: 11 }}>
+          <div>NOT VALID FOR MEDICOLEGAL PURPOSE</div>
+          <div style={{ textAlign: "right" }}>
+            <b>Electronically Signed</b><br/>
+            <b>Dr. Kuldeep Budania</b><br/>
+            MD Psychiatry · Reg. No. 30526<br/>
+            {signedAt}<br/>
+            {prescriptionId}
+          </div>
+        </div>
+      </section>
+
       <style jsx global>{`
+        .formal-print { display: none; }
         @media print {
-          .no-print {
-            display: none !important;
-          }
-
-          body {
-            background: white !important;
-          }
-
-          @page {
-            size: A4;
-            margin: 12mm;
-          }
+          main > :not(.formal-print):not(style) { display: none !important; }
+          .formal-print { display: block !important; }
+          .no-print { display: none !important; }
+          body { background: white !important; }
+          @page { size: A4; margin: 12mm; }
         }
       `}</style>
     
-      <div
-        className="no-print"
-        style={{
-          marginTop: 18,
-          padding: 16,
-          border: "1px solid #cbd5e1",
-          borderRadius: 12
-        }}
-      >
-        <b>E-Sign with 8-digit E-PIN</b>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            marginTop: 10,
-            flexWrap: "wrap"
-          }}
-        >
-          <input
-            type="password"
-            inputMode="numeric"
-            maxLength={8}
-            placeholder="8-digit E-PIN"
-            value={nmbEsignPin}
-            onChange={(e) =>
-              setNmbEsignPin(
-                e.target.value.replace(/\D/g, "").slice(0, 8)
-              )
-            }
-            style={{
-              padding: 10,
-              border: "1px solid #cbd5e1",
-              borderRadius: 8
-            }}
-          />
-
-          <button
-            type="button"
-            disabled={!nmbPaymentClearance}
-            onClick={async () => {
-              if (!/^\d{8}$/.test(nmbEsignPin)) {
-                alert("8-digit E-PIN enter karein.");
-                return;
-              }
-
-              const bytes =
-                new TextEncoder().encode(nmbEsignPin);
-
-              const digest =
-                await crypto.subtle.digest(
-                  "SHA-256",
-                  bytes
-                );
-
-              const hash =
-                Array.from(
-                  new Uint8Array(digest)
-                )
-                .map((b) =>
-                  b.toString(16).padStart(2, "0")
-                )
-                .join("");
-
-              if (
-                hash !==
-                "a01be0a4bdae6a5d5cce15622b5ba569c927815d5419e4cbd40741b956d6e709"
-              ) {
-                setNmbPinVerified(false);
-                alert("Incorrect E-PIN");
-                return;
-              }
-
-              setNmbPinVerified(true);
-              setNmbEsignPin("");
-              alert("E-Sign verified");
-            }}
-            style={{
-              padding: "10px 16px",
-              border: 0,
-              borderRadius: 8,
-              background: "#176b87",
-              color: "#fff",
-              fontWeight: 700
-            }}
-          >
-            Verify E-PIN
-          </button>
-
-          {nmbPinVerified && (
-            <strong style={{ color: "#15803d" }}>
-              Electronically Signed ✓
-            </strong>
-          )}
-        </div>
-      </div>
 </main>
   );
 }
