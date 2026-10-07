@@ -162,16 +162,32 @@ export default function PrescriptionPage() {
     signedSnapshot !== "" && signedSnapshot === prescriptionSnapshot;
 
   useEffect(() => {
-    try {
-      const p =
-        localStorage.getItem("nmb_payment_clearance");
-
-      if (p) {
-        setNmbPaymentClearance(JSON.parse(p));
-      }
-    } catch {}
     const params = new URLSearchParams(window.location.search);
     const appointmentId = params.get("appointmentId") || "";
+    const paymentReturn = params.get("paymentReturn") === "1";
+
+    // Payment clearance is isolated per appointment/patient.
+    // The payment page currently writes the result to the legacy common key;
+    // only consume that key when returning directly from the payment screen,
+    // then migrate it to this appointment's own key and remove the common key.
+    try {
+      const scopedKey = appointmentId
+        ? `nmb_payment_clearance_${appointmentId}`
+        : "nmb_payment_clearance_new";
+      let raw = localStorage.getItem(scopedKey);
+
+      if (!raw && paymentReturn) {
+        raw = localStorage.getItem("nmb_payment_clearance");
+        if (raw) {
+          localStorage.setItem(scopedKey, raw);
+          localStorage.removeItem("nmb_payment_clearance");
+        }
+      }
+
+      setNmbPaymentClearance(raw ? JSON.parse(raw) : null);
+    } catch {
+      setNmbPaymentClearance(null);
+    }
     const type = (params.get("type") || params.get("mode") || params.get("consultation") || "").toLowerCase();
     const tele =
       params.get("teleconsultation") === "1" ||
@@ -223,11 +239,6 @@ export default function PrescriptionPage() {
       return;
     }
 
-    if (!auth.currentUser) {
-      alert("Doctor login is required before e-signing.");
-      return;
-    }
-
     if (!/^\d{8}$/.test(esignPin.trim())) {
       alert("Please enter your 8-digit E-Sign PIN.");
       return;
@@ -268,6 +279,47 @@ export default function PrescriptionPage() {
     } catch (error) {
       console.error(error);
       alert("Unable to verify E-Sign PIN.");
+    } finally {
+      setPinBusy(false);
+    }
+  }
+
+  async function resetESignPin() {
+    const currentPin = window.prompt("Current 8-digit E-PIN enter karein:") || "";
+    if (!/^\d{8}$/.test(currentPin)) {
+      alert("Valid 8-digit current E-PIN enter karein.");
+      return;
+    }
+    const newPin = window.prompt("New 8-digit E-PIN enter karein:") || "";
+    if (!/^\d{8}$/.test(newPin)) {
+      alert("New E-PIN exactly 8 digits ka hona chahiye.");
+      return;
+    }
+    const confirmPin = window.prompt("New E-PIN dobara enter karein:") || "";
+    if (newPin !== confirmPin) {
+      alert("New E-PIN match nahi hua.");
+      return;
+    }
+    try {
+      setPinBusy(true);
+      const response = await fetch("/api/esign/reset-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPin, newPin }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data?.ok) {
+        alert(data?.error || "E-PIN reset nahi ho paya.");
+        return;
+      }
+      setEsignPin("");
+      setSignedAt("");
+      setPrescriptionId("");
+      setSignedSnapshot("");
+      alert("E-PIN reset successfully.");
+    } catch (error) {
+      console.error(error);
+      alert("E-PIN reset nahi ho paya.");
     } finally {
       setPinBusy(false);
     }
@@ -679,6 +731,7 @@ export default function PrescriptionPage() {
     setSignedAt("");
     setPrescriptionId("");
     setSignedSnapshot("");
+    setNmbPaymentClearance(null);
   }
 
   return (
@@ -700,8 +753,11 @@ export default function PrescriptionPage() {
             <button
               type="button"
               onClick={() => {
+                const here = new URL(window.location.href);
+                here.searchParams.set("paymentReturn", "1");
+                const next = here.pathname + "?" + here.searchParams.toString();
                 window.location.href =
-                  "/doctor/payment?next=/doctor/prescription";
+                  "/doctor/payment?next=" + encodeURIComponent(next);
               }}
               style={{
                 padding: "10px 16px",
@@ -797,6 +853,15 @@ export default function PrescriptionPage() {
             disabled={pinBusy}
           >
             {pinBusy ? "Verifying..." : "Verify PIN & E-Sign"}
+          </button>
+
+          <button
+            type="button"
+            style={s.secondary}
+            onClick={resetESignPin}
+            disabled={pinBusy}
+          >
+            Reset E-PIN
           </button>
 
           {isESigned && (
