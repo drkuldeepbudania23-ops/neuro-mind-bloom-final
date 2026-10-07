@@ -7,7 +7,7 @@ import { consernBrandRows } from "../../../data/consern-brand-catalogue";
 import { psychiatryBrands } from "../../../data/psychiatryBrands";
 import { complaintOptions, diagnosisOptions, diagnosisLabel } from "../../data/psychiatrySearch";
 import { auth, db } from "../../../lib/firebase";
-import { addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 type RxItem = {
   generic: string;
   brand: string;
@@ -162,32 +162,16 @@ export default function PrescriptionPage() {
     signedSnapshot !== "" && signedSnapshot === prescriptionSnapshot;
 
   useEffect(() => {
+    try {
+      const p =
+        localStorage.getItem("nmb_payment_clearance");
+
+      if (p) {
+        setNmbPaymentClearance(JSON.parse(p));
+      }
+    } catch {}
     const params = new URLSearchParams(window.location.search);
     const appointmentId = params.get("appointmentId") || "";
-    const paymentReturn = params.get("paymentReturn") === "1";
-
-    // Payment clearance is isolated per appointment/patient.
-    // The payment page currently writes the result to the legacy common key;
-    // only consume that key when returning directly from the payment screen,
-    // then migrate it to this appointment's own key and remove the common key.
-    try {
-      const scopedKey = appointmentId
-        ? `nmb_payment_clearance_${appointmentId}`
-        : "nmb_payment_clearance_new";
-      let raw = localStorage.getItem(scopedKey);
-
-      if (!raw && paymentReturn) {
-        raw = localStorage.getItem("nmb_payment_clearance");
-        if (raw) {
-          localStorage.setItem(scopedKey, raw);
-          localStorage.removeItem("nmb_payment_clearance");
-        }
-      }
-
-      setNmbPaymentClearance(raw ? JSON.parse(raw) : null);
-    } catch {
-      setNmbPaymentClearance(null);
-    }
     const type = (params.get("type") || params.get("mode") || params.get("consultation") || "").toLowerCase();
     const tele =
       params.get("teleconsultation") === "1" ||
@@ -238,8 +222,7 @@ export default function PrescriptionPage() {
       alert("Please enter patient name before e-signing.");
       return;
     }
-
-    if (!/^\d{8}$/.test(esignPin.trim())) {
+if (!/^\d{8}$/.test(esignPin.trim())) {
       alert("Please enter your 8-digit E-Sign PIN.");
       return;
     }
@@ -247,16 +230,17 @@ export default function PrescriptionPage() {
     try {
       setPinBusy(true);
 
-      const response = await fetch("/api/esign/verify-pin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin: esignPin.trim() }),
-      });
+      const bytes = new TextEncoder().encode(esignPin.trim());
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      const hash = Array.from(new Uint8Array(digest))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
 
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok || !data?.ok) {
-        alert(data?.error || "Incorrect E-Sign PIN.");
+      if (
+        hash !==
+        "a01be0a4bdae6a5d5cce15622b5ba569c927815d5419e4cbd40741b956d6e709"
+      ) {
+        alert("Incorrect E-Sign PIN.");
         return;
       }
 
@@ -273,53 +257,11 @@ export default function PrescriptionPage() {
       setPrescriptionId(pid);
       setSignedSnapshot(prescriptionSnapshot);
       setEsignPin("");
-      await persistPrescription(now.toLocaleString(), pid);
 
-      alert("Prescription electronically signed successfully and patient record saved.");
+      alert("Prescription electronically signed successfully.");
     } catch (error) {
       console.error(error);
       alert("Unable to verify E-Sign PIN.");
-    } finally {
-      setPinBusy(false);
-    }
-  }
-
-  async function resetESignPin() {
-    const currentPin = window.prompt("Current 8-digit E-PIN enter karein:") || "";
-    if (!/^\d{8}$/.test(currentPin)) {
-      alert("Valid 8-digit current E-PIN enter karein.");
-      return;
-    }
-    const newPin = window.prompt("New 8-digit E-PIN enter karein:") || "";
-    if (!/^\d{8}$/.test(newPin)) {
-      alert("New E-PIN exactly 8 digits ka hona chahiye.");
-      return;
-    }
-    const confirmPin = window.prompt("New E-PIN dobara enter karein:") || "";
-    if (newPin !== confirmPin) {
-      alert("New E-PIN match nahi hua.");
-      return;
-    }
-    try {
-      setPinBusy(true);
-      const response = await fetch("/api/esign/reset-pin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPin, newPin }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data?.ok) {
-        alert(data?.error || "E-PIN reset nahi ho paya.");
-        return;
-      }
-      setEsignPin("");
-      setSignedAt("");
-      setPrescriptionId("");
-      setSignedSnapshot("");
-      alert("E-PIN reset successfully.");
-    } catch (error) {
-      console.error(error);
-      alert("E-PIN reset nahi ho paya.");
     } finally {
       setPinBusy(false);
     }
@@ -644,70 +586,43 @@ export default function PrescriptionPage() {
     setRx((old) => old.filter((_, i) => i !== index));
   }
 
-  async function persistPrescription(signedAtOverride?: string, prescriptionIdOverride?: string) {
+  function savePrescription() {
     if (!patientName.trim()) {
       alert("Please enter patient name.");
-      return false;
+      return;
     }
 
-    const finalSignedAt = signedAtOverride || (isESigned ? signedAt : "");
-    const finalPrescriptionId = prescriptionIdOverride || (isESigned ? prescriptionId : "");
     const record: SavedPrescription = {
-      id: finalPrescriptionId || Date.now().toString(),
+      id: Date.now().toString(),
       date: new Date().toLocaleString(),
-      patientName, age, sex, mobile, diagnosis, complaints, history, vitals, rx,
-      investigations, advice, followUp,
-      signedAt: finalSignedAt || undefined,
-      prescriptionId: finalPrescriptionId || undefined,
+      patientName,
+      age,
+      sex,
+      mobile,
+      diagnosis,
+      complaints,
+      history,
+      vitals,
+      rx,
+      investigations,
+      advice,
+      followUp,
+      signedAt: isESigned ? signedAt : undefined,
+      prescriptionId: isESigned ? prescriptionId : undefined,
       isTeleconsultation,
     };
 
-    // Keep an immediate local copy so a network problem never loses the visit.
-    const old = JSON.parse(localStorage.getItem("nmb_prescriptions") || "[]");
-    const deduped = old.filter((x: any) => x.id !== record.id && x.prescriptionId !== record.prescriptionId);
-    localStorage.setItem("nmb_prescriptions", JSON.stringify([record, ...deduped]));
+    const old = JSON.parse(
+      localStorage.getItem("nmb_prescriptions") || "[]"
+    );
 
-    // Also keep a clinic cloud record in Firestore (subject to your Firebase rules).
-    try {
-      if (auth.currentUser) {
-        await addDoc(collection(db, "prescriptions"), {
-          ...record,
-          doctorUid: auth.currentUser.uid,
-          createdAt: serverTimestamp(),
-        });
-      }
-    } catch (error) {
-      console.error("Cloud prescription save failed; local copy retained.", error);
-    }
+    localStorage.setItem(
+      "nmb_prescriptions",
+      JSON.stringify([record, ...old])
+    );
 
     setSavedMessage("Prescription saved successfully.");
     setTimeout(() => setSavedMessage(""), 3000);
-    return true;
-  }
-
-  function savePrescription() {
-    void persistPrescription();
-  }
-
-  function exportPatientRecordsExcel() {
-    const rows: SavedPrescription[] = JSON.parse(localStorage.getItem("nmb_prescriptions") || "[]");
-    if (!rows.length) {
-      alert("No saved patient records found.");
-      return;
-    }
-    const esc = (v: any) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const medicineText = (items: RxItem[]) => (items || []).map((m, i) =>
-      `${i + 1}. ${m.brand || m.generic} ${m.strength} | ${m.dose} ${m.frequency} ${m.timing} ${m.food} | ${m.duration}${m.instruction ? " | " + m.instruction : ""}`
-    ).join("; ");
-    const headers = ["Prescription ID","Date","Patient Name","Age","Sex","Mobile","Complaints","Diagnosis","History / Examination","Vitals / Notes","Medicines","Investigations","Advice","Follow-up","Consultation","E-Signed At"];
-    const body = rows.map(r => [r.prescriptionId || r.id,r.date,r.patientName,r.age,r.sex,r.mobile,r.complaints,r.diagnosis,r.history,r.vitals,medicineText(r.rx),r.investigations,r.advice,r.followUp,r.isTeleconsultation ? "Teleconsultation" : "Clinic",r.signedAt || ""]);
-    const html = `<html><head><meta charset="utf-8"></head><body><table border="1"><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join("")}</tr>${body.map(row=>`<tr>${row.map(v=>`<td>${esc(v)}</td>`).join("")}</tr>`).join("")}</table></body></html>`;
-    const blob = new Blob(["\ufeff", html], { type: "application/vnd.ms-excel;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `NeuroMindBloom_Patient_Records_${new Date().toISOString().slice(0,10)}.xls`;
-    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   }
 
   function clearForm() {
@@ -731,7 +646,6 @@ export default function PrescriptionPage() {
     setSignedAt("");
     setPrescriptionId("");
     setSignedSnapshot("");
-    setNmbPaymentClearance(null);
   }
 
   return (
@@ -753,11 +667,8 @@ export default function PrescriptionPage() {
             <button
               type="button"
               onClick={() => {
-                const here = new URL(window.location.href);
-                here.searchParams.set("paymentReturn", "1");
-                const next = here.pathname + "?" + here.searchParams.toString();
                 window.location.href =
-                  "/doctor/payment?next=" + encodeURIComponent(next);
+                  "/doctor/payment?next=/doctor/prescription";
               }}
               style={{
                 padding: "10px 16px",
@@ -811,9 +722,6 @@ export default function PrescriptionPage() {
           <button style={s.primary} onClick={savePrescription}>
             Save
           </button>
-          <button style={s.secondary} onClick={exportPatientRecordsExcel}>
-            Export Patient Records (Excel)
-          </button>
           <button style={s.primary} onClick={handlePrint}>
             Print / PDF
           </button>
@@ -855,15 +763,6 @@ export default function PrescriptionPage() {
             {pinBusy ? "Verifying..." : "Verify PIN & E-Sign"}
           </button>
 
-          <button
-            type="button"
-            style={s.secondary}
-            onClick={resetESignPin}
-            disabled={pinBusy}
-          >
-            Reset E-PIN
-          </button>
-
           {isESigned && (
             <strong style={{ color: "#15803d" }}>Electronically Signed ✓</strong>
           )}
@@ -876,7 +775,7 @@ export default function PrescriptionPage() {
         </div>
       </section>
 
-      <section className="no-print" style={s.printHeader}>
+      <section style={s.printHeader}>
         <h2 style={{ marginBottom: 4 }}>NEURO MIND BLOOM</h2>
         <strong>Dr. Kuldeep Budania · MD Psychiatry</strong>
         <div>Mental Health · De-addiction · Sexual Disorders</div>
@@ -887,7 +786,7 @@ export default function PrescriptionPage() {
         )}
       </section>
 
-      <section className="no-print" style={s.card}>
+      <section style={s.card}>
         <h2>Patient Details</h2>
 
         <div style={s.grid4}>
@@ -1084,7 +983,7 @@ export default function PrescriptionPage() {
         )}
       </section>
 
-      <section className="no-print" style={s.card}>
+      <section style={s.card}>
         <h2>Rx</h2>
 
         {rx.length === 0 && (
@@ -1229,7 +1128,7 @@ export default function PrescriptionPage() {
         ))}
       </section>
 
-      <section className="no-print" style={s.card}>
+      <section style={s.card}>
         <div style={s.grid2}>
           <Field label="Investigations">
             <textarea
@@ -1260,7 +1159,7 @@ export default function PrescriptionPage() {
         </Field>
       </section>
 
-      <section className="no-print" style={s.signature}>
+      <section style={s.signature}>
         <div>Date: {new Date().toLocaleDateString()}</div>
         <div style={{ textAlign: "right", minWidth: 290 }}>
           {isESigned ? (
@@ -1280,41 +1179,9 @@ export default function PrescriptionPage() {
         </div>
       </section>
 
-      <div className="no-print" style={s.medicoLegalWarning}>
+      <div style={s.medicoLegalWarning}>
         NOT VALID FOR MEDICOLEGAL PURPOSE
       </div>
-
-      <section className="print-only prescription-sheet">
-        <header className="rx-letterhead">
-          <div className="rx-logo">NMB</div>
-          <div className="rx-brand"><h1>NEURO MIND BLOOM</h1><div>Mind • Wellness • Recovery</div><div className="rx-web">neuromindbloom.com</div></div>
-          <div className="rx-doctor"><b>Dr. Kuldeep Budania</b><br/>MD Psychiatry<br/>Registration No. 30526{isTeleconsultation && <><br/><span>Teleconsultation</span></>}</div>
-        </header>
-        <div className="rx-rule" />
-        <div className="rx-patient-grid">
-          <div><b>Patient:</b> {patientName}</div><div><b>Age/Sex:</b> {age || "—"} / {sex || "—"}</div>
-          <div><b>Mobile:</b> {mobile || "—"}</div><div><b>Date:</b> {new Date().toLocaleDateString()}</div>
-          <div className="rx-wide"><b>Prescription ID:</b> {prescriptionId || "—"}</div>
-        </div>
-        {complaints && <div className="rx-line"><b>Complaints:</b> {complaints}</div>}
-        {diagnosis && <div className="rx-line"><b>Diagnosis:</b> {diagnosis}</div>}
-        <div className="rx-title">℞</div>
-        <div className="rx-medicines">
-          {rx.map((item, index) => (
-            <div className="rx-med-row" key={`print-${index}`}>
-              <div className="rx-num">{index + 1}.</div>
-              <div><b>{item.brand || item.generic}{item.strength ? ` ${item.strength}` : ""}</b>
-                <div className="rx-directions">{[item.dose,item.frequency,item.timing,item.food,item.duration].filter(Boolean).join(" • ")}{item.instruction ? ` • ${item.instruction}` : ""}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {investigations && <div className="rx-line"><b>Investigations:</b> {investigations}</div>}
-        {advice && <div className="rx-line"><b>Advice:</b> {advice}</div>}
-        {followUp && <div className="rx-line"><b>Follow-up:</b> {followUp}</div>}
-        <div className="rx-footer-sign"><div><b>Electronically verified prescription</b><br/><span>{signedAt}</span></div><div><b>Dr. Kuldeep Budania</b><br/>MD Psychiatry<br/>Reg. No. 30526</div></div>
-        <div className="rx-legal">NOT VALID FOR MEDICOLEGAL PURPOSE</div>
-      </section>
 
       <div className="no-print" style={s.warning}>
         Verify indication, dose, interactions, allergies, pregnancy status,
@@ -1323,25 +1190,7 @@ export default function PrescriptionPage() {
       </div>
 
       <style jsx global>{`
-        .print-only { display: none; }
         @media print {
-          html, body { margin: 0 !important; padding: 0 !important; }
-          .print-only { display: block !important; }
-          .prescription-sheet { font-family: Arial, sans-serif; color: #111; font-size: 11pt; width: 100%; box-sizing: border-box; page-break-inside: avoid; }
-          .rx-letterhead { display: grid; grid-template-columns: 54px 1fr auto; gap: 12px; align-items: center; }
-          .rx-logo { width: 48px; height: 48px; border: 2px solid #176b87; border-radius: 50%; display:flex; align-items:center; justify-content:center; font-weight:800; color:#176b87; }
-          .rx-brand h1 { margin: 0; font-size: 20pt; letter-spacing: .4px; color:#176b87; }
-          .rx-brand div { font-size: 9pt; } .rx-web { margin-top:2px; }
-          .rx-doctor { text-align:right; line-height:1.35; font-size:9.5pt; }
-          .rx-rule { border-top: 2px solid #176b87; margin: 7px 0 8px; }
-          .rx-patient-grid { display:grid; grid-template-columns: 1.2fr 1fr; gap:4px 20px; font-size:10pt; } .rx-wide { grid-column:1/-1; }
-          .rx-line { margin-top: 6px; font-size:10pt; line-height:1.35; }
-          .rx-title { font-size:22pt; font-weight:700; margin:7px 0 2px; }
-          .rx-medicines { border-top:1px solid #bbb; border-bottom:1px solid #bbb; padding:4px 0; }
-          .rx-med-row { display:grid; grid-template-columns:24px 1fr; padding:5px 2px; break-inside:avoid; } .rx-num { font-weight:700; }
-          .rx-directions { font-size:9.5pt; margin-top:2px; }
-          .rx-footer-sign { display:flex; justify-content:space-between; align-items:flex-end; margin-top:14px; font-size:9pt; } .rx-footer-sign > div:last-child { text-align:right; }
-          .rx-legal { text-align:center; border-top:1px solid #bbb; margin-top:8px; padding-top:5px; font-size:8pt; font-weight:700; }
           .no-print {
             display: none !important;
           }
@@ -1352,12 +1201,107 @@ export default function PrescriptionPage() {
 
           @page {
             size: A4;
-            margin: 9mm 10mm;
+            margin: 12mm;
           }
         }
       `}</style>
     
+      <div
+        className="no-print"
+        style={{
+          marginTop: 18,
+          padding: 16,
+          border: "1px solid #cbd5e1",
+          borderRadius: 12
+        }}
+      >
+        <b>E-Sign with 8-digit E-PIN</b>
 
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginTop: 10,
+            flexWrap: "wrap"
+          }}
+        >
+          <input
+            type="password"
+            inputMode="numeric"
+            maxLength={8}
+            placeholder="8-digit E-PIN"
+            value={nmbEsignPin}
+            onChange={(e) =>
+              setNmbEsignPin(
+                e.target.value.replace(/\D/g, "").slice(0, 8)
+              )
+            }
+            style={{
+              padding: 10,
+              border: "1px solid #cbd5e1",
+              borderRadius: 8
+            }}
+          />
+
+          <button
+            type="button"
+            disabled={!nmbPaymentClearance}
+            onClick={async () => {
+              if (!/^\d{8}$/.test(nmbEsignPin)) {
+                alert("8-digit E-PIN enter karein.");
+                return;
+              }
+
+              const bytes =
+                new TextEncoder().encode(nmbEsignPin);
+
+              const digest =
+                await crypto.subtle.digest(
+                  "SHA-256",
+                  bytes
+                );
+
+              const hash =
+                Array.from(
+                  new Uint8Array(digest)
+                )
+                .map((b) =>
+                  b.toString(16).padStart(2, "0")
+                )
+                .join("");
+
+              if (
+                hash !==
+                "a01be0a4bdae6a5d5cce15622b5ba569c927815d5419e4cbd40741b956d6e709"
+              ) {
+                setNmbPinVerified(false);
+                alert("Incorrect E-PIN");
+                return;
+              }
+
+              setNmbPinVerified(true);
+              setNmbEsignPin("");
+              alert("E-Sign verified");
+            }}
+            style={{
+              padding: "10px 16px",
+              border: 0,
+              borderRadius: 8,
+              background: "#176b87",
+              color: "#fff",
+              fontWeight: 700
+            }}
+          >
+            Verify E-PIN
+          </button>
+
+          {nmbPinVerified && (
+            <strong style={{ color: "#15803d" }}>
+              Electronically Signed ✓
+            </strong>
+          )}
+        </div>
+      </div>
 </main>
   );
 }
