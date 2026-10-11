@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { usePathname, useRouter } from "next/navigation";
 import { auth } from "../../lib/firebase";
 
@@ -21,15 +21,32 @@ export default function DoctorLayout({
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    let active = true;
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!active) return;
       if (!user) {
         router.replace("/login");
-      } else {
+        return;
+      }
+
+      try {
+        const token = await user.getIdTokenResult();
+        if (!active) return;
+        if (token.claims.doctor !== true) {
+          await signOut(auth);
+          if (active) router.replace("/login?access=denied");
+          return;
+        }
         setChecking(false);
+      } catch {
+        if (active) router.replace("/login");
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [pathname, router]);
 
   if (pathname === "/doctor/login") {

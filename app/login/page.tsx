@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { auth } from "../../lib/firebase";
@@ -12,6 +12,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("access") === "denied") {
+      setMessage("This account is not authorized for the doctor dashboard.");
+    }
+  }, []);
 
   async function handleLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();

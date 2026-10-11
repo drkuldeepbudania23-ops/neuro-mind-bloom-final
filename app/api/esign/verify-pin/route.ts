@@ -1,26 +1,8 @@
 import { NextResponse } from "next/server";
-import { pbkdf2Sync, timingSafeEqual } from "crypto";
+import { getDoctorUid, verifyPinForUid } from "../pin-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const PROJECT_ID = "neuro-mind-bloom";
-const API_KEY = "AIzaSyC2bX4cWgV7sKhKmNflLGJSvAU6CqrTizw";
-const LEGACY_SALT = "b4f9428a3e2b408a12f809829e5b599f25c1c058ee72e6fb";
-const LEGACY_HASH = "2fb9ce23ef710c70618dfd126142f8183ba975ff614ccb6c8aeb2a8611765432";
-const LEGACY_ITERATIONS = 310000;
-
-async function getUid(idToken: string) {
-  const r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${API_KEY}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ idToken }),
-    cache: "no-store",
-  });
-  if (!r.ok) return "";
-  const data = await r.json();
-  return String(data?.users?.[0]?.localId || "");
-}
 
 export async function POST(request: Request) {
   try {
@@ -35,34 +17,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "Doctor login is required." }, { status: 401 });
     }
 
-    const uid = await getUid(idToken);
+    const uid = await getDoctorUid(idToken);
     if (!uid) {
-      return NextResponse.json({ ok: false, error: "Doctor session expired. Please login again." }, { status: 401 });
+      return NextResponse.json({ ok: false, error: "Authorized doctor login is required." }, { status: 403 });
     }
 
-    let salt = LEGACY_SALT;
-    let hash = LEGACY_HASH;
-    let iterations = LEGACY_ITERATIONS;
-
-    const docUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/esignPins/${encodeURIComponent(uid)}`;
-    const savedResponse = await fetch(docUrl, {
-      headers: { Authorization: `Bearer ${idToken}` },
-      cache: "no-store",
-    });
-
-    if (savedResponse.ok) {
-      const savedDoc = await savedResponse.json();
-      const f = savedDoc?.fields || {};
-      if (f.salt?.stringValue && f.hash?.stringValue && f.iterations?.integerValue) {
-        salt = String(f.salt.stringValue);
-        hash = String(f.hash.stringValue);
-        iterations = Number(f.iterations.integerValue);
-      }
-    }
-
-    const entered = pbkdf2Sync(pin, salt, iterations, 32, "sha256");
-    const saved = Buffer.from(hash, "hex");
-    const valid = entered.length === saved.length && timingSafeEqual(entered, saved);
+    const valid = await verifyPinForUid(uid, idToken, pin);
 
     if (!valid) {
       await new Promise((resolve) => setTimeout(resolve, 900));

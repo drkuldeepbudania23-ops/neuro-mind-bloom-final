@@ -1,4 +1,5 @@
 import Link from "next/link";
+import EpinResetButton from "./EpinResetButton";
 
 export default function DoctorDashboard() {
   const cards = [
@@ -12,6 +13,7 @@ export default function DoctorDashboard() {
     <main style={{padding:30,maxWidth:1100,margin:"auto"}}>
       <h1>Doctor Dashboard</h1>
       <p>Manage online consultation workflow from one place.</p>
+      <EpinResetButton />
 
       <div style={{
         display:"grid",

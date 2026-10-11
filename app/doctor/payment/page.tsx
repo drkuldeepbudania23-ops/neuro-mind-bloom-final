@@ -1,7 +1,9 @@
 ﻿"use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { doc, getDoc, runTransaction, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "../../../lib/firebase";
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -15,6 +17,20 @@ export default function PaymentPage() {
   const [reason, setReason] = useState("");
   const [mode, setMode] = useState("UPI");
   const [reference, setReference] = useState("");
+  const [alreadyCleared, setAlreadyCleared] = useState(false);
+  const [existingStatus, setExistingStatus] = useState("");
+  const [legacyNeedsVerification, setLegacyNeedsVerification] = useState(false);
+  const [legacyPaymentStatus, setLegacyPaymentStatus] = useState("");
+  const [legacyPaymentDetails, setLegacyPaymentDetails] = useState<any>(null);
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const walkInPaymentId = useRef("");
+  const appointmentId =
+    searchParams.get("appointmentId") ||
+    (searchParams.get("paymentKey") === "walkin"
+      ? ""
+      : searchParams.get("paymentKey") || "");
+  const [appointmentLoading, setAppointmentLoading] = useState(Boolean(appointmentId));
 
   const fee = service === "psychotherapy" ? 2000 : 500;
 
@@ -31,12 +47,72 @@ export default function PaymentPage() {
       );
     }
 
-    return Math.max(0, fee - d);
+    return Math.max(0, fee - Math.min(d, fee));
   }, [fee, status, discount, discountType]);
 
-  function savePayment() {
+  useEffect(() => {
+    if (!appointmentId) {
+      setAppointmentLoading(false);
+      return;
+    }
+
+    let active = true;
+    setAppointmentLoading(true);
+    (async () => {
+      try {
+        const snapshot = await getDoc(doc(db, "appointments", appointmentId));
+        if (!active) return;
+        if (!snapshot.exists()) {
+          alert("Appointment could not be found.");
+          return;
+        }
+        const appointment = snapshot.data();
+        setPatient(String(appointment.patientName || appointment.name || ""));
+        setService(/psychotherapy|counseling/i.test(String(appointment.service || ""))
+          ? "psychotherapy"
+          : "consultation");
+        const savedPayment = await getDoc(doc(db, "payments", appointmentId));
+        if (!active) return;
+        const storedStatus = String(appointment.paymentStatus || "");
+        const clearedStatuses = ["Paid", "Discount", "Exempt"];
+        if (savedPayment.exists() || appointment.paymentId) {
+          setAlreadyCleared(true);
+          setExistingStatus(String(storedStatus || savedPayment.data()?.paymentStatus || "Recorded"));
+        } else if (clearedStatuses.includes(storedStatus)) {
+          const details = appointment.paymentDetails || {};
+          setLegacyNeedsVerification(true);
+          setLegacyPaymentStatus(storedStatus);
+          setLegacyPaymentDetails(details);
+          setStatus(storedStatus);
+          if (details.discountType === "percent" || details.discountType === "amount") {
+            setDiscountType(details.discountType);
+          }
+          if (Number.isFinite(Number(details.discount))) setDiscount(String(details.discount));
+          if (typeof details.reason === "string") setReason(details.reason);
+          if (typeof details.paymentMode === "string" && details.paymentMode) setMode(details.paymentMode);
+        }
+      } catch {
+        if (active) alert("Appointment could not be loaded.");
+      } finally {
+        if (active) setAppointmentLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [appointmentId]);
+
+  async function savePayment() {
+    if (savingRef.current || alreadyCleared || appointmentLoading) return;
     if (!patient.trim()) {
       alert("Patient name required.");
+      return;
+    }
+
+    const doctor = auth.currentUser;
+    if (!doctor) {
+      alert("Doctor login is required to confirm payment.");
       return;
     }
 
@@ -48,46 +124,126 @@ export default function PaymentPage() {
       return;
     }
 
-    const record = {
-      id: Date.now().toString(),
-      patient: patient.trim(),
-      service,
+    const requestedDiscount = Number(discount);
+    if (status === "Discount" && (!Number.isFinite(requestedDiscount) || requestedDiscount <= 0)) {
+      alert("Enter a valid discount greater than zero.");
+      return;
+    }
+    if (legacyNeedsVerification && status !== legacyPaymentStatus) {
+      alert("Confirm the existing payment status without changing it.");
+      return;
+    }
+    const approvedDiscount = status !== "Discount"
+      ? 0
+      : discountType === "percent"
+        ? Math.min(requestedDiscount, 100)
+        : Math.min(requestedDiscount, fee);
+    const confirmedAt = new Date().toISOString();
+    const paymentId = appointmentId || walkInPaymentId.current || crypto.randomUUID();
+    if (!appointmentId) walkInPaymentId.current = paymentId;
+    const paymentDetails = {
       originalFee: fee,
-      status,
       discountType: status === "Discount" ? discountType : "",
-      discount:
-        status === "Discount" ? Number(discount || 0) : 0,
+      discount: approvedDiscount,
       finalAmount,
       reason: reason.trim(),
       paymentMode: finalAmount === 0 ? "Nil / Exempt" : mode,
       reference: reference.trim(),
-      createdAt: new Date().toISOString(),
+      service,
+      confirmedBy: doctor.uid,
+      confirmedAt: serverTimestamp(),
+      ...(legacyNeedsVerification ? { legacyPaymentDetails: legacyPaymentDetails || null } : {}),
     };
+    const destination = new URL(
+      searchParams.get("next") || "/doctor/prescription",
+      window.location.origin
+    );
+    if (destination.origin !== window.location.origin) {
+      alert("Invalid next page.");
+      return;
+    }
+    if (appointmentId) {
+      destination.searchParams.set("appointmentId", appointmentId);
+    } else {
+      destination.searchParams.set("paymentId", paymentId);
+    }
 
+    savingRef.current = true;
+    setSaving(true);
     try {
-      const old = JSON.parse(
-        localStorage.getItem("nmb_payments") || "[]"
-      );
+      await runTransaction(db, async (transaction) => {
+        const paymentRef = doc(db, "payments", paymentId);
+        const savedPayment = await transaction.get(paymentRef);
+        if (savedPayment.exists()) throw new Error("PAYMENT_ALREADY_RECORDED");
 
-      localStorage.setItem(
-        "nmb_payments",
-        JSON.stringify([record, ...old])
-      );
+        if (appointmentId) {
+          const appointmentRef = doc(db, "appointments", appointmentId);
+          const appointment = await transaction.get(appointmentRef);
+          if (!appointment.exists()) throw new Error("APPOINTMENT_NOT_FOUND");
+          if (appointment.data().paymentId) throw new Error("PAYMENT_ALREADY_RECORDED");
+          const previousStatus = String(appointment.data().paymentStatus || "");
+          if (legacyNeedsVerification) {
+            if (previousStatus !== legacyPaymentStatus || status !== legacyPaymentStatus) {
+              throw new Error("LEGACY_STATUS_CHANGED");
+            }
+          } else if (["Paid", "Discount", "Exempt"].includes(previousStatus)) {
+            throw new Error("PAYMENT_ALREADY_RECORDED");
+          }
+          transaction.update(appointmentRef, {
+            paymentId,
+            paymentStatus: status,
+            paymentDetails,
+          });
+        }
 
-      localStorage.setItem(
-        "nmb_payment_clearance",
-        JSON.stringify(record)
-      );
+        transaction.set(paymentRef, {
+          paymentId,
+          appointmentId: appointmentId || "",
+          patientName: patient.trim(),
+          paymentStatus: status,
+          paymentDetails,
+          createdAt: serverTimestamp(),
+        });
+      });
+      setAlreadyCleared(true);
+      setExistingStatus(status);
+      setLegacyNeedsVerification(false);
 
-      localStorage.setItem("nmb_rx_patient", patient.trim());
+      const record = {
+        id: paymentId,
+        patient: patient.trim(),
+        ...paymentDetails,
+        confirmedAt,
+        status,
+      };
+      try {
+        const old = JSON.parse(localStorage.getItem("nmb_payments") || "[]");
+        localStorage.setItem("nmb_payments", JSON.stringify([record, ...old]));
+        localStorage.setItem("nmb_rx_patient", patient.trim());
+      } catch {
+        // The database record is authoritative; local history is only a convenience.
+      }
 
-      const next =
-        searchParams.get("next") || "/doctor/prescription";
-
-      router.push(next);
-    } catch (e) {
-      console.error(e);
-      alert("Payment record save nahi hua.");
+      router.push(`${destination.pathname}${destination.search}${destination.hash}`);
+    } catch (error) {
+      if (error instanceof Error && error.message === "PAYMENT_ALREADY_RECORDED") {
+        setAlreadyCleared(true);
+        setExistingStatus("Recorded");
+        alert("A payment clearance already exists for this visit. It was not overwritten.");
+        return;
+      }
+      if (error instanceof Error && error.message === "APPOINTMENT_NOT_FOUND") {
+        alert("Appointment was not found; payment was not cleared.");
+        return;
+      }
+      if (error instanceof Error && error.message === "LEGACY_STATUS_CHANGED") {
+        alert("The existing payment status changed. Reload the appointment before continuing.");
+        return;
+      }
+      alert("Payment record could not be saved. Payment was not cleared.");
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
     }
   }
 
@@ -129,6 +285,7 @@ export default function PaymentPage() {
         <select
           value={service}
           onChange={(e) => setService(e.target.value)}
+          disabled={Boolean(appointmentId)}
           style={input}
         >
           <option value="consultation">
@@ -147,6 +304,7 @@ export default function PaymentPage() {
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
+          disabled={legacyNeedsVerification || alreadyCleared}
           style={input}
         >
           <option value="Paid">Paid</option>
@@ -254,8 +412,21 @@ export default function PaymentPage() {
           <strong>Final ₹{finalAmount}</strong>
         </div>
 
+        {alreadyCleared && (
+          <div role="status" style={{ color: "#166534", fontWeight: 700 }}>
+            Payment clearance already recorded: {existingStatus}. Existing history was preserved.
+          </div>
+        )}
+
+        {legacyNeedsVerification && (
+          <div role="alert" style={{ color: "#92400e", fontWeight: 700 }}>
+            Existing {legacyPaymentStatus} status needs doctor verification. This adds its history record without collecting another payment.
+          </div>
+        )}
+
         <button
           onClick={savePayment}
+          disabled={saving || alreadyCleared || appointmentLoading}
           style={{
             border: 0,
             borderRadius: 9,
@@ -263,10 +434,19 @@ export default function PaymentPage() {
             background: "#176b87",
             color: "white",
             fontWeight: 700,
-            cursor: "pointer",
+            cursor: saving || alreadyCleared || appointmentLoading ? "not-allowed" : "pointer",
+            opacity: saving || alreadyCleared || appointmentLoading ? 0.65 : 1,
           }}
         >
-          Save & Continue to E-Prescription
+          {appointmentLoading
+            ? "Loading Appointment..."
+            : saving
+              ? "Saving..."
+                : legacyNeedsVerification
+                  ? "Verify Existing Clearance"
+                  : alreadyCleared
+                ? "Payment Already Recorded"
+                : "Save & Continue to E-Prescription"}
         </button>
       </div>
     </main>

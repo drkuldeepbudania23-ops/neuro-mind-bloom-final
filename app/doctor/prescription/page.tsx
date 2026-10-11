@@ -6,8 +6,9 @@ import { officialBrandRows } from "../../../data/official-brand-catalogue";
 import { consernBrandRows } from "../../../data/consern-brand-catalogue";
 import { psychiatryBrands } from "../../../data/psychiatryBrands";
 import { complaintOptions, diagnosisOptions, diagnosisLabel } from "../../data/psychiatrySearch";
-import { db } from "../../../lib/firebase";
+import { auth, db } from "../../../lib/firebase";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
+import EpinResetButton from "../EpinResetButton";
 type RxItem = {
   generic: string;
   brand: string;
@@ -53,6 +54,18 @@ const blankRx = (): RxItem => ({
   duration: "30 days",
   instruction: "",
 });
+
+function paymentClearanceFromRecord(record: any) {
+  const status = String(record?.paymentStatus || "");
+  if (!["Paid", "Discount", "Exempt"].includes(status)) return null;
+  const details = record?.paymentDetails;
+  if (!details?.confirmedBy || typeof details?.confirmedAt?.toMillis !== "function") return null;
+  return {
+    ...details,
+    status,
+    finalAmount: Number(record?.paymentDetails?.finalAmount || 0),
+  };
+}
 
 export default function PrescriptionPage() {
 
@@ -170,17 +183,8 @@ export default function PrescriptionPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const apptId = params.get("appointmentId") || "";
+    const paymentId = params.get("paymentId") || "";
     setAppointmentId(apptId);
-
-    try {
-      const paymentKey = apptId
-        ? `nmb_payment_clearance:${apptId}`
-        : "nmb_payment_clearance:walkin";
-      const p = localStorage.getItem(paymentKey);
-      setNmbPaymentClearance(p ? JSON.parse(p) : null);
-    } catch {
-      setNmbPaymentClearance(null);
-    }
 
     const type = (params.get("type") || params.get("mode") || params.get("consultation") || "").toLowerCase();
     const tele =
@@ -189,7 +193,23 @@ export default function PrescriptionPage() {
       type === "teleconsultation";
     setIsTeleconsultation(tele);
 
-    if (!apptId) return;
+    if (!apptId) {
+      if (!paymentId) return;
+      let active = true;
+      getDoc(doc(db, "payments", paymentId))
+        .then((snap) => {
+          if (!active || !snap.exists()) return;
+          const payment = snap.data() as any;
+          setNmbPaymentClearance(paymentClearanceFromRecord(payment));
+          setPatientName((current) => current || String(payment.patientName || ""));
+        })
+        .catch(() => {
+          if (active) setNmbPaymentClearance(null);
+        });
+      return () => {
+        active = false;
+      };
+    }
 
     let active = true;
     (async () => {
@@ -197,6 +217,7 @@ export default function PrescriptionPage() {
         const snap = await getDoc(doc(db, "appointments", apptId));
         if (!active || !snap.exists()) return;
         const a = snap.data() as any;
+        setNmbPaymentClearance(paymentClearanceFromRecord(a));
         setPatientName(String(a.patientName || a.name || ""));
         setAge(String(a.age || ""));
         setSex(String(a.gender || a.sex || ""));
@@ -261,6 +282,7 @@ export default function PrescriptionPage() {
     setFollowUp(record.followUp || "");
     setIsTeleconsultation(false);
     setNmbPaymentClearance(null);
+    setAppointmentId("");
     setSignedAt("");
     setPrescriptionId("");
     setSignedSnapshot("");
@@ -335,14 +357,22 @@ export default function PrescriptionPage() {
 
     try {
       setPinBusy(true);
-      const bytes = new TextEncoder().encode(esignPin.trim());
-      const digest = await crypto.subtle.digest("SHA-256", bytes);
-      const hash = Array.from(new Uint8Array(digest))
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
-
-      if (hash !== "a01be0a4bdae6a5d5cce15622b5ba569c927815d5419e4cbd40741b956d6e709") {
-        alert("Incorrect E-Sign PIN.");
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Doctor login is required to verify the E-Sign PIN.");
+        return;
+      }
+      const response = await fetch("/api/esign/verify-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pin: esignPin.trim(),
+          idToken: await user.getIdToken(),
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        alert(result.error || "Unable to verify E-Sign PIN.");
         return;
       }
 
@@ -361,8 +391,7 @@ export default function PrescriptionPage() {
       setEsignPin("");
       setNmbPinVerified(true);
       alert("Prescription electronically signed successfully.");
-    } catch (error) {
-      console.error(error);
+    } catch {
       alert("Unable to verify E-Sign PIN.");
     } finally {
       setPinBusy(false);
@@ -758,9 +787,6 @@ export default function PrescriptionPage() {
     setNmbPinVerified(false);
     setNmbPaymentClearance(null);
     setAppointmentId("");
-    try {
-      localStorage.removeItem("nmb_payment_clearance:walkin");
-    } catch {}
     window.history.replaceState({}, "", "/doctor/prescription");
   }
 
@@ -931,6 +957,8 @@ export default function PrescriptionPage() {
           >
             {pinBusy ? "Verifying..." : "Verify PIN & E-Sign"}
           </button>
+
+          <EpinResetButton style={s.secondary} />
 
           {isESigned && (
             <strong style={{ color: "#15803d" }}>Electronically Signed ✓</strong>
