@@ -21,7 +21,7 @@ const services = [
 const faqs = [
  ["Is the consultation online?", "Yes. The current service is video consultation only."],
  ["What is the psychiatric consultation fee?", "The psychiatric consultation fee is 500."],
- ["What is the psychotherapy fee?", "A psychotherapy session is 2000."],
+ ["What is the psychotherapy fee?", "The first psychotherapy session is Rs. 1,500 and each follow-up session is Rs. 1,000."],
  ["How will I receive the video link?", "The clinic will confirm your slot and share the consultation link on WhatsApp."],
  ["Will I receive a prescription?", "A digital prescription may be provided when clinically appropriate."],
  ["Is my information confidential?", "Yes. Personal and clinical information is handled with privacy and confidentiality."],
@@ -102,7 +102,7 @@ export default function Home() {
  <div className="container"><div className="sectionHead"><span className="sectionLabel">ONLINE CONSULTATIONS</span><h2>Choose your consultation</h2></div>
  <div className="pricingGrid">
  <article className="priceCard teal"><div className="roundIcon"></div><h3>Psychiatric Consultation</h3><div className="price">Rs. 500</div><a className="btn primary full" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book a Psychiatric Consultation for 500.")}`} target="_blank" rel="noreferrer">Book on WhatsApp</a></article>
- <article className="priceCard blue"><div className="roundIcon"></div><h3>Psychotherapy Session</h3><div className="price">Rs. 2000</div><a className="btn blueBtn full" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book a Psychotherapy Session for 2000.")}`} target="_blank" rel="noreferrer">Book on WhatsApp</a></article>
+ <article className="priceCard blue"><div className="roundIcon"></div><h3>Psychotherapy Session</h3><div className="price">Rs. 1,500 <small>(first session)</small></div><p>Follow-up sessions: Rs. 1,000 each</p><a className="btn blueBtn full" href={`${whatsappBase}?text=${encodeURIComponent("Hello Doctor, I want to book a Psychotherapy Session. Please confirm whether this is a first session (Rs. 1,500) or follow-up (Rs. 1,000).")}`} target="_blank" rel="noreferrer">Book on WhatsApp</a></article>
  </div>
  </div>
  </section>
