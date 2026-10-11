@@ -11,7 +11,7 @@
 - Premium responsive homepage
 - Dr. Kuldeep Budania portrait
 - Psychiatric consultation ₹500
-- Psychotherapy ₹2000
+- Psychotherapy: ₹1,500 first session; ₹1,000 follow-up
 - Services including sexual disorders
 - Working WhatsApp appointment form
 - FAQ, contact and SEO metadata
