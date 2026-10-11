@@ -28,6 +28,7 @@ type SavedPrescription = {
   age: string;
   sex: string;
   mobile: string;
+  email?: string;
   diagnosis: string;
   complaints: string;
   history: string;
@@ -39,6 +40,7 @@ type SavedPrescription = {
   signedAt?: string;
   prescriptionId?: string;
   isTeleconsultation?: boolean;
+  consultationType?: "opd" | "teleconsultation";
   paymentClearance?: any;
   appointmentId?: string;
 };
@@ -80,6 +82,7 @@ export default function PrescriptionPage() {
   const [age, setAge] = useState("");
   const [sex, setSex] = useState("");
   const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
   const [diagnosisSearch, setDiagnosisSearch] = useState("");
   const [complaintSearch, setComplaintSearch] = useState("");
@@ -110,6 +113,7 @@ export default function PrescriptionPage() {
         age,
         sex,
         mobile,
+        email,
         diagnosis,
         complaints,
         history,
@@ -118,10 +122,11 @@ export default function PrescriptionPage() {
         investigations,
         advice,
         followUp,
+        isTeleconsultation,
       }),
     [
-      patientName, age, sex, mobile, diagnosis, complaints, history, vitals,
-      rx, investigations, advice, followUp,
+      patientName, age, sex, mobile, email, diagnosis, complaints, history, vitals,
+      rx, investigations, advice, followUp, isTeleconsultation,
     ]
   );
 
@@ -222,6 +227,7 @@ export default function PrescriptionPage() {
         setAge(String(a.age || ""));
         setSex(String(a.gender || a.sex || ""));
         setMobile(String(a.mobile || ""));
+        setEmail(String(a.email || ""));
 
         const rawConcern = String(a.concern || "").trim();
         if (rawConcern) {
@@ -272,6 +278,7 @@ export default function PrescriptionPage() {
     setAge(record.age || "");
     setSex(record.sex || "");
     setMobile(record.mobile || "");
+    setEmail(record.email || "");
     setDiagnosis(record.diagnosis || "");
     setComplaints(record.complaints || "");
     setHistory(record.history || "");
@@ -280,7 +287,11 @@ export default function PrescriptionPage() {
     setInvestigations(record.investigations || "");
     setAdvice(record.advice || "");
     setFollowUp(record.followUp || "");
-    setIsTeleconsultation(false);
+    setIsTeleconsultation(
+      record.consultationType
+        ? record.consultationType === "teleconsultation"
+        : Boolean(record.isTeleconsultation)
+    );
     setNmbPaymentClearance(null);
     setAppointmentId("");
     setSignedAt("");
@@ -308,6 +319,7 @@ export default function PrescriptionPage() {
       Age: r.age,
       Sex: r.sex,
       Mobile: r.mobile,
+      Email: r.email || "",
       Complaints: r.complaints,
       Diagnosis: r.diagnosis,
       History: r.history,
@@ -318,7 +330,9 @@ export default function PrescriptionPage() {
       Investigations: r.investigations,
       Advice: r.advice,
       "Follow-up": r.followUp,
-      Consultation: r.isTeleconsultation ? "Teleconsultation" : "In-person",
+      Consultation: r.consultationType === "teleconsultation" || r.isTeleconsultation
+        ? "Teleconsultation"
+        : "OPD",
       "Payment Status": r.paymentClearance?.status || "",
       "Payment Amount": r.paymentClearance?.finalAmount ?? "",
       "Appointment ID": r.appointmentId || "",
@@ -413,7 +427,7 @@ export default function PrescriptionPage() {
     return digits;
   }
 
-  function handleWhatsAppPrescription() {
+  async function handleWhatsAppPrescription() {
     if (!isESigned) {
       alert("Please verify E-Sign PIN before sending the prescription.");
       return;
@@ -426,13 +440,14 @@ export default function PrescriptionPage() {
     }
 
     // Save the current prescription before opening WhatsApp.
-    savePrescription();
+    await savePrescription();
 
     const message = [
       `Hello ${patientName || "Patient"},`,
       "Your e-prescription from Neuro Mind Bloom is ready.",
       prescriptionId ? `Prescription ID: ${prescriptionId}` : "",
-      "Please find the prescription PDF attached.",
+      `Consultation: ${isTeleconsultation ? "Teleconsultation" : "OPD"}`,
+      "Please attach the PDF saved using Print / PDF.",
       "— Neuro Mind Bloom"
     ].filter(Boolean).join("\n");
 
@@ -440,6 +455,35 @@ export default function PrescriptionPage() {
     // This opens the patient's chat with a ready message; use Print / PDF
     // first to save the prescription, then attach that PDF in WhatsApp.
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+  }
+
+  async function handleEmailPrescription() {
+    if (!isESigned) {
+      alert("Please verify E-Sign PIN before sending the prescription.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      alert("Please enter a valid patient email address.");
+      return;
+    }
+
+    await savePrescription();
+    const subject = `E-prescription from Neuro Mind Bloom${prescriptionId ? ` - ${prescriptionId}` : ""}`;
+    const body = [
+      `Hello ${patientName || "Patient"},`,
+      "",
+      "Your e-prescription from Neuro Mind Bloom is ready.",
+      prescriptionId ? `Prescription ID: ${prescriptionId}` : "",
+      `Consultation: ${isTeleconsultation ? "Teleconsultation" : "OPD"}`,
+      "",
+      "Please attach the PDF saved using Print / PDF before sending this email.",
+      "",
+      "Regards,",
+      "Dr. Kuldeep Budania",
+      "Neuro Mind Bloom",
+    ].filter(Boolean).join("\n");
+
+    window.location.href = `mailto:${email.trim()}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
 
   const psychBrandResults = useMemo(() => {
@@ -730,6 +774,7 @@ export default function PrescriptionPage() {
       age,
       sex,
       mobile,
+      email,
       diagnosis,
       complaints,
       history,
@@ -741,6 +786,7 @@ export default function PrescriptionPage() {
       signedAt: isESigned ? signedAt : undefined,
       prescriptionId: isESigned ? prescriptionId : undefined,
       isTeleconsultation,
+      consultationType: isTeleconsultation ? "teleconsultation" : "opd",
       paymentClearance: nmbPaymentClearance || undefined,
       appointmentId: appointmentId || undefined,
     };
@@ -770,6 +816,7 @@ export default function PrescriptionPage() {
     setAge("");
     setSex("");
     setMobile("");
+    setEmail("");
     setDiagnosis("");
     setComplaints("");
     setHistory("");
@@ -786,6 +833,7 @@ export default function PrescriptionPage() {
     setSignedSnapshot("");
     setNmbPinVerified(false);
     setNmbPaymentClearance(null);
+    setIsTeleconsultation(false);
     setAppointmentId("");
     window.history.replaceState({}, "", "/doctor/prescription");
   }
@@ -813,7 +861,8 @@ export default function PrescriptionPage() {
           <button style={s.secondary} onClick={refreshSavedPatients}>5. Saved Patients / Follow-up</button>
           <button style={s.secondary} onClick={handlePrint}>6. Print / PDF</button>
           <button style={s.secondary} onClick={handleWhatsAppPrescription}>7. WhatsApp</button>
-          <button style={s.secondary} onClick={exportPatientRecordsExcel}>8. Excel Export</button>
+          <button style={s.secondary} onClick={handleEmailPrescription}>8. Email</button>
+          <button style={s.secondary} onClick={exportPatientRecordsExcel}>9. Excel Export</button>
         </div>
       </section>
 
@@ -923,6 +972,9 @@ export default function PrescriptionPage() {
           <button style={s.primary} onClick={handleWhatsAppPrescription}>
             Send on WhatsApp
           </button>
+          <button style={s.primary} onClick={handleEmailPrescription}>
+            Send by Email
+          </button>
         </div>
       </div>
 
@@ -973,17 +1025,20 @@ export default function PrescriptionPage() {
       </section>
 
       <section style={s.printHeader}>
-        <h2 style={{ marginBottom: 4 }}>NEURO MIND BLOOM</h2>
+        <PrescriptionBrandHeader isTeleconsultation={isTeleconsultation} />
         <strong>Dr. Kuldeep Budania · MD Psychiatry</strong>
         <div>Mental Health · De-addiction · Sexual Disorders</div>
-        {isTeleconsultation && (
-          <div style={{ fontSize: 10, marginTop: 4, letterSpacing: "0.5px" }}>
-            Teleconsultation
-          </div>
-        )}
       </section>
 
       <section style={s.card}>
+        <label className="no-print" style={s.consultationToggle}>
+          <input
+            type="checkbox"
+            checked={isTeleconsultation}
+            onChange={(event) => setIsTeleconsultation(event.target.checked)}
+          />
+          <span>Teleconsultation</span>
+        </label>
         <h2>Patient Details</h2>
 
         <div style={s.grid4}>
@@ -1021,6 +1076,15 @@ export default function PrescriptionPage() {
               style={s.input}
               value={mobile}
               onChange={(e) => setMobile(e.target.value)}
+            />
+          </Field>
+
+          <Field label="Email">
+            <input
+              style={s.input}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </Field>
         </div>
@@ -1376,10 +1440,6 @@ export default function PrescriptionPage() {
         </div>
       </section>
 
-      <div style={s.medicoLegalWarning}>
-        NOT VALID FOR MEDICOLEGAL PURPOSE
-      </div>
-
       <div className="no-print" style={s.warning}>
         Verify indication, dose, interactions, allergies, pregnancy status,
         renal/hepatic function and current prescribing information before
@@ -1387,30 +1447,38 @@ export default function PrescriptionPage() {
       </div>
 
       <section className="formal-print">
-        <div style={{ textAlign: "center", borderBottom: "2px solid #111", paddingBottom: 8, marginBottom: 10 }}>
-          <div style={{ fontSize: 22, fontWeight: 800 }}>NEURO MIND BLOOM</div>
-          <div style={{ fontSize: 16, fontWeight: 700 }}>Dr. Kuldeep Budania · MD Psychiatry</div>
-          <div style={{ fontSize: 11 }}>Registration No. 30526 · www.neuromindbloom.com</div>
-          {isTeleconsultation && <div style={{ fontSize: 10, marginTop: 3 }}>Teleconsultation</div>}
+        <div className="prescription-document-header">
+          <PrescriptionBrandHeader isTeleconsultation={isTeleconsultation} />
+          <strong>Dr. Kuldeep Budania · MD Psychiatry</strong>
+          <div>Mental Health · De-addiction · Sexual Disorders</div>
+          <div>Registration No. 30526 · www.neuromindbloom.com</div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 6, fontSize: 12, marginBottom: 10 }}>
+        <div className="prescription-patient-details">
           <div><b>Patient:</b> {patientName}</div>
           <div><b>Age/Sex:</b> {age || "-"} / {sex || "-"}</div>
           <div><b>Date:</b> {new Date().toLocaleDateString()}</div>
           <div><b>Mobile:</b> {mobile || "-"}</div>
-          <div style={{ gridColumn: "span 2" }}><b>Prescription ID:</b> {prescriptionId || "-"}</div>
+          {email && <div><b>Email:</b> {email}</div>}
+          <div><b>Prescription ID:</b> {prescriptionId || "-"}</div>
         </div>
 
         {(complaints || diagnosis) && (
-          <div style={{ fontSize: 12, marginBottom: 10 }}>
+          <div className="prescription-clinical-details">
             {complaints && <div><b>Complaints:</b> {complaints}</div>}
             {diagnosis && <div><b>Diagnosis:</b> {diagnosis}</div>}
           </div>
         )}
 
-        <div style={{ fontSize: 18, fontWeight: 800, margin: "8px 0" }}>Rx</div>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+        {(history || vitals) && (
+          <div className="prescription-clinical-details">
+            {history && <div><b>Relevant History / Examination:</b> {history}</div>}
+            {vitals && <div><b>Vitals / Clinical Notes:</b> {vitals}</div>}
+          </div>
+        )}
+
+        <div className="prescription-rx-title">Rx</div>
+        <table className="prescription-rx-table">
           <thead>
             <tr>
               <th style={{ textAlign: "left", borderBottom: "1px solid #555", padding: 4 }}>#</th>
@@ -1423,52 +1491,164 @@ export default function PrescriptionPage() {
           <tbody>
             {rx.map((m, i) => (
               <tr key={i}>
-                <td style={{ padding: 5, verticalAlign: "top" }}>{i + 1}.</td>
-                <td style={{ padding: 5, verticalAlign: "top" }}>
+                <td>{i + 1}.</td>
+                <td>
                   <b>{m.brand || m.generic} {m.strength}</b>
                   {m.instruction && <div style={{ fontSize: 10 }}>{m.instruction}</div>}
                 </td>
-                <td style={{ padding: 5, verticalAlign: "top" }}>{m.dose} · {m.frequency}</td>
-                <td style={{ padding: 5, verticalAlign: "top" }}>{m.timing} · {m.food}</td>
-                <td style={{ padding: 5, verticalAlign: "top" }}>{m.duration}</td>
+                <td>{m.dose} · {m.frequency}</td>
+                <td>{m.timing} · {m.food}</td>
+                <td>{m.duration}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
         {(investigations || advice || followUp) && (
-          <div style={{ fontSize: 11, marginTop: 12 }}>
+          <div className="prescription-clinical-details">
             {investigations && <div><b>Investigations:</b> {investigations}</div>}
             {advice && <div><b>Advice:</b> {advice}</div>}
             {followUp && <div><b>Follow-up:</b> {followUp}</div>}
           </div>
         )}
 
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 24, fontSize: 11 }}>
-          <div>NOT VALID FOR MEDICOLEGAL PURPOSE</div>
-          <div style={{ textAlign: "right" }}>
-            <b>Electronically Signed</b><br/>
-            <b>Dr. Kuldeep Budania</b><br/>
-            MD Psychiatry · Reg. No. 30526<br/>
-            {signedAt}<br/>
-            {prescriptionId}
+        <div className="prescription-signature">
+          <div>Date: {new Date().toLocaleDateString()}</div>
+          <div>
+            <b>Electronically Signed</b><br />
+            <b>Dr. Kuldeep Budania</b><br />
+            MD Psychiatry · Reg. No. 30526<br />
+            {signedAt}<br />
+            Prescription ID: {prescriptionId}
           </div>
         </div>
+
+        <div className="prescription-disclaimer">Not valid for medicolegal purpose.</div>
       </section>
 
       <style jsx global>{`
         .formal-print { display: none; }
+        .prescription-teleconsultation-label {
+          font-size: 10px;
+          letter-spacing: 0.3px;
+          margin-top: 3px;
+        }
         @media print {
           main > :not(.formal-print):not(style) { display: none !important; }
+          main { max-width: none !important; margin: 0 !important; padding: 0 !important; }
           .formal-print { display: block !important; }
           .no-print { display: none !important; }
           body { background: white !important; }
-          @page { size: A4; margin: 12mm; }
+          @page { size: A4; margin: 10mm; }
+          .prescription-document-header {
+            text-align: center;
+            border-bottom: 1.5px solid #176b87;
+            padding-bottom: 7px;
+            margin-bottom: 8px;
+            font-size: 10pt;
+            line-height: 1.25;
+            break-inside: avoid;
+          }
+          .prescription-document-header .brand {
+            margin-bottom: 4px;
+          }
+          .prescription-document-header .brandMark {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            font-size: 18px;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+          .prescription-document-header .brand strong {
+            font-size: 18px;
+          }
+          .prescription-document-header .brand small {
+            font-size: 9px;
+          }
+          .prescription-patient-details {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 3px 8px;
+            font-size: 9.5pt;
+            margin-bottom: 7px;
+          }
+          .prescription-clinical-details {
+            font-size: 9.5pt;
+            margin: 5px 0;
+            line-height: 1.25;
+          }
+          .prescription-rx-title {
+            font-size: 14pt;
+            font-weight: 800;
+            margin: 5px 0 2px;
+          }
+          .prescription-rx-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+          }
+          .prescription-rx-table th {
+            text-align: left;
+            border-bottom: 1px solid #555;
+            padding: 3px;
+          }
+          .prescription-rx-table td {
+            padding: 3px;
+            vertical-align: top;
+          }
+          .prescription-rx-table tr {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+          .prescription-signature {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 16px;
+            margin-top: 12px;
+            font-size: 9pt;
+            break-inside: avoid;
+          }
+          .prescription-signature > div:last-child {
+            text-align: right;
+          }
+          .prescription-disclaimer {
+            margin-top: 8px;
+            font-size: 8.5pt;
+            line-height: 1.2;
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
         }
       `}</style>
     
 
 </main>
+  );
+}
+
+function PrescriptionBrandHeader({
+  isTeleconsultation,
+}: {
+  isTeleconsultation: boolean;
+}) {
+  return (
+    <div>
+      <div
+        className="brand"
+        style={{ justifyContent: "center", marginBottom: 4 }}
+      >
+        <span className="brandMark">N</span>
+        <span style={{ textAlign: "left" }}>
+          <strong>Neuro Mind Bloom</strong>
+          <small>Psychiatry Psychology Wellness</small>
+        </span>
+      </div>
+      {isTeleconsultation && (
+        <div className="prescription-teleconsultation-label">Teleconsultation</div>
+      )}
+    </div>
   );
 }
 
@@ -1520,6 +1700,17 @@ const s: Record<string, React.CSSProperties> = {
     marginBottom: 18,
     borderBottom: "2px solid #176b87",
     paddingBottom: 12,
+  },
+
+  consultationToggle: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+    color: "#334155",
+    fontSize: 14,
+    fontWeight: 700,
+    cursor: "pointer",
   },
 
   card: {
@@ -1667,23 +1858,4 @@ const s: Record<string, React.CSSProperties> = {
     paddingTop: 10,
   },
 
-  medicoLegalWarning: {
-    marginTop: 4,
-    paddingTop: 10,
-    borderTop: "1px solid #cbd5e1",
-    textAlign: "center",
-    fontSize: 12,
-    fontWeight: 800,
-    letterSpacing: "0.5px",
-    color: "#991b1b",
-  },
 };
-
-
-
-
-
-
-
-
-
