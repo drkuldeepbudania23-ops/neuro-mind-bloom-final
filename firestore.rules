@@ -3,8 +3,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Doctor claim + (if 2FA is enrolled) a valid 2FA session (claim mfa_exp, seconds).
     function isDoctor() {
-      return request.auth != null && request.auth.token.get('doctor', false) == true;
+      return request.auth != null
+        && request.auth.token.get('doctor', false) == true
+        && (request.auth.token.get('mfa', false) != true
+          || request.auth.token.get('mfa_exp', 0) > request.time.toMillis() / 1000);
     }
 
     function hasValidPayment(data) {
@@ -66,9 +70,40 @@ service cloud.firestore {
         && data.get('updatedAt', null) is timestamp;
     }
 
+    function shortString(value, maxLen) {
+      return value is string && value.size() <= maxLen;
+    }
+
+    // Public (unauthenticated) booking form: accept only the expected fields,
+    // bounded sizes, a valid mobile number and a server timestamp. Payment
+    // fields can never be set by the public.
+    function validPublicAppointment(data) {
+      return data.keys().hasOnly([
+          'patientName', 'name', 'mobile', 'email', 'service', 'serviceCode',
+          'preferredDate', 'date', 'preferredTime', 'time', 'concern',
+          'mode', 'status', 'source', 'language', 'consent', 'createdAt'])
+        && data.keys().hasAll(['patientName', 'mobile', 'service', 'status', 'createdAt'])
+        && shortString(data.patientName, 80) && data.patientName.size() >= 2
+        && data.mobile is string && data.mobile.matches('^[0-9]{10,13}$')
+        && shortString(data.service, 80)
+        && data.status == 'pending'
+        && data.createdAt == request.time
+        && shortString(data.get('name', ''), 80)
+        && shortString(data.get('email', ''), 120)
+        && shortString(data.get('serviceCode', ''), 40)
+        && shortString(data.get('preferredDate', ''), 10)
+        && shortString(data.get('date', ''), 10)
+        && shortString(data.get('preferredTime', ''), 8)
+        && shortString(data.get('time', ''), 8)
+        && shortString(data.get('concern', ''), 2000)
+        && shortString(data.get('mode', ''), 20)
+        && shortString(data.get('source', ''), 20)
+        && data.get('language', 'en') in ['en', 'hi']
+        && data.get('consent', true) is bool;
+    }
+
     match /appointments/{appointmentId} {
-      allow create: if !('paymentStatus' in request.resource.data)
-        && !('paymentDetails' in request.resource.data);
+      allow create: if validPublicAppointment(request.resource.data);
       allow read, delete: if isDoctor();
       allow update: if isDoctor()
         && (paymentFieldsUnchanged()
@@ -99,6 +134,106 @@ service cloud.firestore {
       allow read, write: if isDoctor();
     }
 
+    match /followUps/{followUpId} {
+      allow read, write: if isDoctor();
+    }
+
+    // Website articles written by the doctor (public can read only published ones).
+    match /cmsArticles/{articleId} {
+      allow read: if resource.data.status == 'published' || isDoctor();
+      allow create, update: if isDoctor()
+        && request.resource.data.keys().hasOnly(['slug', 'cat', 'title', 'excerpt', 'body', 'references', 'tags', 'related', 'status', 'published', 'updated'])
+        && request.resource.data.status in ['draft', 'published']
+        && request.resource.data.slug is string
+        && request.resource.data.slug.matches('^[a-z0-9]+(-[a-z0-9]+){1,10}$');
+      allow delete: if isDoctor();
+    }
+
+    match /cmsCategories/{catId} {
+      allow read: if true;
+      allow create, update: if isDoctor() && request.resource.data.keys().hasOnly(['name']);
+      allow delete: if isDoctor();
+    }
+
+    // Patient feedback (public form). Anyone may submit a pending entry with a consent record;
+    // only the doctor can read, moderate or delete. Nothing is public from the client side —
+    // the website shows approved entries (server-side) only if PUBLIC_REVIEWS_ENABLED is on.
+    match /feedback/{feedbackId} {
+      allow read, delete: if isDoctor();
+      allow create: if request.resource.data.keys().hasOnly([
+            'rating', 'name', 'comment', 'consentStore', 'consentDisplay', 'visitDate', 'language',
+            'status', 'consentText', 'consentVersion', 'reviewDate', 'createdAt'])
+        && request.resource.data.keys().hasAll(['rating', 'comment', 'consentStore', 'status', 'consentText', 'reviewDate', 'createdAt'])
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() >= 10 && request.resource.data.comment.size() <= 1000
+        && shortString(request.resource.data.get('name', ''), 60)
+        && request.resource.data.consentStore == true
+        && request.resource.data.get('consentDisplay', false) is bool
+        && shortString(request.resource.data.get('visitDate', ''), 10)
+        && request.resource.data.get('language', 'en') in ['en', 'hi']
+        && request.resource.data.status == 'pending'
+        && shortString(request.resource.data.consentText, 800)
+        && shortString(request.resource.data.get('consentVersion', ''), 20)
+        && request.resource.data.reviewDate is string
+        && request.resource.data.reviewDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.createdAt == request.time;
+      allow update: if isDoctor()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'name', 'comment', 'moderatorNote', 'moderatedAt'])
+        && request.resource.data.status in ['pending', 'approved', 'rejected']
+        && shortString(request.resource.data.comment, 1000)
+        && shortString(request.resource.data.get('name', ''), 60)
+        && shortString(request.resource.data.get('moderatorNote', ''), 300);
+    }
+
+    // Recovery stories. Client reads are doctor-only (the consent note is internal); the public
+    // page reads published stories server-side and strips the consent record. A story can only be
+    // published once the doctor has reviewed it AND it is either a labelled fictional example or
+    // has documented written consent.
+    match /recoveryStories/{storyId} {
+      allow read, delete: if isDoctor();
+      allow create, update: if isDoctor()
+        && request.resource.data.keys().hasOnly(['title', 'category', 'narrative', 'imageUrl', 'imageAlt', 'fictional', 'doctorReviewed', 'consent', 'status', 'updated'])
+        && request.resource.data.status in ['draft', 'published']
+        && request.resource.data.fictional is bool
+        && request.resource.data.doctorReviewed is bool
+        && (request.resource.data.status == 'draft'
+          || (request.resource.data.doctorReviewed == true
+            && (request.resource.data.fictional == true || request.resource.data.consent.documented == true)));
+    }
+
+    // Brands the doctor adds to the prescription medicine search.
+    match /doctorMedicines/{medId} {
+      allow read, delete: if isDoctor();
+      allow create, update: if isDoctor()
+        && request.resource.data.keys().hasOnly(['generic', 'brand', 'strength', 'form', 'company', 'createdAt'])
+        && shortString(request.resource.data.get('generic', ''), 120)
+        && shortString(request.resource.data.get('brand', ''), 80)
+        && shortString(request.resource.data.get('strength', ''), 40)
+        && shortString(request.resource.data.get('form', ''), 40)
+        && shortString(request.resource.data.get('company', ''), 80);
+    }
+
+    // One document per patient; id = UHID (NMB-000123).
+    match /patients/{uhid} {
+      allow read: if isDoctor();
+      allow create, update: if isDoctor()
+        && uhid.matches('^NMB-[0-9]{6}$')
+        && request.resource.data.get('uhid', uhid) == uhid
+        && request.resource.data.get('mobile10', '') is string
+        && request.resource.data.get('name', '') is string;
+      allow delete: if false;
+    }
+
+    // UHID counter: can only move forward by one.
+    match /counters/patients {
+      allow read: if isDoctor();
+      allow create: if isDoctor() && request.resource.data.next == 1;
+      allow update: if isDoctor() && request.resource.data.next == resource.data.next + 1;
+      allow delete: if false;
+    }
+
     match /esignPins/{uid} {
       allow read: if isDoctor() && request.auth.uid == uid;
       allow create, update: if isDoctor()
@@ -106,6 +241,27 @@ service cloud.firestore {
         && validPinRecord(request.resource.data);
       allow delete: if false;
     }
+
+    // E-signed prescriptions: written only by the server at signing time, never changed.
+    match /signedPrescriptions/{prescriptionId} {
+      allow read: if isDoctor();
+      allow write: if false;
+    }
+
+    // Audit trail: append-only. Doctors may add their own entries; nobody edits or deletes.
+    match /auditLog/{entryId} {
+      allow read: if isDoctor();
+      allow create: if isDoctor()
+        && request.resource.data.keys().hasOnly(['uid', 'action', 'details', 'source', 'at'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.source == 'client'
+        && request.resource.data.at == request.time
+        && request.resource.data.action is string
+        && request.resource.data.action.size() <= 80;
+      allow update, delete: if false;
+    }
+
+    // Server-only: 2FA secrets (mfa), rate-limit counters (rateLimits) — covered by the deny-all below.
 
     match /{document=**} {
       allow read, write: if false;

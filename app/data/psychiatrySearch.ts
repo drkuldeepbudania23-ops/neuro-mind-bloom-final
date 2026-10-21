@@ -1,5 +1,7 @@
 "use client";
 
+import { PSYCHIATRY_ICD } from "../../data/psychiatry-icd";
+
 export type ComplaintOption = {
   en: string;
   hi: string;
@@ -70,7 +72,7 @@ export const complaintOptions: ComplaintOption[] = [
   { en: "Nightmares / flashbacks", hi: "डरावने सपने या घटना बार-बार याद आना", tags: ["ptsd"] },
 ];
 
-export const diagnosisOptions: DiagnosisOption[] = [
+const CURATED: DiagnosisOption[] = [
   {
     name: "Depressive episode",
     icd10: "F32",
@@ -200,5 +202,114 @@ export function complaintLabel(item: ComplaintOption) {
 }
 
 export function diagnosisLabel(item: DiagnosisOption) {
-  return `${item.name} | ICD-10 ${item.icd10} | ICD-11 ${item.icd11}`;
+  return [item.name, item.icd10 && `ICD-10 ${item.icd10}`, item.icd11 && `ICD-11 ${item.icd11}`].filter(Boolean).join(" | ");
+}
+
+/** Tags used to filter chief-complaint suggestions, derived from the ICD block. */
+function tagsFor(icd10: string, icd11: string, name: string): string[] {
+  const n = name.toLowerCase();
+  const c = icd10.toUpperCase();
+  const t: string[] = [];
+  const add = (...x: string[]) => t.push(...x);
+  if (/^F0|^G30/.test(c) || /dementia|cognitive|delirium|amnes/.test(n)) add("cognition");
+  if (/^F1/.test(c)) add("addiction");
+  if (/^F10/.test(c)) add("alcohol");
+  if (/^F11/.test(c)) add("opioid");
+  if (/^F12/.test(c)) add("cannabis");
+  if (/^F17/.test(c)) add("tobacco");
+  if (/withdrawal/.test(n)) add("withdrawal");
+  if (/^F2/.test(c) || /psychot|delusion|schizo/.test(n)) add("psychosis");
+  if (/^F3[01]/.test(c) || /bipolar|mania|cyclothym/.test(n)) add("bipolar", "mania", "mood");
+  if (/^F3[234]/.test(c) || /depress|dysthym|grief|pmdd|premenstrual/.test(n)) add("depression", "mood");
+  if (/^F4[01]/.test(c) || /anxiety|phobi|panic|mutism/.test(n)) add("anxiety");
+  if (/panic/.test(n)) add("panic");
+  if (/phobi/.test(n)) add("phobia");
+  if (/social/.test(n)) add("social");
+  if (/^F42/.test(c) || /obsess|dysmorph|hoard|trichotill|skin-picking|olfactory/.test(n)) add("ocd");
+  if (/^F43/.test(c) || /stress|adjustment|trauma|burn-out/.test(n)) add("stress");
+  if (/post-traumatic|ptsd/.test(n)) add("ptsd");
+  if (/^F44|dissociat|trance|depersonal/.test(c + " " + n)) add("dissociation");
+  if (/^F45|somat|bodily|hypochond|dhat|neurasth/.test(c + " " + n)) add("somatic");
+  if (/^F50|eating|anorexia|bulimia|pica|food intake|rumination/.test(c + " " + n)) add("eating");
+  if (/^F51|^G47|^7A|insomnia|sleep|narcolep|restless legs|nightmare/.test(c + " " + icd11 + " " + n)) add("sleep");
+  if (/^F52|^N52|^HA|sexual|ejaculat|erectile|vaginismus|dyspareun|orgasm/.test(c + " " + icd11 + " " + n)) add("sexual");
+  if (/^F6[0-2]|personality/.test(c + " " + n)) add("personality");
+  if (/^F63|gambl|gaming|impulse|explosive|klepto|pyro/.test(c + " " + n)) add("impulse");
+  if (/explosive|conduct|oppositional/.test(n)) add("anger");
+  if (/^F7|^F8[0-9]|^F9[0-8]/.test(c) || /childhood|infancy/.test(n)) add("child");
+  if (/^F7|^F8/.test(c)) add("development");
+  if (/^F84|autism|asperger/.test(c + " " + n)) add("autism");
+  if (/^F90|adhd|hyperkinetic/.test(c + " " + n)) add("adhd");
+  if (/tic|tourette|stereotyped|tremor|dystonia|parkinsonism/.test(n)) add("movement");
+  if (/self-harm|suicid/.test(n)) add("risk");
+  if (/marital|family|support group/.test(n)) add("relationship");
+  return Array.from(new Set(t));
+}
+
+const ICD_OPTIONS: DiagnosisOption[] = PSYCHIATRY_ICD.map(([icd10, icd11, name, keywords]) => ({
+  name,
+  icd10,
+  icd11,
+  keywords: keywords ?? "",
+  tags: tagsFor(icd10, icd11, name),
+}));
+
+/** Curated psychiatry diagnoses first, then the full ICD-10 Chapter V / ICD-11 Chapter 6 list (no duplicates). */
+export const diagnosisOptions: DiagnosisOption[] = (() => {
+  const seen = new Set(CURATED.map((d) => `${d.icd10}|${d.icd11}`.toLowerCase()));
+  const curatedNames = new Set(CURATED.map((d) => d.name.toLowerCase()));
+  const extra = ICD_OPTIONS.filter((d) => {
+    const key = `${d.icd10}|${d.icd11}`.toLowerCase();
+    if (seen.has(key) || curatedNames.has(d.name.toLowerCase())) return false;
+    seen.add(key);
+    return true;
+  });
+  return [...CURATED, ...extra];
+})();
+
+function norm(v: string): string {
+  return v.toLowerCase().replace(/[^a-z0-9.\u0900-\u097f]+/g, " ").trim();
+}
+
+/**
+ * Ranked diagnosis search: every word must match (name, codes, keywords or tags).
+ * Exact / prefix code matches rank first, then name starts, then other matches.
+ */
+const HINGLISH: Record<string, string[]> = {
+  neend: ["sleep", "insomnia"], nind: ["sleep", "insomnia"], udasi: ["depress"], udas: ["depress"],
+  ghabrahat: ["anxiety", "panic"], chinta: ["anxiety", "worry"], dar: ["phobi", "anxiety"], darr: ["phobi", "anxiety"],
+  vaham: ["obsess"], vehem: ["obsess"], shak: ["delusion", "paranoid"], sharab: ["alcohol"], daru: ["alcohol"],
+  afeem: ["opioid"], afim: ["opioid"], doda: ["opioid"], smack: ["opioid"], heroin: ["opioid"], ganja: ["cannab"],
+  charas: ["cannab"], bhang: ["cannab"], tambaku: ["tobacco"], gutka: ["tobacco"], bidi: ["tobacco"],
+  mirgi: ["epilep", "seizure"], daura: ["seizure", "dissociative convulsions"], bhoolna: ["dementia", "memory", "amnes"],
+  yaddasht: ["dementia", "memory"], gussa: ["explosive", "anger", "oppositional"], satta: ["gambl"],
+  pagal: ["psychos", "schizo"], dhat: ["dhat"], shighrapatan: ["premature"], napunsakta: ["erectile"],
+};
+
+export function searchDiagnoses(query: string, limit = 30): DiagnosisOption[] {
+  const q = norm(query);
+  if (!q) return [];
+  const words = q.split(" ");
+  const alts = words.map((w) => [w, ...(HINGLISH[w] ?? [])]);
+  const scored: { d: DiagnosisOption; score: number; i: number }[] = [];
+  diagnosisOptions.forEach((d, i) => {
+    const codes = `${d.icd10} ${d.icd11}`.toLowerCase();
+    const name = norm(d.name);
+    const hay = `${name} ${codes} ${norm(d.keywords)} ${d.tags.join(" ")}`;
+    if (!alts.every((opts) => opts.some((w) => hay.includes(w)))) return;
+    const c10 = d.icd10.toLowerCase();
+    const c11 = d.icd11.toLowerCase();
+    let score = 6;
+    if (c10 === q || c11 === q) score = 0;
+    else if ((c10 && c10.startsWith(q)) || (c11 && c11.startsWith(q))) score = 1;
+    else if (name.startsWith(q)) score = 2;
+    else if (name.split(" ").some((w) => alts[0].some((a) => w.startsWith(a)))) score = 3;
+    else if (name.includes(q)) score = 4;
+    else if (codes.includes(q)) score = 5;
+    scored.push({ d, score, i });
+  });
+  return scored
+    .sort((a, b) => a.score - b.score || (a.score <= 1 ? a.d.icd10.localeCompare(b.d.icd10) : a.i - b.i))
+    .slice(0, limit)
+    .map((x) => x.d);
 }

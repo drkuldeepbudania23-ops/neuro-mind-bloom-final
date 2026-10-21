@@ -1,0 +1,375 @@
+import type { ConditionContent } from "../types";
+
+export const CHILD_EXTRA: ConditionContent[] = [
+  {
+    slug: "intellectual-disability-idd-india",
+    category: "child",
+    name: { en: "Intellectual Disability (IDD)", hi: "बौद्धिक अक्षमता (मंदबुद्धि / IDD)" },
+    title: { en: "Intellectual Disability (IDD) – Assessment, Certificate & Support", hi: "बौद्धिक अक्षमता (IDD) – जाँच, प्रमाणपत्र और सहयोग" },
+    h1: { en: "Intellectual developmental disorder (IDD)", hi: "बौद्धिक विकास विकार (IDD)" },
+    description: {
+      en: "Delayed milestones, slow learning or difficulty with daily skills? Assessment, IQ testing guidance, disability certificate and practical support for families.",
+      hi: "विकास में देरी, धीरे सीखना या रोज़ के कामों में दिक्कत? जाँच, IQ टेस्ट का मार्गदर्शन, विकलांगता प्रमाणपत्र और परिवारों के लिए व्यावहारिक सहयोग।",
+    },
+    intro: [
+      { en: "IDD means limitations in intellectual functioning and everyday adaptive skills that begin in childhood. Every child can learn and progress with the right support.", hi: "IDD का मतलब है बचपन से शुरू होने वाली बौद्धिक क्षमता और रोज़ के कौशलों में सीमाएँ। सही सहयोग से हर बच्चा सीख और आगे बढ़ सकता है।" },
+      { en: "Behavioural problems, epilepsy, ADHD, sleep issues and anxiety are common alongside IDD and are treatable.", hi: "IDD के साथ व्यवहार की समस्याएँ, मिर्गी, ADHD, नींद और घबराहट आम हैं, और इनका इलाज संभव है।" },
+    ],
+    symptoms: [
+      { en: "Delay in sitting, walking or speaking", hi: "बैठने, चलने या बोलने में देरी" },
+      { en: "Learning much slower than other children", hi: "दूसरे बच्चों से बहुत धीरे सीखना" },
+      { en: "Difficulty with self-care, money, time or safety", hi: "अपनी देखभाल, पैसे, समय या सुरक्षा में दिक्कत" },
+      { en: "Behaviour problems — aggression, self-injury, hyperactivity", hi: "व्यवहार की समस्याएँ — आक्रामकता, ख़ुद को चोट, अति-सक्रियता" },
+      { en: "Fits, poor sleep, feeding difficulties", hi: "दौरे, ख़राब नींद, खाने में दिक्कत" },
+    ],
+    causes: [
+      { en: "Genetic conditions (e.g. Down syndrome)", hi: "आनुवंशिक स्थितियाँ (जैसे डाउन सिंड्रोम)" },
+      { en: "Problems during pregnancy or birth (lack of oxygen, prematurity)", hi: "गर्भावस्था या जन्म के समय की समस्या (ऑक्सीजन की कमी, समय से पहले जन्म)" },
+      { en: "Childhood brain infections, severe malnutrition, thyroid deficiency", hi: "बचपन में दिमाग़ का संक्रमण, गंभीर कुपोषण, थायरॉइड की कमी" },
+      { en: "Often no single cause is found — it is not the parents' fault", hi: "अक्सर कोई एक वजह नहीं मिलती — यह माता-पिता की ग़लती नहीं" },
+    ],
+    treatment: [
+      { en: "Developmental assessment and referral for standardised IQ/adaptive testing", hi: "विकास की जाँच और मानक IQ/कौशल टेस्ट के लिए रेफ़रल" },
+      { en: "Guidance on disability certificate (UDID) and government benefits", hi: "विकलांगता प्रमाणपत्र (UDID) और सरकारी लाभों पर मार्गदर्शन" },
+      { en: "Special education, speech and occupational therapy", hi: "विशेष शिक्षा, स्पीच और ऑक्यूपेशनल थेरेपी" },
+      { en: "Behaviour management training for parents", hi: "माता-पिता के लिए व्यवहार प्रबंधन प्रशिक्षण" },
+      { en: "Treating epilepsy, ADHD, sleep or aggression with careful medication", hi: "मिर्गी, ADHD, नींद या आक्रामकता का सावधानी से दवाओं से इलाज" },
+    ],
+    seekHelp: [
+      { en: "Milestones are clearly delayed", hi: "विकास के पड़ाव साफ़ तौर पर देर से" },
+      { en: "School reports serious learning difficulty", hi: "स्कूल से पढ़ाई में गंभीर कठिनाई की शिकायत" },
+      { en: "Aggression or self-injury at home", hi: "घर पर आक्रामकता या ख़ुद को चोट" },
+    ],
+    faqs: [
+      { q: { en: "Can IDD be cured?", hi: "क्या IDD ठीक हो सकता है?" }, a: { en: "IDD is lifelong, but skills, independence and behaviour improve greatly with early training and support.", hi: "IDD ज़िंदगी भर रहता है, पर जल्दी प्रशिक्षण और सहयोग से कौशल, आत्मनिर्भरता और व्यवहार में बहुत सुधार होता है।" } },
+      { q: { en: "How do we get a disability certificate?", hi: "विकलांगता प्रमाणपत्र कैसे मिलेगा?" }, a: { en: "It is issued by a government medical board after IQ assessment. We guide you through the process.", hi: "यह IQ जाँच के बाद सरकारी मेडिकल बोर्ड द्वारा जारी होता है। हम पूरी प्रक्रिया में मार्गदर्शन करते हैं।" } },
+      { q: { en: "Are medicines needed?", hi: "क्या दवाएँ ज़रूरी हैं?" }, a: { en: "Not for IDD itself — only for associated problems like fits, hyperactivity, sleep or aggression.", hi: "IDD के लिए नहीं — सिर्फ़ साथ की समस्याओं जैसे दौरे, अति-सक्रियता, नींद या आक्रामकता के लिए।" } },
+    ],
+    related: ["autism-psychiatrist-india", "adhd-psychiatrist-india", "child-psychiatrist-india", "specific-learning-disorder-india"],
+  },
+  {
+    slug: "odd-conduct-disorder-india",
+    category: "child",
+    name: { en: "Defiance & Conduct Problems (ODD)", hi: "ज़िद, गुस्सा और व्यवहार की समस्या (ODD)" },
+    title: { en: "ODD & Conduct Disorder – Child Anger and Defiance", hi: "ODD और कंडक्ट डिसऑर्डर – बच्चों का गुस्सा और ज़िद" },
+    h1: { en: "Oppositional defiant disorder and conduct problems", hi: "बच्चों में ज़िद, गुस्सा और व्यवहार की समस्याएँ (ODD / कंडक्ट डिसऑर्डर)" },
+    description: {
+      en: "Frequent temper outbursts, arguing, refusing rules, lying, fighting or stealing? Parent training and therapy can turn behaviour around.",
+      hi: "बार-बार गुस्से के दौरे, बहस, नियम न मानना, झूठ, लड़ाई या चोरी? माता-पिता प्रशिक्षण और थेरेपी से व्यवहार सुधर सकता है।",
+    },
+    intro: [
+      { en: "ODD involves a persistent pattern of angry, argumentative and defiant behaviour. Conduct disorder is more serious, involving aggression, rule-breaking or harm to others.", hi: "ODD में लगातार गुस्सा, बहस और ज़िद का पैटर्न होता है। कंडक्ट डिसऑर्डर ज़्यादा गंभीर है, जिसमें आक्रामकता, नियम तोड़ना या दूसरों को नुकसान शामिल है।" },
+      { en: "Early help prevents school failure, substance use and legal problems later.", hi: "जल्दी मदद से आगे चलकर स्कूल में नाकामी, नशा और क़ानूनी परेशानियों से बचाव होता है।" },
+    ],
+    symptoms: [
+      { en: "Frequent temper tantrums and irritability", hi: "बार-बार गुस्से के दौरे और चिड़चिड़ापन" },
+      { en: "Arguing with adults, refusing rules", hi: "बड़ों से बहस, नियम न मानना" },
+      { en: "Deliberately annoying others, blaming others", hi: "जानबूझकर दूसरों को परेशान करना, दूसरों पर दोष डालना" },
+      { en: "Lying, stealing, running away, bunking school", hi: "झूठ, चोरी, घर से भागना, स्कूल से भागना" },
+      { en: "Fighting, bullying, cruelty to animals (conduct disorder)", hi: "मारपीट, दूसरों को तंग करना, जानवरों पर क्रूरता (कंडक्ट डिसऑर्डर)" },
+    ],
+    causes: [
+      { en: "ADHD, learning difficulties or language delay", hi: "ADHD, सीखने की कठिनाई या भाषा में देरी" },
+      { en: "Inconsistent or very harsh discipline", hi: "असंगत या बहुत कठोर अनुशासन" },
+      { en: "Family conflict, violence or substance use at home", hi: "घर में झगड़े, हिंसा या नशा" },
+      { en: "Peer influence, excess screen time", hi: "दोस्तों का असर, ज़्यादा स्क्रीन टाइम" },
+    ],
+    treatment: [
+      { en: "Parent management training — clear rules, praise, consistent consequences", hi: "माता-पिता प्रबंधन प्रशिक्षण — साफ़ नियम, तारीफ़, एक जैसे नतीजे" },
+      { en: "Child therapy for anger control and problem-solving", hi: "गुस्सा नियंत्रण और समस्या सुलझाने के लिए बच्चे की थेरेपी" },
+      { en: "Treating ADHD, learning or mood problems", hi: "ADHD, सीखने या मूड की समस्याओं का इलाज" },
+      { en: "Working with the school", hi: "स्कूल के साथ मिलकर काम" },
+      { en: "Medicines only for specific associated conditions", hi: "दवाएँ केवल ख़ास साथ की समस्याओं के लिए" },
+    ],
+    seekHelp: [
+      { en: "Behaviour problems at home and school for months", hi: "महीनों से घर और स्कूल दोनों में व्यवहार की समस्या" },
+      { en: "Aggression, stealing or substance use", hi: "आक्रामकता, चोरी या नशा" },
+      { en: "Parents feel they have lost control", hi: "माता-पिता को लगे कि नियंत्रण खो गया" },
+    ],
+    faqs: [
+      { q: { en: "Is my child just badly behaved?", hi: "क्या मेरा बच्चा बस बिगड़ा हुआ है?" }, a: { en: "Persistent patterns often have underlying causes like ADHD or stress. Labelling doesn't help; a plan does.", hi: "लगातार पैटर्न के पीछे अक्सर ADHD या तनाव जैसी वजहें होती हैं। ठप्पा लगाने से नहीं, योजना से मदद मिलती है।" } },
+      { q: { en: "Does beating help?", hi: "क्या मारने से सुधरेगा?" }, a: { en: "No. Harsh punishment usually increases aggression. Consistent, calm consequences work better.", hi: "नहीं। कठोर सज़ा से आमतौर पर आक्रामकता बढ़ती है। एक जैसे, शांत नतीजे बेहतर काम करते हैं।" } },
+      { q: { en: "Do both parents need to attend?", hi: "क्या माता-पिता दोनों को आना होगा?" }, a: { en: "Ideally yes — consistency between caregivers is key.", hi: "बेहतर है हाँ — देखभाल करने वालों में एकरूपता सबसे ज़रूरी है।" } },
+    ],
+    related: ["adhd-psychiatrist-india", "child-psychiatrist-india", "gaming-disorder-treatment-india"],
+  },
+  {
+    slug: "tic-tourette-movement-disorders-india",
+    category: "child",
+    name: { en: "Tics, Tourette & Movement Disorders", hi: "टिक्स, टूरेट और मूवमेंट डिसऑर्डर" },
+    title: { en: "Tics & Tourette Syndrome Treatment", hi: "टिक्स और टूरेट सिंड्रोम का इलाज" },
+    h1: { en: "Tics, Tourette syndrome and childhood movement disorders", hi: "टिक्स, टूरेट सिंड्रोम और बच्चों के मूवमेंट डिसऑर्डर" },
+    description: {
+      en: "Repeated blinking, facial jerks, throat clearing or sounds? Tics are common in children; most improve, and treatment helps when they cause distress.",
+      hi: "बार-बार आँख झपकाना, चेहरे का झटका, गला साफ़ करना या आवाज़ें? बच्चों में टिक्स आम हैं; ज़्यादातर सुधर जाते हैं, और परेशानी हो तो इलाज मदद करता है।",
+    },
+    intro: [
+      { en: "Tics are sudden, repeated movements or sounds. When both motor and vocal tics last more than a year, it is called Tourette syndrome. Stress and excitement make tics worse.", hi: "टिक्स अचानक, बार-बार होने वाली हरकतें या आवाज़ें हैं। जब हरकत और आवाज़ दोनों तरह के टिक्स एक साल से ज़्यादा रहें, तो इसे टूरेट सिंड्रोम कहते हैं। तनाव और उत्तेजना से टिक्स बढ़ते हैं।" },
+      { en: "Tics often occur with ADHD, OCD or anxiety, which may need treatment too.", hi: "टिक्स अक्सर ADHD, OCD या घबराहट के साथ होते हैं, जिनका इलाज भी ज़रूरी हो सकता है।" },
+    ],
+    symptoms: [
+      { en: "Eye blinking, facial grimacing, head or shoulder jerks", hi: "आँख झपकाना, चेहरा बनाना, सिर या कंधे का झटका" },
+      { en: "Throat clearing, sniffing, grunting or words", hi: "गला साफ़ करना, सूँघना, आवाज़ निकालना या शब्द बोलना" },
+      { en: "An urge before the tic, relief after it", hi: "टिक से पहले बेचैनी जैसी तलब, बाद में राहत" },
+      { en: "Tics increase with stress, decrease when focused", hi: "तनाव में टिक्स बढ़ना, ध्यान लगाने पर कम होना" },
+      { en: "Teasing, embarrassment or school difficulties", hi: "चिढ़ाया जाना, शर्मिंदगी या स्कूल में दिक्कत" },
+    ],
+    causes: [
+      { en: "Neurodevelopmental — differences in brain movement circuits", hi: "न्यूरो-डेवलपमेंटल — दिमाग़ के मूवमेंट सर्किट में अंतर" },
+      { en: "Strong family tendency", hi: "मज़बूत पारिवारिक प्रवृत्ति" },
+      { en: "Not caused by bad behaviour or parenting", hi: "ग़लत व्यवहार या परवरिश से नहीं होता" },
+    ],
+    treatment: [
+      { en: "Education for child, family and school — reducing attention to tics", hi: "बच्चे, परिवार और स्कूल को जानकारी — टिक्स पर ध्यान कम करना" },
+      { en: "Behavioural therapy (habit reversal / CBIT)", hi: "व्यवहार थेरेपी (हैबिट रिवर्सल / CBIT)" },
+      { en: "Medicines when tics are severe or painful", hi: "टिक्स गंभीर या दर्दनाक हों तो दवाएँ" },
+      { en: "Treating associated ADHD, OCD or anxiety", hi: "साथ में ADHD, OCD या घबराहट का इलाज" },
+      { en: "Neurology review for other movement disorders when needed", hi: "ज़रूरत पर दूसरे मूवमेंट डिसऑर्डर के लिए न्यूरोलॉजी जाँच" },
+    ],
+    seekHelp: [
+      { en: "Tics cause pain, injury or distress", hi: "टिक्स से दर्द, चोट या परेशानी" },
+      { en: "Child is teased or avoids school", hi: "बच्चे को चिढ़ाया जाए या स्कूल से बचे" },
+      { en: "Sudden onset of tics with OCD symptoms after an infection", hi: "किसी संक्रमण के बाद अचानक टिक्स और OCD लक्षण" },
+    ],
+    faqs: [
+      { q: { en: "Should we tell the child to stop?", hi: "क्या बच्चे को रोकने के लिए कहें?" }, a: { en: "No — asking to stop increases stress and tics. Calm acceptance helps more.", hi: "नहीं — रोकने को कहने से तनाव और टिक्स बढ़ते हैं। शांत स्वीकार ज़्यादा मदद करता है।" } },
+      { q: { en: "Will tics go away?", hi: "क्या टिक्स चले जाएँगे?" }, a: { en: "Many children improve by late teens.", hi: "कई बच्चों में किशोरावस्था के अंत तक सुधार हो जाता है।" } },
+      { q: { en: "Can adults have movement problems linked to psychiatric medicines?", hi: "क्या बड़ों में मनोरोग दवाओं से हरकत की समस्या हो सकती है?" }, a: { en: "Yes, some medicines can cause stiffness, tremor or restlessness; tell your doctor so the dose or medicine can be adjusted.", hi: "हाँ, कुछ दवाओं से अकड़न, काँपना या बेचैनी हो सकती है; डॉक्टर को बताएँ ताकि डोज़ या दवा बदली जा सके।" } },
+    ],
+    related: ["adhd-psychiatrist-india", "ocd-treatment-india", "child-psychiatrist-india"],
+  },
+];
+
+export const GERIATRIC: ConditionContent[] = [
+  {
+    slug: "geriatric-psychiatry-india",
+    category: "elderly",
+    name: { en: "Geriatric Psychiatry", hi: "बुज़ुर्गों का मानसिक स्वास्थ्य (जेरियाट्रिक साइकियाट्री)" },
+    title: { en: "Geriatric Psychiatry – Mental Health in Older Adults", hi: "जेरियाट्रिक साइकियाट्री – बुज़ुर्गों का मानसिक स्वास्थ्य" },
+    h1: { en: "Geriatric psychiatry: mental health care for older adults", hi: "जेरियाट्रिक साइकियाट्री: बुज़ुर्गों के मानसिक स्वास्थ्य की देखभाल" },
+    description: {
+      en: "Depression, anxiety, memory loss, confusion, sleep problems and medicine side-effects in older adults — gentle, safe treatment with family guidance.",
+      hi: "बुज़ुर्गों में डिप्रेशन, घबराहट, याददाश्त की कमी, भ्रम, नींद की समस्या और दवाओं के साइड-इफ़ेक्ट — परिवार के मार्गदर्शन के साथ नरम, सुरक्षित इलाज।",
+    },
+    intro: [
+      { en: "Mental health problems in old age are often missed as 'just ageing'. Older adults also take many medicines and have other illnesses, so treatment must be especially careful.", hi: "बुढ़ापे की मानसिक समस्याओं को अक्सर 'उम्र का असर' कहकर अनदेखा कर दिया जाता है। बुज़ुर्ग कई दवाएँ लेते हैं और उन्हें दूसरी बीमारियाँ भी होती हैं, इसलिए इलाज ख़ास सावधानी से होना चाहिए।" },
+    ],
+    headings: { symptoms: { en: "Problems we help with", hi: "किन समस्याओं में मदद मिलती है" } },
+    symptoms: [
+      { en: "Late-life depression — withdrawal, poor appetite, 'I am a burden'", hi: "बुढ़ापे का डिप्रेशन — अकेलापन, भूख कम, 'मैं बोझ हूँ' जैसी सोच" },
+      { en: "Anxiety, restlessness, health worries", hi: "घबराहट, बेचैनी, सेहत की चिंता" },
+      { en: "Memory loss and dementia", hi: "याददाश्त की कमी और डिमेंशिया" },
+      { en: "Sudden confusion (delirium) during illness or after surgery", hi: "बीमारी या ऑपरेशन के बाद अचानक भ्रम (डेलिरियम)" },
+      { en: "Sleep problems and sleeping-pill dependence", hi: "नींद की समस्या और नींद की गोलियों पर निर्भरता" },
+      { en: "Suspiciousness or hallucinations in old age", hi: "बुढ़ापे में शक या भ्रम" },
+      { en: "Long-term afeem or alcohol use", hi: "लंबे समय से अफ़ीम या शराब का सेवन" },
+    ],
+    causes: [
+      { en: "Loss of spouse, loneliness, retirement, dependence on others", hi: "जीवनसाथी को खोना, अकेलापन, रिटायरमेंट, दूसरों पर निर्भरता" },
+      { en: "Stroke, Parkinson's, diabetes, heart disease, pain", hi: "स्ट्रोक, पार्किंसन, डायबिटीज़, दिल की बीमारी, दर्द" },
+      { en: "Hearing or vision loss", hi: "सुनने या देखने में कमी" },
+      { en: "Too many medicines (polypharmacy) and their interactions", hi: "बहुत ज़्यादा दवाएँ और उनका आपस में असर" },
+    ],
+    treatment: [
+      { en: "Full review of all medicines — removing those that worsen memory or cause falls", hi: "सभी दवाओं की पूरी समीक्षा — याददाश्त बिगाड़ने या गिरने का ख़तरा बढ़ाने वाली दवाएँ हटाना" },
+      { en: "Low-dose, carefully chosen medicines ('start low, go slow')", hi: "कम डोज़, सोच-समझकर चुनी दवाएँ ('कम से शुरू, धीरे बढ़ाएँ')" },
+      { en: "Supportive therapy and activity planning", hi: "सहायक थेरेपी और गतिविधियों की योजना" },
+      { en: "Caregiver guidance and coordination with other doctors", hi: "देखभाल करने वालों का मार्गदर्शन और दूसरे डॉक्टरों से तालमेल" },
+      { en: "Online consultation from home — no need to travel", hi: "घर से ऑनलाइन परामर्श — यात्रा की ज़रूरत नहीं" },
+    ],
+    seekHelp: [
+      { en: "Low mood, not eating, or talk of death", hi: "उदासी, खाना न खाना या मौत की बात" },
+      { en: "New forgetfulness or personality change", hi: "नई भूलने की आदत या स्वभाव में बदलाव" },
+      { en: "Sudden confusion — urgent medical check", hi: "अचानक भ्रम — तुरंत डॉक्टरी जाँच" },
+    ],
+    faqs: [
+      { q: { en: "Is depression normal in old age?", hi: "क्या बुढ़ापे में डिप्रेशन सामान्य है?" }, a: { en: "No. It is common but not normal, and it responds well to treatment.", hi: "नहीं। यह आम है पर सामान्य नहीं, और इलाज से अच्छा सुधार होता है।" } },
+      { q: { en: "Can my elderly parent consult by video?", hi: "क्या मेरे बुज़ुर्ग माता-पिता वीडियो से परामर्श ले सकते हैं?" }, a: { en: "Yes, with a family member helping on the call.", hi: "हाँ, कॉल पर परिवार का कोई सदस्य मदद करे।" } },
+      { q: { en: "They take many medicines already. Is it safe to add more?", hi: "वे पहले से कई दवाएँ लेते हैं, और दवा जोड़ना सुरक्षित है?" }, a: { en: "We review everything first; often some medicines can be reduced.", hi: "हम पहले सब दवाएँ देखते हैं; अक्सर कुछ दवाएँ कम की जा सकती हैं।" } },
+    ],
+    related: ["dementia-memory-clinic-india", "delirium-confusion-elderly-india", "post-stroke-depression-india", "sleep-disorders-psychiatrist-india"],
+    selfTest: "phq9",
+  },
+  {
+    slug: "delirium-confusion-elderly-india",
+    category: "elderly",
+    name: { en: "Delirium (Sudden Confusion)", hi: "डेलिरियम (अचानक भ्रम)" },
+    title: { en: "Delirium – Sudden Confusion in Elderly Patients", hi: "डेलिरियम – बुज़ुर्गों में अचानक भ्रम" },
+    h1: { en: "Delirium: sudden confusion is a medical warning sign", hi: "डेलिरियम: अचानक भ्रम एक मेडिकल चेतावनी है" },
+    description: {
+      en: "Sudden confusion, agitation, not recognising family or seeing things — especially during illness, after surgery or in hospital? Delirium needs prompt medical attention.",
+      hi: "अचानक भ्रम, बेचैनी, परिवार को न पहचानना या चीज़ें दिखना — ख़ासकर बीमारी, ऑपरेशन के बाद या अस्पताल में? डेलिरियम में तुरंत इलाज ज़रूरी है।",
+    },
+    intro: [
+      { en: "Delirium is a sudden change in attention and awareness that develops over hours to days and fluctuates. It is caused by an underlying physical problem and is a medical emergency.", hi: "डेलिरियम ध्यान और होश में अचानक बदलाव है जो घंटों या दिनों में होता है और घटता-बढ़ता रहता है। इसकी वजह कोई शारीरिक समस्या होती है और यह मेडिकल इमरजेंसी है।" },
+    ],
+    symptoms: [
+      { en: "Sudden confusion, not knowing time or place", hi: "अचानक भ्रम, समय या जगह का पता न होना" },
+      { en: "Symptoms worse in the evening or night", hi: "शाम या रात में लक्षण ज़्यादा" },
+      { en: "Agitation, pulling lines, trying to get out of bed", hi: "बेचैनी, नलियाँ खींचना, बिस्तर से उठने की कोशिश" },
+      { en: "Or unusual drowsiness and withdrawal", hi: "या असामान्य सुस्ती और चुप्पी" },
+      { en: "Seeing things, fearfulness", hi: "चीज़ें दिखना, डर" },
+    ],
+    causes: [
+      { en: "Infections (urine, chest), dehydration, low sodium or sugar", hi: "संक्रमण (पेशाब, छाती), पानी की कमी, सोडियम या शुगर कम होना" },
+      { en: "Surgery, anaesthesia, pain, constipation, urine retention", hi: "ऑपरेशन, बेहोशी की दवा, दर्द, कब्ज़, पेशाब रुकना" },
+      { en: "New medicines or stopping alcohol/sleeping pills", hi: "नई दवाएँ या शराब/नींद की गोलियाँ अचानक बंद करना" },
+      { en: "Dementia increases the risk", hi: "डिमेंशिया से जोखिम बढ़ता है" },
+    ],
+    treatment: [
+      { en: "Find and treat the physical cause — usually with the physician/hospital team", hi: "शारीरिक वजह ढूँढकर इलाज — आमतौर पर फ़िज़िशियन/अस्पताल टीम के साथ" },
+      { en: "Calm, well-lit room; family presence; glasses and hearing aids", hi: "शांत, रोशनी वाला कमरा; परिवार का साथ; चश्मा और सुनने की मशीन" },
+      { en: "Regular sleep–wake routine, fluids and mobility", hi: "सोने-जागने की नियमित दिनचर्या, पानी और चलना-फिरना" },
+      { en: "Short-term medicines only if agitation is dangerous", hi: "बेचैनी ख़तरनाक हो तभी थोड़े समय के लिए दवा" },
+    ],
+    seekHelp: [
+      { en: "Any sudden confusion — same-day medical assessment", hi: "कोई भी अचानक भ्रम — उसी दिन डॉक्टरी जाँच" },
+      { en: "Fever, breathlessness, not eating or drinking", hi: "बुख़ार, साँस फूलना, खाना-पीना बंद" },
+      { en: "Agitation risking falls or injury", hi: "बेचैनी से गिरने या चोट का ख़तरा" },
+    ],
+    faqs: [
+      { q: { en: "Is delirium the same as dementia?", hi: "क्या डेलिरियम और डिमेंशिया एक ही हैं?" }, a: { en: "No. Delirium is sudden and usually reversible; dementia develops slowly over months to years.", hi: "नहीं। डेलिरियम अचानक होता है और आमतौर पर ठीक हो जाता है; डिमेंशिया महीनों-सालों में धीरे-धीरे बढ़ता है।" } },
+      { q: { en: "Should we give a sleeping pill?", hi: "क्या नींद की गोली दें?" }, a: { en: "Not without a doctor's advice — some sleeping pills worsen delirium.", hi: "डॉक्टर की सलाह के बिना नहीं — कुछ नींद की गोलियाँ डेलिरियम बढ़ाती हैं।" } },
+      { q: { en: "Can it be prevented?", hi: "क्या इससे बचाव हो सकता है?" }, a: { en: "Often — good hydration, mobility, sleep routine, avoiding risky medicines and family presence help.", hi: "अक्सर हाँ — पर्याप्त पानी, चलना-फिरना, नींद की दिनचर्या, जोखिम वाली दवाओं से बचाव और परिवार का साथ मदद करते हैं।" } },
+    ],
+    related: ["dementia-memory-clinic-india", "geriatric-psychiatry-india", "alcohol-addiction-treatment-india"],
+  },
+  {
+    slug: "late-life-depression-india",
+    category: "elderly",
+    name: { en: "Depression in Old Age", hi: "बुढ़ापे का डिप्रेशन" },
+    title: { en: "Late-life Depression – Depression in Older Adults", hi: "बुढ़ापे का डिप्रेशन – बुज़ुर्गों में उदासी" },
+    h1: { en: "Depression in older adults", hi: "बुज़ुर्गों में डिप्रेशन (उदासी)" },
+    description: {
+      en: "Withdrawal, poor appetite, aches, sleep problems or 'I am a burden' thoughts in an elderly parent? Late-life depression is common and treatable.",
+      hi: "बुज़ुर्ग माता-पिता में अकेलापन, भूख कम, दर्द, नींद की समस्या या 'मैं बोझ हूँ' जैसी सोच? बुढ़ापे का डिप्रेशन आम है और इसका इलाज संभव है।",
+    },
+    intro: [
+      { en: "In older adults, depression often shows up as physical complaints, irritability or memory problems rather than obvious sadness.", hi: "बुज़ुर्गों में डिप्रेशन अक्सर साफ़ उदासी के बजाय शारीरिक शिकायतों, चिड़चिड़ेपन या याददाश्त की समस्या के रूप में दिखता है।" },
+    ],
+    symptoms: [
+      { en: "Loss of interest, staying in bed, withdrawal", hi: "रुचि ख़त्म होना, बिस्तर पर पड़े रहना, अकेलापन" },
+      { en: "Poor appetite and weight loss", hi: "भूख कम और वज़न घटना" },
+      { en: "Many aches, fatigue", hi: "कई तरह के दर्द, थकान" },
+      { en: "Poor memory and concentration", hi: "याददाश्त और ध्यान की कमी" },
+      { en: "Hopelessness, talk of death", hi: "नाउम्मीदी, मौत की बातें" },
+    ],
+    causes: [
+      { en: "Loneliness, bereavement, loss of independence", hi: "अकेलापन, किसी अपने की मौत, आत्मनिर्भरता खोना" },
+      { en: "Stroke, heart disease, Parkinson's, chronic pain", hi: "स्ट्रोक, दिल की बीमारी, पार्किंसन, पुराना दर्द" },
+      { en: "Medicine side-effects", hi: "दवाओं के साइड-इफ़ेक्ट" },
+    ],
+    treatment: [
+      { en: "Safe antidepressants chosen for age and other medicines", hi: "उम्र और दूसरी दवाओं के हिसाब से चुनी सुरक्षित एंटीडिप्रेसेंट" },
+      { en: "Supportive therapy and social activity plan", hi: "सहायक थेरेपी और सामाजिक गतिविधियों की योजना" },
+      { en: "Treating pain, sleep and physical illness", hi: "दर्द, नींद और शारीरिक बीमारी का इलाज" },
+      { en: "Family involvement", hi: "परिवार की भागीदारी" },
+    ],
+    seekHelp: [
+      { en: "Low mood or withdrawal for over two weeks", hi: "दो हफ़्ते से ज़्यादा उदासी या अकेलापन" },
+      { en: "Not eating or rapid weight loss", hi: "खाना न खाना या तेज़ी से वज़न घटना" },
+      { en: "Any talk of not wanting to live — urgent", hi: "जीने की इच्छा न होने की कोई भी बात — तुरंत" },
+    ],
+    faqs: [
+      { q: { en: "Are antidepressants safe for the elderly?", hi: "क्या बुज़ुर्गों के लिए एंटीडिप्रेसेंट सुरक्षित हैं?" }, a: { en: "Yes, when chosen carefully at low doses with monitoring.", hi: "हाँ, जब कम डोज़ में सावधानी से चुनी जाएँ और निगरानी हो।" } },
+      { q: { en: "Could memory loss actually be depression?", hi: "क्या भूलना असल में डिप्रेशन हो सकता है?" }, a: { en: "Yes — depression can mimic dementia and memory often improves with treatment.", hi: "हाँ — डिप्रेशन डिमेंशिया जैसा दिख सकता है और इलाज से याददाश्त अक्सर सुधरती है।" } },
+      { q: { en: "My parent refuses to see a 'mental' doctor.", hi: "माता-पिता 'दिमाग़ के डॉक्टर' के पास जाने से मना करते हैं।" }, a: { en: "Family can consult first; framing it as help for sleep, appetite or pain often makes it easier.", hi: "परिवार पहले परामर्श ले सकता है; इसे नींद, भूख या दर्द की मदद के रूप में बताना अक्सर आसान रहता है।" } },
+    ],
+    related: ["geriatric-psychiatry-india", "depression-treatment-india", "dementia-memory-clinic-india"],
+    selfTest: "phq9",
+  },
+];
+
+export const NEURO: ConditionContent[] = [
+  {
+    slug: "neuropsychiatry-india",
+    category: "neuro",
+    name: { en: "Neuropsychiatry", hi: "न्यूरोसाइकियाट्री" },
+    title: { en: "Neuropsychiatry – Mental Health in Brain Disorders", hi: "न्यूरोसाइकियाट्री – दिमाग़ी रोगों में मानसिक स्वास्थ्य" },
+    h1: { en: "Neuropsychiatry: where brain and mind meet", hi: "न्यूरोसाइकियाट्री: जहाँ दिमाग़ और मन मिलते हैं" },
+    description: {
+      en: "Depression, anxiety, behaviour or memory changes with epilepsy, stroke, head injury, Parkinson's, dementia or chronic headache — coordinated neuropsychiatric care.",
+      hi: "मिर्गी, स्ट्रोक, सिर की चोट, पार्किंसन, डिमेंशिया या पुराने सिरदर्द के साथ डिप्रेशन, घबराहट, व्यवहार या याददाश्त में बदलाव — न्यूरोसाइकियाट्रिक देखभाल।",
+    },
+    intro: [
+      { en: "Neurological illnesses frequently affect mood, thinking and behaviour. Treating these psychiatric aspects improves recovery and quality of life.", hi: "दिमाग़ी (न्यूरोलॉजिकल) बीमारियाँ अक्सर मूड, सोच और व्यवहार पर असर डालती हैं। इन मानसिक पहलुओं का इलाज करने से सुधार और जीवन की गुणवत्ता बढ़ती है।" },
+      { en: "We work alongside your neurologist, choosing medicines that are safe with your existing treatment.", hi: "हम आपके न्यूरोलॉजिस्ट के साथ मिलकर काम करते हैं और ऐसी दवाएँ चुनते हैं जो आपके मौजूदा इलाज के साथ सुरक्षित हों।" },
+    ],
+    headings: { symptoms: { en: "Conditions we see", hi: "किन स्थितियों में मदद मिलती है" } },
+    symptoms: [
+      { en: "Epilepsy with depression, anxiety, irritability or psychosis", hi: "मिर्गी के साथ डिप्रेशन, घबराहट, चिड़चिड़ापन या मनोविकृति" },
+      { en: "Post-stroke depression and emotional changes", hi: "स्ट्रोक के बाद डिप्रेशन और भावनात्मक बदलाव" },
+      { en: "Dementia with behaviour problems", hi: "डिमेंशिया के साथ व्यवहार की समस्याएँ" },
+      { en: "Chronic headache and migraine with stress", hi: "तनाव के साथ पुराना सिरदर्द और माइग्रेन" },
+      { en: "Head injury — irritability, memory and personality change", hi: "सिर की चोट — चिड़चिड़ापन, याददाश्त और स्वभाव में बदलाव" },
+      { en: "Parkinson's disease with depression, anxiety or hallucinations", hi: "पार्किंसन के साथ डिप्रेशन, घबराहट या भ्रम" },
+      { en: "Dissociative (non-epileptic) seizures", hi: "डिसोसिएटिव (बिना मिर्गी के) दौरे" },
+    ],
+    causes: [
+      { en: "Direct effects of brain injury or disease on mood circuits", hi: "दिमाग़ की चोट या बीमारी का मूड सर्किट पर सीधा असर" },
+      { en: "Stress of living with a chronic illness", hi: "पुरानी बीमारी के साथ जीने का तनाव" },
+      { en: "Side-effects of some neurological medicines", hi: "कुछ न्यूरोलॉजिकल दवाओं के साइड-इफ़ेक्ट" },
+    ],
+    treatment: [
+      { en: "Careful assessment of neurological history, reports and medicines", hi: "न्यूरोलॉजिकल इतिहास, रिपोर्ट और दवाओं की सावधान जाँच" },
+      { en: "Psychiatric medicines chosen to avoid interactions and seizure risk", hi: "दवाओं के आपसी असर और दौरे के जोखिम से बचते हुए चुनी गई मनोरोग दवाएँ" },
+      { en: "Therapy, rehabilitation advice and caregiver support", hi: "थेरेपी, पुनर्वास सलाह और देखभाल करने वालों को सहयोग" },
+      { en: "Coordination with neurologist and physician", hi: "न्यूरोलॉजिस्ट और फ़िज़िशियन से तालमेल" },
+    ],
+    seekHelp: [
+      { en: "Mood or behaviour changes after a neurological diagnosis", hi: "न्यूरोलॉजिकल बीमारी के बाद मूड या व्यवहार में बदलाव" },
+      { en: "Medicines for epilepsy/Parkinson's seem to affect mood", hi: "मिर्गी/पार्किंसन की दवाओं से मूड पर असर लगे" },
+      { en: "New weakness, speech loss or severe headache — emergency (112)", hi: "नई कमज़ोरी, बोलने में दिक्कत या तेज़ सिरदर्द — इमरजेंसी (112)" },
+    ],
+    faqs: [
+      { q: { en: "Do I still need my neurologist?", hi: "क्या न्यूरोलॉजिस्ट की ज़रूरत बनी रहेगी?" }, a: { en: "Yes. Neuropsychiatric care works alongside neurology, not instead of it.", hi: "हाँ। न्यूरोसाइकियाट्रिक देखभाल न्यूरोलॉजी के साथ चलती है, उसकी जगह नहीं।" } },
+      { q: { en: "Are antidepressants safe in epilepsy?", hi: "क्या मिर्गी में एंटीडिप्रेसेंट सुरक्षित हैं?" }, a: { en: "Many are, at appropriate doses. The choice is made considering your seizure control.", hi: "कई सुरक्षित हैं, सही डोज़ में। चुनाव आपके दौरे के नियंत्रण को देखकर होता है।" } },
+      { q: { en: "Please share all reports before consulting", hi: "क्या परामर्श से पहले रिपोर्ट भेजें?" }, a: { en: "Yes — MRI/CT, EEG and current prescriptions help make the consultation more useful.", hi: "हाँ — MRI/CT, EEG और मौजूदा पर्चे परामर्श को ज़्यादा उपयोगी बनाते हैं।" } },
+    ],
+    related: ["seizure-disorders-psychiatry-india", "post-stroke-depression-india", "dementia-memory-clinic-india", "headache-psychiatric-care-india"],
+  },
+  {
+    slug: "post-stroke-depression-india",
+    category: "neuro",
+    name: { en: "Post-stroke Depression", hi: "स्ट्रोक (लकवे) के बाद डिप्रेशन" },
+    title: { en: "Post-stroke Depression & Emotional Changes", hi: "लकवे (स्ट्रोक) के बाद डिप्रेशन और भावनात्मक बदलाव" },
+    h1: { en: "Depression and emotional changes after stroke", hi: "लकवे (स्ट्रोक) के बाद डिप्रेशन और भावनात्मक बदलाव" },
+    description: {
+      en: "Low mood, crying spells, loss of motivation or anxiety after a stroke? Post-stroke depression is common, slows recovery, and is treatable.",
+      hi: "लकवे के बाद उदासी, बार-बार रोना, प्रेरणा की कमी या घबराहट? स्ट्रोक के बाद डिप्रेशन आम है, सुधार धीमा करता है, और इसका इलाज संभव है।",
+    },
+    intro: [
+      { en: "About one in three people develop depression after a stroke. It reduces participation in physiotherapy and slows recovery — so treating it matters.", hi: "स्ट्रोक के बाद लगभग हर तीन में से एक व्यक्ति को डिप्रेशन होता है। इससे फ़िज़ियोथेरेपी में भागीदारी कम होती है और सुधार धीमा होता है — इसलिए इलाज ज़रूरी है।" },
+    ],
+    symptoms: [
+      { en: "Persistent sadness or hopelessness", hi: "लगातार उदासी या नाउम्मीदी" },
+      { en: "Loss of motivation for exercises and therapy", hi: "व्यायाम और थेरेपी के लिए प्रेरणा की कमी" },
+      { en: "Sudden crying or laughing out of proportion (emotionalism)", hi: "अचानक बेवजह रोना या हँसना" },
+      { en: "Anxiety, fear of another stroke", hi: "घबराहट, दोबारा स्ट्रोक का डर" },
+      { en: "Sleep and appetite changes, irritability", hi: "नींद और भूख में बदलाव, चिड़चिड़ापन" },
+    ],
+    causes: [
+      { en: "Brain damage to mood-regulating areas", hi: "मूड नियंत्रित करने वाले दिमाग़ी हिस्सों को नुकसान" },
+      { en: "Loss of independence, work or role in family", hi: "आत्मनिर्भरता, काम या परिवार में भूमिका खोना" },
+      { en: "Pain, poor sleep, communication difficulty", hi: "दर्द, ख़राब नींद, बोलने में दिक्कत" },
+    ],
+    treatment: [
+      { en: "Antidepressants that are safe with heart and blood-thinning medicines", hi: "दिल और ख़ून पतला करने की दवाओं के साथ सुरक्षित एंटीडिप्रेसेंट" },
+      { en: "Supportive therapy and goal-setting with rehabilitation", hi: "पुनर्वास के साथ सहायक थेरेपी और लक्ष्य तय करना" },
+      { en: "Treating emotionalism, sleep and pain", hi: "भावनात्मक अस्थिरता, नींद और दर्द का इलाज" },
+      { en: "Caregiver support", hi: "देखभाल करने वालों को सहयोग" },
+    ],
+    seekHelp: [
+      { en: "Low mood or withdrawal for more than two weeks after stroke", hi: "स्ट्रोक के बाद दो हफ़्ते से ज़्यादा उदासी या अकेलापन" },
+      { en: "Refusing physiotherapy or food", hi: "फ़िज़ियोथेरेपी या खाना से इनकार" },
+      { en: "New weakness or speech problems — emergency (112)", hi: "नई कमज़ोरी या बोलने में दिक्कत — इमरजेंसी (112)" },
+    ],
+    faqs: [
+      { q: { en: "Is it normal to feel low after a stroke?", hi: "क्या स्ट्रोक के बाद उदास होना सामान्य है?" }, a: { en: "Some sadness is understandable, but persistent depression is a treatable complication.", hi: "थोड़ी उदासी समझ में आती है, पर लगातार डिप्रेशन एक इलाज योग्य जटिलता है।" } },
+      { q: { en: "Will antidepressants interfere with my stroke medicines?", hi: "क्या एंटीडिप्रेसेंट लकवे की दवाओं से टकराएँगे?" }, a: { en: "We choose medicines considering your blood thinners and other treatment.", hi: "हम आपकी ख़ून पतला करने वाली और दूसरी दवाओं को देखकर दवा चुनते हैं।" } },
+      { q: { en: "Can consultation be done at home?", hi: "क्या परामर्श घर से हो सकता है?" }, a: { en: "Yes, by video — very useful when travel is difficult.", hi: "हाँ, वीडियो से — जब यात्रा मुश्किल हो तब बहुत उपयोगी।" } },
+    ],
+    related: ["neuropsychiatry-india", "late-life-depression-india", "geriatric-psychiatry-india"],
+    selfTest: "phq9",
+  },
+];

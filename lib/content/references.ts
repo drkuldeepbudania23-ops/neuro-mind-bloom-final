@@ -1,0 +1,57 @@
+/**
+ * Verified, guideline-level medical references used by articles.
+ * Only official guidelines, WHO/Government documents and classification systems are listed —
+ * no individual research papers are cited, so nothing can be mis-attributed.
+ * Each article cites references by id.
+ */
+export type Reference = { title: string; publisher: string; year?: string; url?: string };
+
+export const REFERENCES: Record<string, Reference> = {
+  icd11: { title: "ICD-11 for Mortality and Morbidity Statistics", publisher: "World Health Organization", url: "https://icd.who.int/" },
+  mhgap: { title: "mhGAP Intervention Guide for mental, neurological and substance use disorders in non-specialized health settings, version 2.0", publisher: "World Health Organization", year: "2016" },
+  "who-depression": { title: "Depressive disorder (depression) — fact sheet", publisher: "World Health Organization", url: "https://www.who.int/news-room/fact-sheets/detail/depression" },
+  "who-anxiety": { title: "Anxiety disorders — fact sheet", publisher: "World Health Organization", url: "https://www.who.int/news-room/fact-sheets/detail/anxiety-disorders" },
+  "who-suicide": { title: "Suicide — fact sheet", publisher: "World Health Organization", url: "https://www.who.int/news-room/fact-sheets/detail/suicide" },
+  "who-live-life": { title: "LIVE LIFE: an implementation guide for suicide prevention in countries", publisher: "World Health Organization", year: "2021" },
+  "who-alcohol": { title: "Alcohol — fact sheet", publisher: "World Health Organization", url: "https://www.who.int/news-room/fact-sheets/detail/alcohol" },
+  "who-tobacco": { title: "Tobacco — fact sheet", publisher: "World Health Organization", url: "https://www.who.int/news-room/fact-sheets/detail/tobacco" },
+  "who-dementia": { title: "Dementia — fact sheet", publisher: "World Health Organization", url: "https://www.who.int/news-room/fact-sheets/detail/dementia" },
+  "who-schizophrenia": { title: "Schizophrenia — fact sheet", publisher: "World Health Organization", url: "https://www.who.int/news-room/fact-sheets/detail/schizophrenia" },
+  "who-adolescent": { title: "Mental health of adolescents — fact sheet", publisher: "World Health Organization", url: "https://www.who.int/news-room/fact-sheets/detail/adolescent-mental-health" },
+  "who-autism": { title: "Autism — fact sheet", publisher: "World Health Organization", url: "https://www.who.int/news-room/fact-sheets/detail/autism-spectrum-disorders" },
+  "who-mental-disorders": { title: "Mental disorders — fact sheet", publisher: "World Health Organization", url: "https://www.who.int/news-room/fact-sheets/detail/mental-disorders" },
+  "who-opioid": { title: "Guidelines for the psychosocially assisted pharmacological treatment of opioid dependence", publisher: "World Health Organization", year: "2009" },
+  "unodc-standards": { title: "International Standards for the Treatment of Drug Use Disorders (revised edition)", publisher: "UNODC & World Health Organization", year: "2020" },
+  "nice-depression": { title: "Depression in adults: treatment and management (NG222)", publisher: "National Institute for Health and Care Excellence (NICE), UK", year: "2022", url: "https://www.nice.org.uk/guidance/ng222" },
+  "nice-depression-young": { title: "Depression in children and young people: identification and management (NG134)", publisher: "NICE, UK", year: "2019", url: "https://www.nice.org.uk/guidance/ng134" },
+  "nice-gad": { title: "Generalised anxiety disorder and panic disorder in adults: management (CG113)", publisher: "NICE, UK", year: "2011", url: "https://www.nice.org.uk/guidance/cg113" },
+  "nice-social-anxiety": { title: "Social anxiety disorder: recognition, assessment and treatment (CG159)", publisher: "NICE, UK", year: "2013", url: "https://www.nice.org.uk/guidance/cg159" },
+  "nice-ocd": { title: "Obsessive-compulsive disorder and body dysmorphic disorder: treatment (CG31)", publisher: "NICE, UK", year: "2005", url: "https://www.nice.org.uk/guidance/cg31" },
+  "nice-ptsd": { title: "Post-traumatic stress disorder (NG116)", publisher: "NICE, UK", year: "2018", url: "https://www.nice.org.uk/guidance/ng116" },
+  "nice-bipolar": { title: "Bipolar disorder: assessment and management (CG185)", publisher: "NICE, UK", year: "2014", url: "https://www.nice.org.uk/guidance/cg185" },
+  "nice-psychosis": { title: "Psychosis and schizophrenia in adults: prevention and management (CG178)", publisher: "NICE, UK", year: "2014", url: "https://www.nice.org.uk/guidance/cg178" },
+  "nice-alcohol": { title: "Alcohol-use disorders: diagnosis, assessment and management of harmful drinking and alcohol dependence (CG115)", publisher: "NICE, UK", year: "2011", url: "https://www.nice.org.uk/guidance/cg115" },
+  "nice-alcohol-physical": { title: "Alcohol-use disorders: diagnosis and management of physical complications (CG100)", publisher: "NICE, UK", year: "2010", url: "https://www.nice.org.uk/guidance/cg100" },
+  "nice-adhd": { title: "Attention deficit hyperactivity disorder: diagnosis and management (NG87)", publisher: "NICE, UK", year: "2018", url: "https://www.nice.org.uk/guidance/ng87" },
+  "nice-autism": { title: "Autism spectrum disorder in under 19s: recognition, referral and diagnosis (CG128)", publisher: "NICE, UK", year: "2011", url: "https://www.nice.org.uk/guidance/cg128" },
+  "nice-dementia": { title: "Dementia: assessment, management and support for people living with dementia and their carers (NG97)", publisher: "NICE, UK", year: "2018", url: "https://www.nice.org.uk/guidance/ng97" },
+  "nice-delirium": { title: "Delirium: prevention, diagnosis and management (CG103)", publisher: "NICE, UK", year: "2010", url: "https://www.nice.org.uk/guidance/cg103" },
+  "nice-eating": { title: "Eating disorders: recognition and treatment (NG69)", publisher: "NICE, UK", year: "2017", url: "https://www.nice.org.uk/guidance/ng69" },
+  "nice-self-harm": { title: "Self-harm: assessment, management and preventing recurrence (NG225)", publisher: "NICE, UK", year: "2022", url: "https://www.nice.org.uk/guidance/ng225" },
+  "nice-bedwetting": { title: "Bedwetting in under 19s (CG111)", publisher: "NICE, UK", year: "2010", url: "https://www.nice.org.uk/guidance/cg111" },
+  "nice-perinatal": { title: "Antenatal and postnatal mental health: clinical management and service guidance (CG192)", publisher: "NICE, UK", year: "2014", url: "https://www.nice.org.uk/guidance/cg192" },
+  "aasm-insomnia": { title: "Behavioral and psychological treatments for chronic insomnia disorder in adults: an American Academy of Sleep Medicine clinical practice guideline", publisher: "Journal of Clinical Sleep Medicine", year: "2021" },
+  "aua-ed": { title: "Erectile Dysfunction: AUA Guideline", publisher: "American Urological Association", year: "2018" },
+  "issm-pe": { title: "International Society for Sexual Medicine guidelines for the diagnosis and treatment of premature ejaculation", publisher: "ISSM", year: "2014" },
+  "aap-adhd": { title: "Clinical practice guideline for the diagnosis, evaluation and treatment of ADHD in children and adolescents", publisher: "American Academy of Pediatrics", year: "2019" },
+  "ips-cpg": { title: "Clinical Practice Guidelines of the Indian Psychiatric Society", publisher: "Indian Psychiatric Society / Indian Journal of Psychiatry", url: "https://journals.lww.com/indianjpsychiatry" },
+  mhca: { title: "The Mental Healthcare Act, 2017", publisher: "Government of India" },
+  tpg: { title: "Telemedicine Practice Guidelines", publisher: "Ministry of Health and Family Welfare, Government of India", year: "2020" },
+  telemanas: { title: "Tele-MANAS — National Tele Mental Health Programme", publisher: "Ministry of Health and Family Welfare, Government of India", url: "https://telemanas.mohfw.gov.in/" },
+  nmhs: { title: "National Mental Health Survey of India, 2015–16", publisher: "NIMHANS, Bengaluru", year: "2016" },
+  "magnitude-substance": { title: "Magnitude of Substance Use in India", publisher: "Ministry of Social Justice & Empowerment and NDDTC, AIIMS New Delhi", year: "2019" },
+  ndps: { title: "The Narcotic Drugs and Psychotropic Substances Act, 1985", publisher: "Government of India" },
+  "who-under5": { title: "Guidelines on physical activity, sedentary behaviour and sleep for children under 5 years of age", publisher: "World Health Organization", year: "2019" },
+  "ugc-ragging": { title: "UGC Regulations on Curbing the Menace of Ragging in Higher Educational Institutions", publisher: "University Grants Commission, India", year: "2009" },
+  rpwd: { title: "The Rights of Persons with Disabilities Act, 2016", publisher: "Government of India" },
+};

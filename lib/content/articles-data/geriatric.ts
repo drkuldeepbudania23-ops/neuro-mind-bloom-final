@@ -1,0 +1,447 @@
+import { batch } from "./_build";
+
+type P = [string, string];
+const BOOK: P = ["Families can book an online consultation and join the call with the elder", "परिवार ऑनलाइन परामर्श बुक कर सकते हैं और बुज़ुर्ग के साथ कॉल में शामिल हो सकते हैं"];
+const SUDDEN: P = ["Sudden confusion, weakness or slurred speech — go to an emergency department now", "अचानक भ्रम, कमज़ोरी या लड़खड़ाती बोली — तुरंत इमरजेंसी जाएँ"];
+
+export const GERIATRIC_ARTICLES = batch("geriatric", [
+  {
+    slug: "normal-forgetfulness-vs-dementia",
+    title: ["Normal forgetfulness or dementia? Key differences", "सामान्य भूलना या डिमेंशिया? मुख्य अंतर"],
+    excerpt: ["Misplacing keys is common with age; getting lost on familiar roads is not. How to tell normal ageing from early dementia and when to get checked.", "उम्र के साथ चाबी रखकर भूलना आम है; जानी-पहचानी सड़क पर रास्ता भूलना नहीं। सामान्य बुढ़ापे और शुरुआती डिमेंशिया में फ़र्क़ और कब जाँच कराएँ।"],
+    related: ["dementia-memory-clinic-india", "mild-cognitive-impairment-india", "alzheimers-disease-india"],
+    refs: ["who-dementia", "nice-dementia"],
+    intro: [
+      ["Some slowing of memory is a normal part of ageing.", "याददाश्त का कुछ धीमा होना बुढ़ापे का सामान्य हिस्सा है।"],
+      ["Dementia is different: memory and thinking decline enough to affect daily independence.", "डिमेंशिया अलग है: याददाश्त और सोच इतनी घटती है कि रोज़ की आत्मनिर्भरता पर असर पड़ता है।"],
+    ],
+    key: [
+      ["Normal: forgetting a name but recalling it later", "सामान्य: नाम भूलना पर बाद में याद आ जाना"],
+      ["Concerning: repeating the same question within minutes", "चिंताजनक: कुछ मिनटों में वही सवाल दोहराना"],
+      ["Treatable causes such as low B12, thyroid or depression must be ruled out", "B12 की कमी, थायरॉइड या डिप्रेशन जैसी ठीक होने वाली वजहें जाँचनी ज़रूरी"],
+    ],
+    sym: [
+      ["Getting lost in familiar places", "जानी-पहचानी जगह में रास्ता भूलना"],
+      ["Difficulty handling money or medicines", "पैसे या दवाएँ संभालने में दिक़्क़त"],
+      ["Personality change, suspicion or withdrawal", "स्वभाव में बदलाव, शक या अलग-थलग होना"],
+    ],
+    cause: [
+      ["Alzheimer's disease", "अल्ज़ाइमर रोग"],
+      ["Strokes and small-vessel disease (vascular dementia)", "स्ट्रोक और छोटी नसों का रोग (वैस्कुलर डिमेंशिया)"],
+      ["Other brain diseases such as Lewy body or frontotemporal dementia", "अन्य दिमाग़ी रोग जैसे लेवी बॉडी या फ़्रंटोटेम्पोरल डिमेंशिया"],
+    ],
+    risk: [
+      ["High blood pressure, diabetes, smoking", "हाई बीपी, डायबिटीज़, धूम्रपान"],
+      ["Untreated hearing loss and social isolation", "बिना इलाज की कम सुनाई देना और सामाजिक अकेलापन"],
+      ["Physical inactivity and alcohol", "शारीरिक निष्क्रियता और शराब"],
+    ],
+    mgmt: [
+      ["Memory assessment with simple cognitive tests", "आसान संज्ञानात्मक टेस्ट से याददाश्त की जाँच"],
+      ["Blood tests and brain scan when advised", "सलाह मिलने पर ख़ून की जाँच और ब्रेन स्कैन"],
+      ["Treat depression, hearing loss and vascular risk factors", "डिप्रेशन, कम सुनाई और नसों के जोखिम का इलाज"],
+      ["Medicines that may slow symptoms in some dementias", "कुछ डिमेंशिया में लक्षण धीमा करने वाली दवाएँ"],
+    ],
+    help: [BOOK, ["Memory problems worsening over months", "महीनों में बढ़ती याददाश्त की समस्या"], SUDDEN],
+    faq: [
+      ["Is dementia a normal part of ageing?", "क्या डिमेंशिया बुढ़ापे का सामान्य हिस्सा है?", "No. It is a disease, not an inevitable part of growing old.", "नहीं। यह बीमारी है, बूढ़े होने का अनिवार्य हिस्सा नहीं।"],
+      ["Can memory loss be reversed?", "क्या याददाश्त की कमी ठीक हो सकती है?", "Some causes — low B12, thyroid, depression, medicine effects — are treatable, so assessment matters.", "कुछ वजहें — B12 की कमी, थायरॉइड, डिप्रेशन, दवा का असर — ठीक हो सकती हैं, इसलिए जाँच ज़रूरी है।"],
+    ],
+    tags: ["bhoolna", "memory loss", "dementia", "yaaddasht"],
+    video: ["dementia", "memory"],
+  },
+  {
+    slug: "depression-in-elderly-parents",
+    title: ["Depression in elderly parents: signs families miss", "बुज़ुर्ग माता-पिता में डिप्रेशन: संकेत जो परिवार चूक जाते हैं"],
+    excerpt: ["In older adults depression often shows as aches, poor sleep, irritability or memory complaints rather than sadness. Recognising and treating it.", "बुज़ुर्गों में डिप्रेशन अक्सर उदासी की जगह दर्द, ख़राब नींद, चिड़चिड़ेपन या याददाश्त की शिकायत के रूप में दिखता है। पहचान और इलाज।"],
+    related: ["late-life-depression-india", "geriatric-psychiatry-india", "depression-treatment-india"],
+    refs: ["who-depression", "nice-depression"],
+    intro: [
+      ["Depression is not a normal part of ageing and responds well to treatment at any age.", "डिप्रेशन बुढ़ापे का सामान्य हिस्सा नहीं है और किसी भी उम्र में इलाज से अच्छी तरह ठीक होता है।"],
+      ["Elders may not use the word 'depressed' and may hide feelings to avoid being a burden.", "बुज़ुर्ग 'डिप्रेशन' शब्द इस्तेमाल न करें और बोझ न बनने के लिए भावनाएँ छुपा सकते हैं।"],
+    ],
+    key: [
+      ["Physical complaints without a clear cause can signal depression", "बिना साफ़ वजह की शारीरिक शिकायतें डिप्रेशन का संकेत हो सकती हैं"],
+      ["Depression can mimic dementia ('pseudodementia')", "डिप्रेशन डिमेंशिया जैसा दिख सकता है ('स्यूडोडिमेंशिया')"],
+      ["Suicide risk is higher in older men", "बुज़ुर्ग पुरुषों में आत्महत्या का जोखिम ज़्यादा"],
+    ],
+    sym: [
+      ["Loss of interest in prayer, TV, grandchildren", "पूजा, टीवी, पोते-पोतियों में रुचि ख़त्म होना"],
+      ["Poor appetite, weight loss, early waking", "भूख कम, वज़न घटना, सुबह जल्दी जागना"],
+      ["Saying 'I am a burden' or 'What's the use of living'", "'मैं बोझ हूँ' या 'जीकर क्या फ़ायदा' कहना"],
+    ],
+    cause: [
+      ["Loss of spouse, friends or role", "जीवनसाथी, दोस्तों या भूमिका का खोना"],
+      ["Chronic illness and pain", "पुरानी बीमारी और दर्द"],
+      ["Brain changes from strokes", "स्ट्रोक से दिमाग़ में बदलाव"],
+    ],
+    risk: [
+      ["Living alone or children abroad", "अकेले रहना या बच्चे विदेश में"],
+      ["Hearing or vision loss", "सुनने या देखने में कमी"],
+      ["Many medicines", "बहुत सारी दवाएँ"],
+    ],
+    mgmt: [
+      ["Medical check-up to rule out thyroid, anaemia and medicine effects", "थायरॉइड, ख़ून की कमी और दवाओं के असर जाँचने के लिए मेडिकल जाँच"],
+      ["Psychotherapy and regular social contact", "साइकोथेरेपी और नियमित सामाजिक संपर्क"],
+      ["Antidepressants chosen carefully at lower starting doses", "कम शुरुआती डोज़ पर सावधानी से चुने गए एंटीडिप्रेसेंट"],
+      ["Daily routine with light activity and sunlight", "हल्की गतिविधि और धूप के साथ रोज़ की दिनचर्या"],
+    ],
+    help: [BOOK, ["Not eating or losing weight", "खाना न खाना या वज़न घटना"], ["Any talk of death or self-harm — seek help the same day", "मौत या ख़ुद को नुकसान की कोई बात — उसी दिन मदद लें"]],
+    faq: [
+      ["Are antidepressants safe for older people?", "क्या बुज़ुर्गों के लिए एंटीडिप्रेसेंट सुरक्षित हैं?", "Many are safe when started low and monitored for interactions, falls and salt levels.", "कम डोज़ से शुरू करके और दवाओं के मेल, गिरने और नमक के स्तर की निगरानी के साथ कई सुरक्षित हैं।"],
+      ["Can they consult online?", "क्या वे ऑनलाइन परामर्श ले सकते हैं?", "Yes, with a family member helping with the call if needed.", "हाँ, ज़रूरत हो तो परिवार का कोई सदस्य कॉल में मदद कर सकता है।"],
+    ],
+    tags: ["elderly depression", "budhape me udasi", "parents"],
+    video: ["depression", "elderly"],
+  },
+  {
+    slug: "dementia-caregiver-stress",
+    title: ["Caring for a person with dementia: avoiding burnout", "डिमेंशिया वाले व्यक्ति की देखभाल: थकान से कैसे बचें"],
+    excerpt: ["Dementia care is a marathon. Practical tips for daily care, handling difficult behaviour, and protecting the caregiver's own health.", "डिमेंशिया की देखभाल लंबी दौड़ है। रोज़ की देखभाल, कठिन व्यवहार संभालने और देखभाल करने वाले की अपनी सेहत बचाने के व्यावहारिक सुझाव।"],
+    related: ["dementia-behaviour-problems-bpsd-india", "dementia-memory-clinic-india", "family-therapy-india"],
+    refs: ["who-dementia", "nice-dementia"],
+    intro: [
+      ["Family members provide most dementia care in India, often without training or breaks.", "भारत में डिमेंशिया की ज़्यादातर देखभाल परिवार करता है, अक्सर बिना प्रशिक्षण या आराम के।"],
+      ["Caregiver stress, depression and sleep loss are common and deserve attention.", "देखभाल करने वाले में तनाव, डिप्रेशन और नींद की कमी आम है और ध्यान देने योग्य है।"],
+    ],
+    key: [
+      ["Behaviour changes are symptoms of the disease, not deliberate", "व्यवहार में बदलाव बीमारी के लक्षण हैं, जानबूझकर नहीं"],
+      ["Routine and a calm environment reduce agitation", "दिनचर्या और शांत माहौल बेचैनी घटाते हैं"],
+      ["Sharing care among family members prevents burnout", "परिवार में देखभाल बाँटने से थकान रुकती है"],
+    ],
+    sym: [
+      ["Caregiver exhaustion, irritability or guilt", "देखभाल करने वाले की थकावट, चिड़चिड़ापन या अपराधबोध"],
+      ["Neglecting own health and friendships", "अपनी सेहत और दोस्ती की अनदेखी"],
+      ["Feeling trapped or hopeless", "फँसा हुआ या निराश महसूस करना"],
+    ],
+    cause: [
+      ["Round-the-clock supervision", "चौबीसों घंटे देखरेख"],
+      ["Night waking and wandering", "रात में जागना और भटकना"],
+      ["Aggression, suspicion or repeated questions", "आक्रामकता, शक या बार-बार सवाल"],
+    ],
+    risk: [
+      ["Single caregiver with no breaks", "बिना आराम के अकेला देखभाल करने वाला"],
+      ["Financial strain", "आर्थिक तंगी"],
+      ["Caregiver's own illness", "देखभाल करने वाले की अपनी बीमारी"],
+    ],
+    mgmt: [
+      ["Simple instructions, one step at a time; avoid arguing", "आसान निर्देश, एक बार में एक क़दम; बहस से बचें"],
+      ["Look for triggers of agitation: pain, constipation, noise, infection", "बेचैनी के कारण देखें: दर्द, क़ब्ज़, शोर, संक्रमण"],
+      ["Home safety: lock gas, remove trip hazards, ID bracelet", "घर की सुरक्षा: गैस लॉक, ठोकर वाली चीज़ें हटाएँ, पहचान ब्रेसलेट"],
+      ["Schedule regular respite for the main caregiver", "मुख्य देखभाल करने वाले के लिए नियमित आराम तय करें"],
+    ],
+    help: [BOOK, ["Aggression or night disturbance not manageable at home", "आक्रामकता या रात की बेचैनी घर पर संभल न रही हो"], SUDDEN],
+    faq: [
+      ["Should we correct them when they are wrong?", "जब वे ग़लत हों तो क्या उन्हें टोकें?", "Usually no. Gently redirect rather than argue; arguing increases distress.", "आमतौर पर नहीं। बहस की बजाय प्यार से ध्यान बदलें; बहस से परेशानी बढ़ती है।"],
+      ["Are calming medicines needed?", "क्या शांत करने वाली दवाएँ ज़रूरी हैं?", "Non-medicine approaches come first; medicines are used carefully only when needed.", "पहले बिना दवा के तरीक़े; दवाएँ सिर्फ़ ज़रूरत पर सावधानी से।"],
+    ],
+    tags: ["caregiver", "dementia care", "dekhbhal"],
+    video: ["dementia"],
+  },
+  {
+    slug: "delirium-sudden-confusion-in-hospital",
+    title: ["Sudden confusion in elders: understanding delirium", "बुज़ुर्गों में अचानक भ्रम: डिलीरियम को समझें"],
+    excerpt: ["An elder who suddenly becomes confused, drowsy or agitated during illness or after surgery may have delirium — a medical emergency that is often reversible.", "बीमारी या सर्जरी के बाद अचानक भ्रमित, सुस्त या बेचैन होने वाले बुज़ुर्ग को डिलीरियम हो सकता है — यह इमरजेंसी है जो अक्सर ठीक हो जाती है।"],
+    related: ["delirium-confusion-elderly-india", "geriatric-psychiatry-india", "dementia-memory-clinic-india"],
+    refs: ["nice-delirium", "icd11"],
+    intro: [
+      ["Delirium is an acute brain dysfunction that develops over hours to days.", "डिलीरियम दिमाग़ की अचानक गड़बड़ी है जो घंटों से दिनों में विकसित होती है।"],
+      ["It is common in hospital, especially in people with dementia, and needs a search for the cause.", "यह अस्पताल में आम है, ख़ासकर डिमेंशिया वालों में, और इसकी वजह ढूँढनी ज़रूरी है।"],
+    ],
+    key: [
+      ["Onset is sudden and symptoms fluctuate through the day", "शुरुआत अचानक और लक्षण दिन भर घटते-बढ़ते हैं"],
+      ["Infection, dehydration and medicines are common triggers", "संक्रमण, पानी की कमी और दवाएँ आम कारण"],
+      ["Family presence helps reorient the patient", "परिवार की मौजूदगी मरीज़ को सँभालने में मदद करती है"],
+    ],
+    sym: [
+      ["Confusion about time, place or people", "समय, जगह या लोगों को लेकर भ्रम"],
+      ["Seeing things that are not there, restlessness", "ऐसी चीज़ें दिखना जो नहीं हैं, बेचैनी"],
+      ["Unusual drowsiness or reversed sleep cycle", "असामान्य सुस्ती या उल्टा नींद-चक्र"],
+    ],
+    cause: [
+      ["Urinary or chest infection", "पेशाब या छाती का संक्रमण"],
+      ["Dehydration, low sodium or low sugar", "पानी, सोडियम या शुगर की कमी"],
+      ["Sedatives, pain medicines or alcohol withdrawal", "नींद की दवाएँ, दर्द की दवाएँ या शराब छोड़ने के लक्षण"],
+    ],
+    risk: [
+      ["Age over 65 and dementia", "65 से ज़्यादा उम्र और डिमेंशिया"],
+      ["Surgery such as hip fracture", "कूल्हे की हड्डी जैसी सर्जरी"],
+      ["Poor vision or hearing", "कम दिखना या सुनना"],
+    ],
+    mgmt: [
+      ["Urgent medical evaluation for the underlying cause", "मूल वजह के लिए तुरंत मेडिकल जाँच"],
+      ["Orientation: clock, calendar, glasses, hearing aids, familiar faces", "पहचान दिलाना: घड़ी, कैलेंडर, चश्मा, सुनने की मशीन, परिचित चेहरे"],
+      ["Good hydration, sleep at night, early mobilisation", "अच्छा पानी, रात में नींद, जल्दी चलना-फिरना"],
+      ["Medicines only for severe distress or danger", "दवाएँ सिर्फ़ गंभीर परेशानी या ख़तरे में"],
+    ],
+    help: [SUDDEN, ["Confusion during fever or after surgery — inform the treating doctor", "बुख़ार या सर्जरी के बाद भ्रम — इलाज करने वाले डॉक्टर को बताएँ"], BOOK],
+    faq: [
+      ["Is delirium the same as dementia?", "क्या डिलीरियम और डिमेंशिया एक हैं?", "No. Delirium is sudden and often reversible; dementia develops slowly over months to years.", "नहीं। डिलीरियम अचानक होता है और अक्सर ठीक होता है; डिमेंशिया महीनों-सालों में धीरे बढ़ता है।"],
+      ["How long does delirium last?", "डिलीरियम कितने समय रहता है?", "Usually days, but recovery can take weeks in frail elders.", "आमतौर पर कुछ दिन, पर कमज़ोर बुज़ुर्गों में ठीक होने में हफ़्ते लग सकते हैं।"],
+    ],
+    tags: ["delirium", "achanak bhram", "confusion"],
+    video: ["elderly", "dementia"],
+  },
+  {
+    slug: "loneliness-in-older-adults",
+    title: ["Loneliness in older adults: a hidden health risk", "बुज़ुर्गों में अकेलापन: छुपा हुआ स्वास्थ्य जोखिम"],
+    excerpt: ["With children working far away, many elders live alone. Loneliness raises the risk of depression and dementia — and simple steps help.", "बच्चों के दूर काम करने से कई बुज़ुर्ग अकेले रहते हैं। अकेलापन डिप्रेशन और डिमेंशिया का जोखिम बढ़ाता है — और आसान क़दम मदद करते हैं।"],
+    related: ["late-life-depression-india", "geriatric-psychiatry-india", "mild-cognitive-impairment-india"],
+    refs: ["who-dementia", "who-depression"],
+    intro: [
+      ["Loneliness is the painful feeling of having fewer meaningful connections than one wants.", "अकेलापन चाहे से कम सार्थक जुड़ाव होने की दर्दनाक भावना है।"],
+      ["Social isolation is now recognised as a risk factor for dementia and poor health.", "सामाजिक अलगाव अब डिमेंशिया और ख़राब सेहत का जोखिम माना जाता है।"],
+    ],
+    key: [
+      ["Quality of contact matters more than quantity", "संपर्क की मात्रा से ज़्यादा गुणवत्ता मायने रखती है"],
+      ["Hearing loss is a major, treatable cause of isolation", "कम सुनाई देना अलगाव की बड़ी, ठीक होने वाली वजह है"],
+      ["Purpose and routine protect mental health", "उद्देश्य और दिनचर्या मानसिक स्वास्थ्य बचाते हैं"],
+    ],
+    sym: [
+      ["Talking less, staying indoors", "कम बोलना, घर में रहना"],
+      ["Waiting all day for calls", "दिन भर कॉल का इंतज़ार"],
+      ["Poor sleep, low appetite, irritability", "ख़राब नींद, कम भूख, चिड़चिड़ापन"],
+    ],
+    cause: [
+      ["Children living in other cities or abroad", "बच्चे दूसरे शहर या विदेश में"],
+      ["Death of spouse or friends", "जीवनसाथी या दोस्तों की मौत"],
+      ["Limited mobility", "चलने-फिरने में कमी"],
+    ],
+    risk: [
+      ["Living alone", "अकेले रहना"],
+      ["Hearing or vision problems", "सुनने या देखने की समस्या"],
+      ["Retirement without new roles", "बिना नई भूमिका के रिटायरमेंट"],
+    ],
+    mgmt: [
+      ["Regular video calls at fixed times", "तय समय पर नियमित वीडियो कॉल"],
+      ["Community groups: satsang, senior clubs, morning walks", "सामुदायिक समूह: सत्संग, सीनियर क्लब, सुबह की सैर"],
+      ["Hearing test and hearing aids if needed", "सुनने की जाँच और ज़रूरत हो तो सुनने की मशीन"],
+      ["Meaningful roles: teaching grandchildren, volunteering, gardening", "सार्थक भूमिकाएँ: पोते-पोतियों को पढ़ाना, सेवा, बाग़वानी"],
+    ],
+    help: [BOOK, ["Signs of depression or memory decline", "डिप्रेशन या याददाश्त घटने के संकेत"], ["Talk of being a burden or not wanting to live", "बोझ होने या जीना न चाहने की बात"]],
+    faq: [
+      ["Can a smartphone help?", "क्या स्मार्टफ़ोन मदद कर सकता है?", "Yes — teaching simple video calling can greatly increase contact with family.", "हाँ — आसान वीडियो कॉल सिखाने से परिवार से संपर्क बहुत बढ़ सकता है।"],
+      ["Is loneliness a mental illness?", "क्या अकेलापन मानसिक बीमारी है?", "No, but long-term loneliness increases the risk of depression and should be addressed.", "नहीं, पर लंबा अकेलापन डिप्रेशन का जोखिम बढ़ाता है और इस पर ध्यान देना चाहिए।"],
+    ],
+    tags: ["akelapan", "elderly alone", "loneliness"],
+    video: ["elderly"],
+  },
+  {
+    slug: "sleep-problems-in-older-adults",
+    title: ["Sleep problems in older adults", "बुज़ुर्गों में नींद की समस्याएँ"],
+    excerpt: ["Lighter, earlier sleep is normal with age, but frequent waking and daytime sleepiness need a look. Safe ways to improve sleep without risky pills.", "उम्र के साथ हल्की और जल्दी नींद सामान्य है, पर बार-बार जागना और दिन में नींद पर ध्यान देना चाहिए। जोखिम वाली गोलियों के बिना नींद सुधारने के सुरक्षित तरीक़े।"],
+    related: ["insomnia-treatment-india", "geriatric-psychiatry-india", "sleep-disorders-psychiatrist-india"],
+    refs: ["aasm-insomnia", "who-dementia"],
+    intro: [
+      ["Ageing shifts the body clock earlier and makes sleep lighter.", "उम्र के साथ शरीर की घड़ी जल्दी की ओर खिसकती है और नींद हल्की होती है।"],
+      ["Persistent insomnia, however, is often due to pain, urine frequency, depression or medicines.", "पर लगातार अनिद्रा अक्सर दर्द, बार-बार पेशाब, डिप्रेशन या दवाओं की वजह से होती है।"],
+    ],
+    key: [
+      ["Sleeping pills increase falls and confusion in elders", "नींद की गोलियाँ बुज़ुर्गों में गिरने और भ्रम का जोखिम बढ़ाती हैं"],
+      ["Daytime light and activity improve night sleep", "दिन की रोशनी और गतिविधि रात की नींद सुधारती है"],
+      ["CBT-I works at any age", "CBT-I हर उम्र में काम करती है"],
+    ],
+    sym: [
+      ["Waking at 3–4 am and unable to sleep again", "सुबह 3–4 बजे जागना और फिर नींद न आना"],
+      ["Long daytime naps", "दिन में लंबी झपकी"],
+      ["Night-time confusion or wandering", "रात में भ्रम या भटकना"],
+    ],
+    cause: [
+      ["Pain, arthritis, breathlessness", "दर्द, गठिया, साँस फूलना"],
+      ["Frequent urination at night", "रात में बार-बार पेशाब"],
+      ["Depression, anxiety or dementia", "डिप्रेशन, चिंता या डिमेंशिया"],
+    ],
+    risk: [
+      ["Inactivity and staying indoors", "निष्क्रियता और घर के अंदर रहना"],
+      ["Multiple medicines", "कई दवाएँ"],
+      ["Snoring and sleep apnoea", "खर्राटे और स्लीप एपनिया"],
+    ],
+    mgmt: [
+      ["Morning sunlight and a daily walk", "सुबह की धूप और रोज़ सैर"],
+      ["Limit naps to 30 minutes before 3 pm", "झपकी दोपहर 3 बजे से पहले 30 मिनट तक"],
+      ["Less fluid after evening; treat pain and prostate problems", "शाम के बाद कम पानी; दर्द और प्रोस्टेट की समस्या का इलाज"],
+      ["Review sleeping pills with the doctor — reduce gradually", "डॉक्टर के साथ नींद की गोलियों की समीक्षा — धीरे-धीरे कम करें"],
+    ],
+    help: [BOOK, ["Falls or confusion at night", "रात में गिरना या भ्रम"], ["Sleep problem with low mood or memory decline", "उदासी या याददाश्त घटने के साथ नींद की समस्या"]],
+    faq: [
+      ["Do older people need less sleep?", "क्या बुज़ुर्गों को कम नींद चाहिए?", "Needs reduce only slightly; most still need about 7–8 hours, though it may be lighter.", "ज़रूरत थोड़ी ही घटती है; ज़्यादातर को अब भी लगभग 7–8 घंटे चाहिए, भले नींद हल्की हो।"],
+      ["Can long-used sleeping pills be stopped?", "क्या लंबे समय से ली जा रही नींद की गोलियाँ बंद हो सकती हैं?", "Yes, by slow tapering under medical supervision, ideally with CBT-I.", "हाँ, डॉक्टर की देखरेख में धीरे-धीरे घटाकर, बेहतर हो CBT-I के साथ।"],
+    ],
+    tags: ["elderly sleep", "budhape me neend"],
+    video: ["sleep", "elderly"],
+  },
+  {
+    slug: "medicines-and-falls-in-elderly",
+    title: ["Medicines that raise fall risk in elders", "बुज़ुर्गों में गिरने का जोखिम बढ़ाने वाली दवाएँ"],
+    excerpt: ["Sleeping pills, some psychiatric and blood pressure medicines can cause dizziness and falls. Why a regular medicine review protects older adults.", "नींद की गोलियाँ, कुछ मानसिक और बीपी की दवाएँ चक्कर और गिरने का कारण बन सकती हैं। नियमित दवा समीक्षा बुज़ुर्गों की रक्षा क्यों करती है।"],
+    related: ["geriatric-psychiatry-india", "sedative-sleeping-pill-dependence-india", "prescription-drug-dependence-india"],
+    refs: ["nice-delirium", "who-dementia"],
+    intro: [
+      ["Falls are a leading cause of injury and loss of independence in older adults.", "गिरना बुज़ुर्गों में चोट और आत्मनिर्भरता खोने की बड़ी वजह है।"],
+      ["Several medicine classes increase the risk, especially when combined.", "कई दवा-श्रेणियाँ जोखिम बढ़ाती हैं, ख़ासकर साथ में लेने पर।"],
+    ],
+    key: [
+      ["Sedative sleeping pills are a major fall risk", "नींद लाने वाली गोलियाँ गिरने का बड़ा जोखिम हैं"],
+      ["Bring all medicines (including over-the-counter) to every review", "हर समीक्षा में सारी दवाएँ (बिना पर्चे वाली भी) लाएँ"],
+      ["Never stop medicines suddenly — taper under guidance", "दवाएँ अचानक बंद न करें — सलाह से धीरे घटाएँ"],
+    ],
+    sym: [
+      ["Dizziness on standing", "खड़े होने पर चक्कर"],
+      ["Unsteady walking, especially at night", "लड़खड़ाती चाल, ख़ासकर रात में"],
+      ["Daytime drowsiness or confusion", "दिन में सुस्ती या भ्रम"],
+    ],
+    cause: [
+      ["Sedatives and sleeping pills", "नींद और शांत करने वाली दवाएँ"],
+      ["Some antidepressants, antipsychotics and anti-allergy medicines", "कुछ एंटीडिप्रेसेंट, एंटीसाइकोटिक और एलर्जी की दवाएँ"],
+      ["Blood pressure and diabetes medicines causing low BP or low sugar", "बीपी और डायबिटीज़ की दवाएँ जिनसे बीपी या शुगर कम हो"],
+    ],
+    risk: [
+      ["Taking five or more medicines", "पाँच या ज़्यादा दवाएँ लेना"],
+      ["Weak vision or poor lighting", "कमज़ोर नज़र या कम रोशनी"],
+      ["Getting up at night to urinate", "रात में पेशाब के लिए उठना"],
+    ],
+    mgmt: [
+      ["Medicine review every 6–12 months", "हर 6–12 महीने दवाओं की समीक्षा"],
+      ["Lowest effective doses and fewer sedating medicines", "सबसे कम असरदार डोज़ और कम नींद लाने वाली दवाएँ"],
+      ["Night lights, grab bars, non-slip mats", "रात की रोशनी, पकड़ने के हैंडल, न फिसलने वाली चटाई"],
+      ["Balance and strength exercises", "संतुलन और ताक़त वाले व्यायाम"],
+    ],
+    help: [BOOK, ["A fall or near-fall after starting a new medicine", "नई दवा के बाद गिरना या गिरते-गिरते बचना"], SUDDEN],
+    faq: [
+      ["My parent has taken sleeping pills for years — is it harmful?", "मेरे माता-पिता सालों से नींद की गोली ले रहे हैं — क्या नुकसानदेह है?", "Long-term use increases falls and memory problems; a gradual supervised reduction is usually advised.", "लंबे इस्तेमाल से गिरने और याददाश्त की समस्या बढ़ती है; आमतौर पर देखरेख में धीरे-धीरे घटाने की सलाह दी जाती है।"],
+      ["Who should do the medicine review?", "दवाओं की समीक्षा कौन करे?", "The treating physician or psychiatrist, with a full list of all medicines.", "इलाज करने वाले फ़िज़िशियन या मनोचिकित्सक, सारी दवाओं की पूरी सूची के साथ।"],
+    ],
+    tags: ["falls", "girna", "medicine review", "elderly"],
+    video: ["elderly"],
+  },
+  {
+    slug: "brain-health-tips-for-ageing",
+    title: ["Brain health after 50: habits that lower dementia risk", "50 के बाद दिमाग़ी सेहत: डिमेंशिया का जोखिम घटाने वाली आदतें"],
+    excerpt: ["Up to a third or more of dementia risk is linked to modifiable factors. Blood pressure, hearing, activity, social life and more — what you can do now.", "डिमेंशिया के जोखिम का एक-तिहाई या ज़्यादा हिस्सा बदले जा सकने वाले कारणों से जुड़ा है। बीपी, सुनना, गतिविधि, सामाजिक जीवन और भी — अभी क्या कर सकते हैं।"],
+    related: ["mild-cognitive-impairment-india", "dementia-memory-clinic-india", "vascular-dementia-india"],
+    refs: ["who-dementia", "nice-dementia"],
+    intro: [
+      ["The WHO recommends lifestyle steps to reduce the risk of cognitive decline.", "WHO संज्ञानात्मक गिरावट का जोखिम घटाने के लिए जीवनशैली के क़दम सुझाता है।"],
+      ["It is never too late to start, and the same habits protect the heart.", "शुरुआत में कभी देर नहीं होती, और यही आदतें दिल की भी रक्षा करती हैं।"],
+    ],
+    key: [
+      ["What is good for the heart is good for the brain", "जो दिल के लिए अच्छा, वह दिमाग़ के लिए भी"],
+      ["Correcting hearing loss is an important step", "कम सुनाई का इलाज अहम क़दम है"],
+      ["No supplement has proven to prevent dementia", "कोई सप्लीमेंट डिमेंशिया रोकने में साबित नहीं हुआ"],
+    ],
+    sym: [
+      ["Slower thinking or word-finding with age", "उम्र के साथ धीमी सोच या शब्द ढूँढने में देर"],
+      ["Less physical activity after retirement", "रिटायरमेंट के बाद कम शारीरिक गतिविधि"],
+      ["Reduced social contact", "कम सामाजिक संपर्क"],
+    ],
+    cause: [
+      ["Uncontrolled blood pressure and diabetes", "बेक़ाबू बीपी और डायबिटीज़"],
+      ["Smoking and heavy alcohol use", "धूम्रपान और ज़्यादा शराब"],
+      ["Inactivity, isolation and depression", "निष्क्रियता, अकेलापन और डिप्रेशन"],
+    ],
+    risk: [
+      ["Family history of dementia", "डिमेंशिया का पारिवारिक इतिहास"],
+      ["Head injuries", "सिर की चोट"],
+      ["Low education or little mental stimulation", "कम शिक्षा या कम मानसिक उत्तेजना"],
+    ],
+    mgmt: [
+      ["150 minutes of walking or yoga per week", "हफ़्ते में 150 मिनट टहलना या योग"],
+      ["Control BP, sugar and cholesterol; stop smoking", "बीपी, शुगर और कोलेस्ट्रॉल नियंत्रित; धूम्रपान बंद"],
+      ["Learn something new: language, music, games", "कुछ नया सीखें: भाषा, संगीत, खेल"],
+      ["Stay socially active; treat hearing loss and depression", "सामाजिक रूप से सक्रिय रहें; कम सुनाई और डिप्रेशन का इलाज"],
+    ],
+    help: [BOOK, ["Memory complaints noticed by family", "परिवार को याददाश्त की कमी दिखे"], ["Memory decline with low mood", "उदासी के साथ याददाश्त घटना"]],
+    faq: [
+      ["Do brain games prevent dementia?", "क्या ब्रेन गेम डिमेंशिया रोकते हैं?", "They may help thinking skills, but combined physical, social and mental activity matters more.", "ये सोच में मदद कर सकते हैं, पर शारीरिक, सामाजिक और मानसिक गतिविधि का मेल ज़्यादा मायने रखता है।"],
+      ["Is dementia hereditary?", "क्या डिमेंशिया वंशानुगत है?", "Family history raises risk modestly; most dementia is not directly inherited.", "पारिवारिक इतिहास से जोखिम थोड़ा बढ़ता है; ज़्यादातर डिमेंशिया सीधे वंशानुगत नहीं।"],
+    ],
+    tags: ["brain health", "dimag", "dementia prevention"],
+    video: ["dementia", "memory"],
+  },
+  {
+    slug: "retirement-and-mental-health",
+    title: ["Retirement and mental health: adjusting to a new phase", "रिटायरमेंट और मानसिक स्वास्थ्य: नए दौर के साथ तालमेल"],
+    excerpt: ["Retirement brings freedom but also loss of routine, role and income. Recognising adjustment difficulties and building a meaningful routine.", "रिटायरमेंट आज़ादी लाता है पर दिनचर्या, भूमिका और आमदनी भी छीनता है। समायोजन की कठिनाइयों को पहचानना और सार्थक दिनचर्या बनाना।"],
+    related: ["adjustment-disorder-india", "late-life-depression-india", "geriatric-psychiatry-india"],
+    refs: ["who-depression", "who-dementia"],
+    intro: [
+      ["Work provides structure, identity and social contact; retirement removes all three at once.", "काम ढाँचा, पहचान और सामाजिक संपर्क देता है; रिटायरमेंट तीनों एक साथ हटा देता है।"],
+      ["Most people adjust within months; some develop low mood or anxiety.", "ज़्यादातर लोग महीनों में ढल जाते हैं; कुछ में उदासी या चिंता होती है।"],
+    ],
+    key: [
+      ["Plan the non-financial side of retirement too", "रिटायरमेंट का ग़ैर-आर्थिक पक्ष भी योजना में रखें"],
+      ["A daily routine prevents drift", "रोज़ की दिनचर्या भटकाव रोकती है"],
+      ["Couples may need to renegotiate roles at home", "दंपति को घर की भूमिकाएँ फिर तय करनी पड़ सकती हैं"],
+    ],
+    sym: [
+      ["Feeling purposeless or 'useless'", "बेमक़सद या 'बेकार' महसूस करना"],
+      ["Irritability and conflicts at home", "चिड़चिड़ापन और घर में टकराव"],
+      ["Increased alcohol use or TV watching", "शराब या टीवी देखना बढ़ना"],
+    ],
+    cause: [
+      ["Loss of work identity", "काम वाली पहचान खोना"],
+      ["Reduced income and status", "कम आमदनी और रुतबा"],
+      ["Loss of colleagues and daily contact", "सहकर्मियों और रोज़ के संपर्क का खोना"],
+    ],
+    risk: [
+      ["Sudden or forced retirement", "अचानक या ज़बरदस्ती रिटायरमेंट"],
+      ["Few interests outside work", "काम के अलावा कम रुचियाँ"],
+      ["Health problems", "स्वास्थ्य समस्याएँ"],
+    ],
+    mgmt: [
+      ["Fixed wake time, exercise and a weekly plan", "तय जागने का समय, व्यायाम और साप्ताहिक योजना"],
+      ["Part-time work, mentoring or volunteering", "पार्ट-टाइम काम, मेंटरिंग या सेवा"],
+      ["Rebuild social circles: walking groups, community activities", "सामाजिक दायरा फिर बनाएँ: सैर समूह, सामुदायिक गतिविधियाँ"],
+      ["Talk openly with spouse about expectations", "जीवनसाथी से उम्मीदों पर खुलकर बात"],
+    ],
+    help: [BOOK, ["Low mood or sleep problems for more than two weeks", "दो हफ़्ते से ज़्यादा उदासी या नींद की समस्या"], ["Rising alcohol use", "बढ़ती शराब"]],
+    faq: [
+      ["Is it normal to feel low after retiring?", "क्या रिटायरमेंट के बाद उदास होना सामान्य है?", "A period of adjustment is normal; persistent low mood should be assessed.", "समायोजन का दौर सामान्य है; लगातार उदासी की जाँच होनी चाहिए।"],
+      ["How can family help?", "परिवार कैसे मदद कर सकता है?", "Involve them in decisions, value their experience and encourage outside activities.", "उन्हें फ़ैसलों में शामिल करें, उनके अनुभव को महत्व दें और बाहरी गतिविधियों को बढ़ावा दें।"],
+    ],
+    tags: ["retirement", "senior citizen", "budhapa"],
+    video: ["elderly"],
+  },
+  {
+    slug: "hearing-loss-and-dementia-risk",
+    title: ["Hearing loss and dementia: why hearing aids matter", "कम सुनाई और डिमेंशिया: सुनने की मशीन क्यों ज़रूरी"],
+    excerpt: ["Untreated hearing loss in midlife is one of the largest modifiable risk factors for dementia. Signs of hearing loss and why early correction helps.", "मध्य उम्र में बिना इलाज की कम सुनाई डिमेंशिया के सबसे बड़े बदले जा सकने वाले जोखिमों में से एक है। संकेत और जल्दी इलाज क्यों मदद करता है।"],
+    related: ["mild-cognitive-impairment-india", "dementia-memory-clinic-india", "late-life-depression-india"],
+    refs: ["who-dementia", "nice-dementia"],
+    intro: [
+      ["Hearing loss makes the brain work harder and cuts people off from conversation.", "कम सुनाई दिमाग़ पर ज़्यादा ज़ोर डालती है और लोगों को बातचीत से काट देती है।"],
+      ["This isolation and strain are linked with faster cognitive decline and depression.", "यह अलगाव और ज़ोर तेज़ संज्ञानात्मक गिरावट और डिप्रेशन से जुड़े हैं।"],
+    ],
+    key: [
+      ["Hearing loss is often gradual and unnoticed by the person", "कम सुनाई अक्सर धीरे होती है और व्यक्ति को पता नहीं चलता"],
+      ["Hearing aids are underused because of stigma and cost", "कलंक और ख़र्च की वजह से सुनने की मशीन का कम इस्तेमाल"],
+      ["A hearing test is a simple step in any memory assessment", "हर याददाश्त जाँच में सुनने की जाँच एक आसान क़दम है"],
+    ],
+    sym: [
+      ["Turning the TV volume very high", "टीवी की आवाज़ बहुत तेज़ करना"],
+      ["Asking people to repeat; mishearing", "लोगों से बार-बार दोहराने को कहना; ग़लत सुनना"],
+      ["Avoiding gatherings and phone calls", "मिलने-जुलने और फ़ोन कॉल से बचना"],
+    ],
+    cause: [
+      ["Age-related hearing loss", "उम्र से जुड़ी कम सुनाई"],
+      ["Long-term noise exposure", "लंबे समय तक शोर में रहना"],
+      ["Ear wax, infections or some medicines", "कान का मैल, संक्रमण या कुछ दवाएँ"],
+    ],
+    risk: [
+      ["Noisy occupations", "शोर वाले काम"],
+      ["Diabetes and smoking", "डायबिटीज़ और धूम्रपान"],
+      ["Family history", "पारिवारिक इतिहास"],
+    ],
+    mgmt: [
+      ["Hearing test (audiometry) with an ENT specialist", "ENT विशेषज्ञ से सुनने की जाँच (ऑडियोमेट्री)"],
+      ["Well-fitted hearing aids, used daily", "ठीक से लगी सुनने की मशीन, रोज़ इस्तेमाल"],
+      ["Face the person, speak clearly, reduce background noise", "व्यक्ति के सामने रहें, साफ़ बोलें, पीछे का शोर कम करें"],
+    ],
+    help: [BOOK, ["Hearing difficulty with memory or mood changes", "याददाश्त या मूड में बदलाव के साथ सुनने में दिक़्क़त"], ["Sudden hearing loss in one ear — urgent ENT review", "एक कान में अचानक सुनाई बंद — तुरंत ENT जाँच"]],
+    faq: [
+      ["Will hearing aids prevent dementia?", "क्या सुनने की मशीन डिमेंशिया रोक देगी?", "They cannot guarantee prevention, but treating hearing loss is one of the most useful risk-reduction steps.", "रोकथाम की गारंटी नहीं, पर कम सुनाई का इलाज जोखिम घटाने के सबसे उपयोगी क़दमों में से एक है।"],
+      ["My parent refuses hearing aids — what can I do?", "माता-पिता सुनने की मशीन से मना करते हैं — क्या करूँ?", "Address concerns about looks and cost, try a trial period, and emphasise staying connected with family.", "दिखावट और ख़र्च की चिंता पर बात करें, ट्रायल दें, और परिवार से जुड़े रहने पर ज़ोर दें।"],
+    ],
+    tags: ["hearing aid", "kam sunai", "dementia risk"],
+    video: ["dementia", "elderly"],
+  },
+]);

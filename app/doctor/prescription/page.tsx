@@ -1,14 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { medicines } from "../../../data/medicines";
-import { officialBrandRows } from "../../../data/official-brand-catalogue";
-import { consernBrandRows } from "../../../data/consern-brand-catalogue";
 import { psychiatryBrands } from "../../../data/psychiatryBrands";
-import { complaintOptions, diagnosisOptions, diagnosisLabel } from "../../data/psychiatrySearch";
+import { complaintOptions, diagnosisOptions, diagnosisLabel, searchDiagnoses } from "../../data/psychiatrySearch";
 import { auth, db } from "../../../lib/firebase";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import EpinResetButton from "../EpinResetButton";
+import PatientUhid from "../../../components/doctor/PatientUhid";
+import { getOrCreatePatient, getPatient, recordVisit } from "../../../lib/client/patients";
+import { logAction } from "../../../lib/client/audit";
+import { customRows, displayName, searchMedicines } from "../../../lib/rx/medicineCatalogue";
+import { deleteCustomMedicine, loadCustomMedicines, saveCustomMedicine, type SavedCustomMedicine } from "../../../lib/client/customMedicines";
 type RxItem = {
   generic: string;
   brand: string;
@@ -43,6 +46,7 @@ type SavedPrescription = {
   consultationType?: "opd" | "teleconsultation";
   paymentClearance?: any;
   appointmentId?: string;
+  uhid?: string;
 };
 
 const blankRx = (): RxItem => ({
@@ -79,6 +83,7 @@ export default function PrescriptionPage() {
     useState(false);
 
   const [patientName, setPatientName] = useState("");
+  const [uhid, setUhid] = useState("");
   const [age, setAge] = useState("");
   const [sex, setSex] = useState("");
   const [mobile, setMobile] = useState("");
@@ -90,6 +95,10 @@ export default function PrescriptionPage() {
   const [history, setHistory] = useState("");
   const [vitals, setVitals] = useState("");
   const [search, setSearch] = useState("");
+  const [customMeds, setCustomMeds] = useState<SavedCustomMedicine[]>([]);
+  const [showAddBrand, setShowAddBrand] = useState(false);
+  const [newMed, setNewMed] = useState({ generic: "", brand: "", strength: "", form: "Tablet", company: "" });
+  const [savingMed, setSavingMed] = useState(false);
   const [rx, setRx] = useState<RxItem[]>([]);
   const [investigations, setInvestigations] = useState("");
   const [advice, setAdvice] = useState("");
@@ -130,19 +139,7 @@ export default function PrescriptionPage() {
     ]
   );
 
-  const diagnosisResults = useMemo(() => {
-    const q = diagnosisSearch.trim().toLowerCase();
-    if (!q) return [];
-    return diagnosisOptions
-      .filter((item) =>
-        item.name.toLowerCase().includes(q) ||
-        item.icd10.toLowerCase().includes(q) ||
-        item.icd11.toLowerCase().includes(q) ||
-        item.keywords.toLowerCase().includes(q) ||
-        item.tags.some((tag) => tag.includes(q))
-      )
-      .slice(0, 12);
-  }, [diagnosisSearch]);
+  const diagnosisResults = useMemo(() => searchDiagnoses(diagnosisSearch), [diagnosisSearch]);
 
   const selectedDiagnosis = useMemo(
     () => diagnosisOptions.find((item) => diagnosis.includes(item.name)),
@@ -184,12 +181,29 @@ export default function PrescriptionPage() {
 
   const isESigned =
     signedSnapshot !== "" && signedSnapshot === prescriptionSnapshot;
+  const lastSavedRef = useRef<{ id: string; prescriptionId: string } | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const apptId = params.get("appointmentId") || "";
     const paymentId = params.get("paymentId") || "";
     setAppointmentId(apptId);
+
+    // Opened from a patient's history page: prefill from the UHID record.
+    const uhidParam = params.get("uhid") || "";
+    if (uhidParam) {
+      getPatient(uhidParam)
+        .then((p) => {
+          if (!p) return;
+          setUhid(p.uhid);
+          setPatientName((v) => v || p.name || "");
+          setMobile((v) => v || p.mobile || p.mobile10 || "");
+          setAge((v) => v || p.age || "");
+          setSex((v) => v || p.sex || "");
+          setEmail((v) => v || p.email || "");
+        })
+        .catch(() => {});
+    }
 
     const type = (params.get("type") || params.get("mode") || params.get("consultation") || "").toLowerCase();
     const tele =
@@ -275,6 +289,7 @@ export default function PrescriptionPage() {
 
   function loadSavedPatient(record: SavedPrescription) {
     setPatientName(record.patientName || "");
+    setUhid(record.uhid || "");
     setAge(record.age || "");
     setSex(record.sex || "");
     setMobile(record.mobile || "");
@@ -302,7 +317,34 @@ export default function PrescriptionPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function exportPatientRecordsExcel() {
+  /** Real Excel (.xlsx) of ALL cloud data (records, appointments, payments, follow-ups). Falls back to CSV of this device. */
+  async function exportPatientRecordsExcel() {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const response = await fetch("/api/doctor/export", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken: await user.getIdToken() }),
+        });
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `NeuroMindBloom-records-${new Date().toISOString().slice(0, 10)}.xlsx`;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Excel export failed, using CSV of this device", error);
+    }
+    exportPatientRecordsCsv();
+  }
+
+  function exportPatientRecordsCsv() {
     let records: SavedPrescription[] = [];
     try {
       records = JSON.parse(localStorage.getItem("nmb_prescriptions") || "[]");
@@ -376,6 +418,44 @@ export default function PrescriptionPage() {
         alert("Doctor login is required to verify the E-Sign PIN.");
         return;
       }
+      // Give the patient a UHID first, so it is part of the signed content.
+      let patientUhid = uhid;
+      if (!patientUhid) {
+        try {
+          patientUhid = (await getOrCreatePatient({ name: patientName, mobile, age, sex, email })).uhid;
+          setUhid(patientUhid);
+        } catch {}
+      }
+
+      // Preferred: the server verifies the PIN, freezes the content and issues the Rx ID + time.
+      const signResponse = await fetch("/api/esign/sign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pin: esignPin.trim(),
+          idToken: await user.getIdToken(),
+          prescription: {
+            patientName, age, sex, mobile, email, diagnosis, complaints, history, vitals, rx,
+            investigations, advice, followUp, isTeleconsultation, uhid: patientUhid, appointmentId,
+          },
+        }),
+      });
+      const signed = await signResponse.json().catch(() => ({}));
+      if (signResponse.ok && signed.ok) {
+        setSignedAt(signed.signedAt);
+        setPrescriptionId(signed.prescriptionId);
+        setSignedSnapshot(prescriptionSnapshot);
+        setEsignPin("");
+        setNmbPinVerified(true);
+        alert("Prescription electronically signed successfully.");
+        return;
+      }
+      if (signed.error !== "not-configured") {
+        alert(signed.error || "Unable to e-sign.");
+        return;
+      }
+
+      // Fallback while the server database key is not configured (older flow).
       const response = await fetch("/api/esign/verify-pin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -427,6 +507,24 @@ export default function PrescriptionPage() {
     return digits;
   }
 
+  /** Secure 30-day PDF link from the server (null if the server is not configured yet). */
+  async function getSecurePrescriptionLink(recordId: string, sendChannel?: "email" | "whatsapp") {
+    try {
+      const user = auth.currentUser;
+      if (!user || !recordId) return null;
+      const response = await fetch("/api/prescriptions/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: await user.getIdToken(), recordId, send: Boolean(sendChannel), channel: sendChannel }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) return null;
+      return result as { link: string; delivery?: { whatsapp: { status: string }; email: { status: string } } };
+    } catch {
+      return null;
+    }
+  }
+
   async function handleWhatsAppPrescription() {
     if (!isESigned) {
       alert("Please verify E-Sign PIN before sending the prescription.");
@@ -439,22 +537,27 @@ export default function PrescriptionPage() {
       return;
     }
 
-    // Save the current prescription before opening WhatsApp.
-    await savePrescription();
+    // Open the tab first (pop-up blockers), then save and fetch the secure link.
+    const win = window.open("", "_blank");
+    const saved = await savePrescription();
+    const share = saved?.cloud ? await getSecurePrescriptionLink(saved.id) : null;
 
     const message = [
       `Hello ${patientName || "Patient"},`,
       "Your e-prescription from Neuro Mind Bloom is ready.",
       prescriptionId ? `Prescription ID: ${prescriptionId}` : "",
       `Consultation: ${isTeleconsultation ? "Teleconsultation" : "OPD"}`,
-      "Please attach the PDF saved using Print / PDF.",
-      "— Neuro Mind Bloom"
+      share ? `Download PDF (secure link, valid 30 days):\n${share.link}` : "Please attach the PDF saved using Print / PDF.",
+      "— Dr. Kuldeep Budania, Neuro Mind Bloom"
     ].filter(Boolean).join("\n");
 
-    // Browsers do not allow silently attaching a local PDF to WhatsApp.
-    // This opens the patient's chat with a ready message; use Print / PDF
-    // first to save the prescription, then attach that PDF in WhatsApp.
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    if (win) {
+      win.opener = null;
+      win.location.href = url;
+    } else {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
   }
 
   async function handleEmailPrescription() {
@@ -467,7 +570,15 @@ export default function PrescriptionPage() {
       return;
     }
 
-    await savePrescription();
+    const saved = await savePrescription();
+    // Preferred: the server emails the patient with the PDF attached.
+    const share = saved?.cloud ? await getSecurePrescriptionLink(saved.id, "email") : null;
+    if (share?.delivery?.email.status === "sent") {
+      setSavedMessage(`Prescription PDF emailed to ${email.trim()}.`);
+      setTimeout(() => setSavedMessage(""), 5000);
+      return;
+    }
+
     const subject = `E-prescription from Neuro Mind Bloom${prescriptionId ? ` - ${prescriptionId}` : ""}`;
     const body = [
       `Hello ${patientName || "Patient"},`,
@@ -476,7 +587,7 @@ export default function PrescriptionPage() {
       prescriptionId ? `Prescription ID: ${prescriptionId}` : "",
       `Consultation: ${isTeleconsultation ? "Teleconsultation" : "OPD"}`,
       "",
-      "Please attach the PDF saved using Print / PDF before sending this email.",
+      share ? `Download PDF (secure link, valid 30 days): ${share.link}` : "Please attach the PDF saved using Print / PDF before sending this email.",
       "",
       "Regards,",
       "Dr. Kuldeep Budania",
@@ -527,201 +638,58 @@ export default function PrescriptionPage() {
     setSearch("");
   }
 
+  useEffect(() => {
+    loadCustomMedicines().then(setCustomMeds).catch(() => undefined);
+  }, []);
+
+  // Ranked search over: psychiatry pack list, core A–Z list, extra brands, official catalogues
+  // and brands added by the doctor. Row shape kept compatible with addMedicine().
   const results = useMemo(() => {
-    const officialMedicines: any[] = officialBrandRows.map((r: any) => ({
+    if (!search.trim()) return [];
+    return searchMedicines(search, customRows(customMeds)).map((r) => ({
       generic: r.generic,
-      category: r.category || "Other",
-      strengths: r.strength ? [r.strength] : [""],
-      brands: [r.brand],
-      brandDetails: [{
-        name: r.brand,
-        company: r.company,
-        strength: r.strength,
-        form: r.form
-      }],
-      form: r.form || "",
-      company: r.company || ""
+      category: r.category,
+      brands: [r.brand || r.generic],
+      strengths: [r.strength],
+      selectedBrand: r.brand || r.generic,
+      selectedStrength: r.strength,
+      selectedCompany: r.company,
+      selectedForm: r.form,
+      company: r.company,
+      form: r.form,
+      label: displayName(r),
+      source: r.source,
+      verify: r.verify,
     }));
-
-    const consernMedicines: any[] = consernBrandRows.map((r: any) => ({
-      generic:r.generic, category:r.category || "Other",
-      strengths:r.strength ? [r.strength] : [""],
-      brands:[r.brand],
-      brandDetails:[{name:r.brand,company:r.company,strength:r.strength,form:r.form}],
-      form:r.form || "", company:r.company
-    }));
-
-    const searchableMedicines: any[] = [...medicines, ...officialMedicines, ...consernMedicines];
-
-    const q = search.trim().toLowerCase();
-
-    if (!q) return [];
-
-    const brandRows: any[] = [];
-
-    searchableMedicines.forEach((m: any) => {
-
-      const details =
-        Array.isArray(m.brandDetails) &&
-        m.brandDetails.length > 0
-
-          ? m.brandDetails
-
-          : (m.brands || []).map((brand: string) => ({
-              name: brand,
-              company: "",
-              strength: "",
-              form: m.form || "",
-            }));
-
-
-      details.forEach((b: any) => {
-
-        const strengths =
-          b.strength
-
-            ? [b.strength]
-
-            : Array.isArray(m.strengths) &&
-              m.strengths.length > 0
-
-              ? m.strengths
-
-              : [""];
-
-
-        strengths.forEach((strength: string) => {
-
-          const company = b.company || "";
-
-          const form =
-            b.form ||
-            m.form ||
-            "";
-
-          /*
-             IMPORTANT:
-
-             Keep old structure so existing addMedicine()
-             continues working unchanged.
-
-             brands[0]    = selected brand
-             strengths[0] = selected strength
-          */
-
-          const row = {
-            ...m,
-
-            brands: [
-              b.name || ""
-            ],
-
-            strengths: [
-              strength || ""
-            ],
-
-            selectedBrand:
-              b.name || "",
-
-            selectedCompany:
-              company,
-
-            selectedStrength:
-              strength || "",
-
-            selectedForm:
-              form,
-
-            company:
-              company,
-
-            form:
-              form
-          };
-
-
-          const searchable = [
-
-            m.generic || "",
-
-            m.category || "",
-
-            b.name || "",
-
-            company,
-
-            strength || "",
-
-            form
-
-          ]
-            .join(" ")
-            .toLowerCase();
-
-
-          if (searchable.includes(q)) {
-
-            brandRows.push(row);
-
-          }
-
-        });
-
-      });
-
-    });
-
-
-    const unique = Array.from(
-
-      new Map(
-
-        brandRows.map((m: any) => [
-
-          [
-
-            m.generic,
-
-            m.brands?.[0],
-
-            m.strengths?.[0],
-
-            m.selectedCompany,
-
-            m.selectedForm
-
-          ]
-
-            .join("|")
-
-            .toLowerCase(),
-
-          m
-
-        ])
-
-      ).values()
-
-    );
-
-
-    return unique
-
-      .sort((a: any,b: any) =>
-
-        `${a.generic} ${a.brands?.[0] || ""} ${a.strengths?.[0] || ""}`
-
-          .localeCompare(
-
-            `${b.generic} ${b.brands?.[0] || ""} ${b.strengths?.[0] || ""}`
-
-          )
-
-      )
-
-      .slice(0,300);
-
-  }, [search]);
+  }, [search, customMeds]);
+
+  async function addBrandToList() {
+    if (!newMed.generic.trim() && !newMed.brand.trim()) {
+      alert("Enter at least a generic or brand name.");
+      return;
+    }
+    setSavingMed(true);
+    try {
+      const saved = await saveCustomMedicine(newMed);
+      setCustomMeds((old) => [saved, ...old]);
+      logAction("medicine.brand.add", { brand: saved.brand, generic: saved.generic });
+      setNewMed({ generic: "", brand: "", strength: "", form: "Tablet", company: "" });
+    } catch (error: any) {
+      alert(error?.message || "Could not save the brand.");
+    } finally {
+      setSavingMed(false);
+    }
+  }
+
+  async function removeBrandFromList(id: string) {
+    if (!window.confirm("Remove this brand from your medicine list?")) return;
+    try {
+      await deleteCustomMedicine(id);
+      setCustomMeds((old) => old.filter((m) => m.id !== id));
+    } catch {
+      alert("Could not remove the brand.");
+    }
+  }
 
   function addMedicine(
     m: (typeof medicines)[number],
@@ -761,14 +729,34 @@ export default function PrescriptionPage() {
     setRx((old) => old.filter((_, i) => i !== index));
   }
 
-  async function savePrescription() {
+  async function savePrescription(): Promise<{ id: string; cloud: boolean } | undefined> {
     if (!patientName.trim()) {
       alert("Please enter patient name.");
       return;
     }
 
+    // Saving the same signed prescription again (e.g. WhatsApp then Email)
+    // updates one record instead of creating duplicates.
+    const reuse =
+      isESigned && lastSavedRef.current && lastSavedRef.current.prescriptionId === prescriptionId
+        ? lastSavedRef.current.id
+        : null;
+
+    // Link to the patient's permanent UHID (existing match by mobile + name, or a new one).
+    let patientUhid = uhid;
+    if (!patientUhid) {
+      try {
+        const patient = await getOrCreatePatient({ name: patientName, mobile, age, sex, email });
+        patientUhid = patient.uhid;
+        setUhid(patient.uhid);
+      } catch (error) {
+        console.warn("UHID not assigned", error);
+      }
+    }
+
     const record: SavedPrescription = {
-      id: Date.now().toString(),
+      uhid: patientUhid || undefined,
+      id: reuse || Date.now().toString(),
       date: new Date().toLocaleString(),
       patientName,
       age,
@@ -795,24 +783,31 @@ export default function PrescriptionPage() {
     try {
       old = JSON.parse(localStorage.getItem("nmb_prescriptions") || "[]");
     } catch {}
-    localStorage.setItem("nmb_prescriptions", JSON.stringify([record, ...old]));
+    localStorage.setItem("nmb_prescriptions", JSON.stringify([record, ...old.filter((x) => x.id !== record.id)]));
 
+    let cloud = false;
     try {
       await setDoc(doc(db, "patientRecords", record.id), record);
+      cloud = true;
+      if (patientUhid && !reuse) recordVisit(patientUhid, { age, sex, email }).catch(() => {});
+      logAction(reuse ? "prescription.updated" : "prescription.saved", { recordId: record.id, uhid: patientUhid || null, signed: Boolean(record.signedAt) });
       setSavedMessage("Patient record saved on this device and cloud.");
     } catch (error) {
       console.error("Cloud patient record save failed", error);
       setSavedMessage("Patient record saved on this device. Cloud sync needs Firebase permission.");
     }
 
+    if (isESigned && prescriptionId) lastSavedRef.current = { id: record.id, prescriptionId };
     setSavedPatients((prev) => [record, ...prev.filter((x) => x.id !== record.id)]);
     setTimeout(() => setSavedMessage(""), 4000);
+    return { id: record.id, cloud };
   }
 
   function clearForm() {
     if (!confirm("Clear current prescription?")) return;
 
     setPatientName("");
+    setUhid("");
     setAge("");
     setSex("");
     setMobile("");
@@ -1088,6 +1083,21 @@ export default function PrescriptionPage() {
             />
           </Field>
         </div>
+        <div className="no-print">
+          <PatientUhid
+            uhid={uhid}
+            name={patientName}
+            mobile={mobile}
+            onSelect={(p) => {
+              setUhid(p?.uhid || "");
+              if (p) {
+                setAge((v) => v || p.age || "");
+                setSex((v) => v || p.sex || "");
+                setEmail((v) => v || p.email || "");
+              }
+            }}
+          />
+        </div>
 
         <Field label="Diagnosis">
           <input
@@ -1112,14 +1122,14 @@ export default function PrescriptionPage() {
             <div style={s.results}>
               {diagnosisResults.map((item) => (
                 <button
-                  key={item.name}
+                  key={`${item.icd10}|${item.icd11}|${item.name}`}
                   type="button"
                   style={s.med}
                   onClick={() => chooseDiagnosis(item)}
                 >
                   <strong>{item.name}</strong>
-                  <span>ICD-10: {item.icd10} | ICD-11: {item.icd11}</span>
-                  <small>Clinical keywords: {item.keywords}</small>
+                  <span>ICD-10: {item.icd10 || "—"} | ICD-11: {item.icd11 || "—"}</span>
+                  {item.keywords && <small>Clinical keywords: {item.keywords}</small>}
                 </button>
               ))}
             </div>
@@ -1201,7 +1211,38 @@ export default function PrescriptionPage() {
           <button style={s.secondary} onClick={addCustomMedicine}>
             + Custom Medicine
           </button>
+          <button style={s.secondary} onClick={() => setShowAddBrand((v) => !v)}>
+            {showAddBrand ? "Close" : `+ Add brand to list${customMeds.length ? ` (${customMeds.length})` : ""}`}
+          </button>
         </div>
+
+        {showAddBrand && (
+          <div style={{ border: "1px solid #e2e8f0", borderRadius: 12, padding: 12, marginTop: 10, background: "#f8fafc" }}>
+            <div style={{ fontSize: 13, color: "#475569", marginBottom: 8 }}>
+              Save a brand you prescribe — it will appear in Medicine Search on all your devices.
+            </div>
+            <div style={s.grid4}>
+              <Field label="Generic"><input style={s.input} value={newMed.generic} onChange={(e) => setNewMed({ ...newMed, generic: e.target.value })} placeholder="e.g. Escitalopram" /></Field>
+              <Field label="Brand"><input style={s.input} value={newMed.brand} onChange={(e) => setNewMed({ ...newMed, brand: e.target.value })} placeholder="e.g. Nexito" /></Field>
+              <Field label="Strength"><input style={s.input} value={newMed.strength} onChange={(e) => setNewMed({ ...newMed, strength: e.target.value })} placeholder="e.g. 10 mg" /></Field>
+              <Field label="Form"><input style={s.input} value={newMed.form} onChange={(e) => setNewMed({ ...newMed, form: e.target.value })} placeholder="Tablet / Capsule / Syrup" /></Field>
+              <Field label="Company (optional)"><input style={s.input} value={newMed.company} onChange={(e) => setNewMed({ ...newMed, company: e.target.value })} /></Field>
+            </div>
+            <button style={{ ...s.secondary, marginTop: 8 }} disabled={savingMed} onClick={addBrandToList}>
+              {savingMed ? "Saving…" : "Save brand"}
+            </button>
+            {customMeds.length > 0 && (
+              <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {customMeds.map((m) => (
+                  <span key={m.id} style={{ fontSize: 12, background: "#fff", border: "1px solid #cbd5e1", borderRadius: 999, padding: "4px 10px" }}>
+                    {[m.brand || m.generic, m.strength].filter(Boolean).join(" ")}
+                    <button type="button" aria-label="Remove" onClick={() => removeBrandFromList(m.id)} style={{ marginLeft: 6, border: 0, background: "none", color: "#b91c1c", cursor: "pointer" }}>×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {search && (
           <div style={s.results}>
@@ -1217,9 +1258,9 @@ export default function PrescriptionPage() {
                     style={s.med}
                     onClick={() => addMedicine(m, brand)}
                   >
-                    <strong>{brand}{strength ? ` ${strength}` : ""}</strong>
+                    <strong>{m.label || `${brand}${strength ? ` ${strength}` : ""}`}</strong>
                     <span>{m.generic}</span>
-                    <small>{[company, form, m.category].filter(Boolean).join(" · ")}</small>
+                    <small>{[company, form, m.category, m.source === "custom" ? "added by you" : "", m.verify ? "verify strength on pack" : ""].filter(Boolean).join(" · ")}</small>
                   </button>
                 );
               })
@@ -1461,6 +1502,7 @@ export default function PrescriptionPage() {
           <div><b>Mobile:</b> {mobile || "-"}</div>
           {email && <div><b>Email:</b> {email}</div>}
           <div><b>Prescription ID:</b> {prescriptionId || "-"}</div>
+          {uhid && <div><b>UHID:</b> {uhid}</div>}
         </div>
 
         {(complaints || diagnosis) && (
@@ -1635,14 +1677,13 @@ function PrescriptionBrandHeader({
 }) {
   return (
     <div>
-      <div
-        className="brand"
-        style={{ justifyContent: "center", marginBottom: 4 }}
-      >
-        <span className="brandMark">N</span>
-        <span style={{ textAlign: "left" }}>
-          <strong>Neuro Mind Bloom</strong>
-          <small>Psychiatry Psychology Wellness</small>
+      {/* Inline styles: this header must not depend on global CSS (it is printed). */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 4 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-mark.png" alt="Neuro Mind Bloom" width={44} height={44} style={{ borderRadius: "50%", display: "block" }} />
+        <span style={{ textAlign: "left", lineHeight: 1.15 }}>
+          <strong style={{ display: "block", fontSize: 18, letterSpacing: 0.5 }}>NEURO MIND BLOOM</strong>
+          <small style={{ display: "block", fontSize: 11, color: "#555" }}>Mind Care, Life Care</small>
         </span>
       </div>
       {isTeleconsultation && (

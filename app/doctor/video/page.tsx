@@ -1,9 +1,9 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { collection, onSnapshot } from "firebase/firestore";
-import { db } from "../../firebase";
+import { auth, db } from "../../firebase";
 
 type Appointment = {
   id: string;
@@ -134,12 +134,33 @@ export default function VideoConsultationsPage() {
               .replace(/\D/g, "")
               .slice(-10);
 
-            const videoLink =
-              `https://neuromindbloom.com/video/${appointment.id}`;
-
-            const whatsappText = encodeURIComponent(
-              `Namaste ${patientName}, your Neuro Mind Bloom video consultation is confirmed for ${date} at ${time}.\n\nJoin Video Consultation:\n${videoLink}\n\nPlease open the link at your appointment time and allow camera and microphone access.`
-            );
+            // The join link is signed by the server (cannot be guessed from the appointment id).
+            async function sendJoinLink() {
+              const win = window.open("", "_blank");
+              let videoLink = `https://neuromindbloom.com/video/${appointment.id}`;
+              try {
+                const user = auth.currentUser;
+                if (user) {
+                  const response = await fetch("/api/video/doctor", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ idToken: await user.getIdToken(), appointmentId: appointment.id }),
+                  });
+                  const result = await response.json().catch(() => ({}));
+                  if (response.ok && result.patientLink) videoLink = result.patientLink;
+                }
+              } catch {}
+              const text = encodeURIComponent(
+                `Namaste ${patientName}, your Neuro Mind Bloom video consultation is confirmed for ${date} at ${time}.\n\nJoin Video Consultation:\n${videoLink}\n\nPlease open the link at your appointment time and allow camera and microphone access.`
+              );
+              const url = `https://wa.me/91${cleanMobile}?text=${text}`;
+              if (win) {
+                win.opener = null;
+                win.location.href = url;
+              } else {
+                window.open(url, "_blank", "noopener,noreferrer");
+              }
+            }
 
             return (
               <section key={appointment.id} style={cardStyle}>
@@ -197,14 +218,13 @@ export default function VideoConsultationsPage() {
                     </Link>
 
                     {cleanMobile && (
-                      <a
-                        href={`https://wa.me/91${cleanMobile}?text=${whatsappText}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={whatsappButton}
+                      <button
+                        type="button"
+                        onClick={sendJoinLink}
+                        style={{ ...whatsappButton, border: 0, cursor: "pointer" }}
                       >
                         Send Join Link
-                      </a>
+                      </button>
                     )}
                   </div>
                 </div>

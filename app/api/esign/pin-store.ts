@@ -1,13 +1,27 @@
 import { pbkdf2Sync, randomBytes, timingSafeEqual } from "crypto";
 
-const PROJECT_ID = "neuro-mind-bloom";
-const API_KEY = "AIzaSyC2bX4cWgV7sKhKmNflLGJSvAU6CqrTizw";
+// Public Firebase identifiers come from environment variables so the same code
+// can run against a separate development/staging Firebase project.
+const PROJECT_ID =
+  process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "";
+const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "";
 const ITERATIONS = 310000;
-const LEGACY_PIN = {
-  salt: "b4f9428a3e2b408a12f809829e5b599f25c1c058ee72e6fb",
-  hash: "2fb9ce23ef710c70618dfd126142f8183ba975ff614ccb6c8aeb2a8611765432",
-  iterations: ITERATIONS,
-};
+
+// Optional one-time fallback for doctors who have never stored a PIN record.
+// Previously this hash was hard-coded in source; it now lives only in server env.
+// Leave both unset once the doctor has set a PIN via "Recover / Set PIN".
+function legacyPin(): PinRecord | null {
+  const salt = process.env.ESIGN_LEGACY_PIN_SALT || "";
+  const hash = process.env.ESIGN_LEGACY_PIN_HASH || "";
+  if (!/^[a-f\d]{48}$/i.test(salt) || !/^[a-f\d]{64}$/i.test(hash)) return null;
+  return { salt, hash, iterations: ITERATIONS };
+}
+
+function assertConfigured() {
+  if (!PROJECT_ID || !API_KEY) {
+    throw new Error("Firebase server configuration is missing (see .env.example).");
+  }
+}
 
 type PinRecord = {
   salt: string;
@@ -16,6 +30,7 @@ type PinRecord = {
 };
 
 export async function getUid(idToken: string) {
+  assertConfigured();
   const response = await fetch(
     `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${API_KEY}`,
     {
@@ -37,7 +52,10 @@ export async function getDoctorUid(idToken: string) {
   try {
     const payload = idToken.split(".")[1];
     const claims = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
-    return claims.doctor === true ? uid : "";
+    if (claims.doctor !== true) return "";
+    // When 2FA is enrolled, the 2FA session must be valid too.
+    if (claims.mfa === true && !(typeof claims.mfa_exp === "number" && claims.mfa_exp > Date.now() / 1000)) return "";
+    return uid;
   } catch {
     return "";
   }
@@ -47,13 +65,13 @@ function pinDocumentUrl(uid: string) {
   return `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/esignPins/${encodeURIComponent(uid)}`;
 }
 
-async function readPinRecord(uid: string, idToken: string): Promise<PinRecord> {
+async function readPinRecord(uid: string, idToken: string): Promise<PinRecord | null> {
   const response = await fetch(pinDocumentUrl(uid), {
     headers: { Authorization: `Bearer ${idToken}` },
     cache: "no-store",
   });
 
-  if (response.status === 404) return LEGACY_PIN;
+  if (response.status === 404) return legacyPin();
   if (!response.ok) throw new Error("PIN record could not be read.");
 
   const fields = (await response.json())?.fields || {};
@@ -69,6 +87,7 @@ async function readPinRecord(uid: string, idToken: string): Promise<PinRecord> {
 export async function verifyPinForUid(uid: string, idToken: string, pin: string) {
   if (!/^\d{8}$/.test(pin)) return false;
   const record = await readPinRecord(uid, idToken);
+  if (!record) return false; // No PIN set yet: doctor must use "Recover / Set PIN".
   const entered = pbkdf2Sync(pin, record.salt, record.iterations, 32, "sha256");
   const saved = Buffer.from(record.hash, "hex");
   return entered.length === saved.length && timingSafeEqual(entered, saved);

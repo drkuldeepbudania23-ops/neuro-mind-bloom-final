@@ -1,1 +1,13 @@
-{"buildCommand":"npm run build"}
+{
+  "buildCommand": "npm run build",
+  "crons": [
+    {
+      "path": "/api/cron/followup-reminders",
+      "schedule": "30 3 * * *"
+    },
+    {
+      "path": "/api/cron/backup",
+      "schedule": "30 20 * * 6"
+    }
+  ]
+}

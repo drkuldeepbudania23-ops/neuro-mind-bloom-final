@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../../../lib/firebase";
 
 type FollowUp = {
   id: string;
@@ -13,6 +15,8 @@ type FollowUp = {
   medicationPlan: string;
   advice: string;
   nextVisit: string;
+  /** yyyy-mm-dd — used for the automatic reminder on WhatsApp/email the day before. */
+  nextVisitDate?: string;
 };
 
 export default function FollowUpPage() {
@@ -24,6 +28,8 @@ export default function FollowUpPage() {
   const [medicationPlan, setMedicationPlan] = useState("");
   const [advice, setAdvice] = useState("");
   const [nextVisit, setNextVisit] = useState("");
+  const [nextVisitDate, setNextVisitDate] = useState("");
+  const [email, setEmail] = useState("");
   const [records, setRecords] = useState<FollowUp[]>([]);
 
   useEffect(() => {
@@ -32,7 +38,7 @@ export default function FollowUpPage() {
     );
   }, []);
 
-  function save() {
+  async function save() {
     if (!patient) {
       alert("Patient name is required.");
       return;
@@ -49,6 +55,7 @@ export default function FollowUpPage() {
       medicationPlan,
       advice,
       nextVisit,
+      nextVisitDate: nextVisitDate || undefined,
     };
 
     const updated = [item, ...records];
@@ -56,7 +63,20 @@ export default function FollowUpPage() {
     setRecords(updated);
     localStorage.setItem("nmb_followups", JSON.stringify(updated));
 
-    alert("Follow-up saved.");
+    // Also save to the cloud so follow-ups are not limited to this device and
+    // reminders can be sent automatically.
+    try {
+      await setDoc(doc(db, "followUps", item.id), {
+        ...item,
+        email: email.trim() || undefined,
+        reminderSent: false,
+        createdAt: new Date().toISOString(),
+      });
+      alert("Follow-up saved (device + cloud).");
+    } catch (error) {
+      console.error("Cloud follow-up save failed", error);
+      alert("Follow-up saved on this device. Cloud save failed — check login / Firestore rules.");
+    }
   }
 
   return (
@@ -121,6 +141,23 @@ export default function FollowUpPage() {
           value={nextVisit}
           onChange={(e) => setNextVisit(e.target.value)}
           placeholder="e.g. 2 weeks"
+        />
+
+        <label style={s.label}>Reminder date (patient gets WhatsApp/email reminder 1 day before)</label>
+        <input
+          style={s.input}
+          type="date"
+          value={nextVisitDate}
+          onChange={(e) => setNextVisitDate(e.target.value)}
+        />
+
+        <label style={s.label}>Patient email (optional, for reminder)</label>
+        <input
+          style={s.input}
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="patient@example.com"
         />
 
         <button style={s.button} onClick={save}>
