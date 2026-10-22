@@ -13,6 +13,7 @@ export const BACKUP_COLLECTIONS = [
   "appointments",
   "payments",
   "followUps",
+  "legacyPayments",
   "esignPins",
   "counters",
   "auditLog",

@@ -15,6 +15,7 @@ export default function DoctorDashboard() {
     ["Video Consultations","/doctor/video"],
     ["Patients (UHID & History)","/doctor/patients"],
     ["Security (2FA)","/doctor/security"],
+    ["Old Data → Cloud","/doctor/data-import"],
     ["Website: Articles","/doctor/articles"],
     ["Website: Patient Feedback","/doctor/feedback"],
     ["Website: Recovery Stories","/doctor/stories"]

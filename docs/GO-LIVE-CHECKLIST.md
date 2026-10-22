@@ -33,12 +33,14 @@ Push `upgrade/dev` → Vercel creates a Preview URL. Add the env vars for **Prev
 | Video (optional) | `DAILY_API_KEY`, `ZOOM_*`, `JAAS_*`, `VIDEO_DEFAULT_PROVIDER` — Google Meet & Jitsi need nothing |
 
 ## 4. Production (only with approval)
+0. Before anything: on the doctor's usual computer/browser, back up the old browser-only data
+   (follow-ups etc.) — see `OLD-DATA-IMPORT.md` step 1.
 1. Backup: Firestore export of the LIVE project (Google Cloud console → Firestore → Import/Export).
 2. Deploy the new `firestore.rules` to the live project (they are stricter — test first on DEV).
 3. Add production env vars (live Razorpay keys only when ready).
 4. Merge `upgrade/dev` → `main` and let Vercel deploy. Keep the previous deployment for instant rollback
    (Vercel → Deployments → "Promote to Production" on the old one).
-5. After go-live: Patients → "Create UHIDs for old records" once; Security → turn on 2FA and store
+5. After go-live: Old Data → Cloud (`/doctor/data-import`) once (see `OLD-DATA-IMPORT.md`); Patients → "Create UHIDs for old records" once; Security → turn on 2FA and store
    the recovery codes safely; keep `BACKUP_ENCRYPTION_KEY` in a password manager (without it backups
    cannot be opened).
 6. Check: home EN/HI, booking, payment, doctor login, prescription PDF + QR scan, video link, sitemap.

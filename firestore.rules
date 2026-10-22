@@ -138,6 +138,17 @@ service cloud.firestore {
       allow read, write: if isDoctor();
     }
 
+    // Archive of payment notes the OLD dashboard kept only in the browser.
+    // Imported once by the doctor; never edited or deleted, and never treated
+    // as a payment clearance (that is /payments).
+    match /legacyPayments/{entryId} {
+      allow read: if isDoctor();
+      allow create: if isDoctor()
+        && request.resource.data.get('importedAt', '') is string
+        && request.resource.data.get('importedFrom', '') in ['browser-localStorage', 'backup-file'];
+      allow update, delete: if false;
+    }
+
     // Website articles written by the doctor (public can read only published ones).
     match /cmsArticles/{articleId} {
       allow read: if resource.data.status == 'published' || isDoctor();
