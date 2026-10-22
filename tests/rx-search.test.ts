@@ -26,6 +26,8 @@ test("diagnosis search: codes, names, ICD-11 and Hinglish", () => {
   assert.ok(searchDiagnoses("neend").some((d) => /insomnia/i.test(d.name)));
   assert.ok(searchDiagnoses("daru withdrawal").some((d) => d.icd10 === "F10.3"));
   assert.equal(searchDiagnoses("  ").length, 0);
+  // Plain-word search puts the main diagnosis first (not bipolar / post-schizophrenic variants).
+  assert.equal(searchDiagnoses("depression")[0].icd10, "F32");
   assert.equal(diagnosisLabel({ name: "X", icd10: "F99", icd11: "", keywords: "", tags: [] }), "X | ICD-10 F99");
 });
 

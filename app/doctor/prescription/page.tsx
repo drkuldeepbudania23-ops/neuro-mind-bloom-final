@@ -695,20 +695,32 @@ export default function PrescriptionPage() {
     m: (typeof medicines)[number],
     selectedBrand?: string
   ) {
-    setRx((old) => [
-      ...old,
-      {
-        generic: m.generic,
-        brand: selectedBrand || m.brands?.[0] || m.generic,
-        strength: m.strengths?.[0] || "",
-        dose: "1 tablet",
-        frequency: "OD",
-        timing: "Night",
-        food: "After food",
-        duration: "30 days",
-        instruction: "",
-      },
-    ]);
+    const brand = selectedBrand || m.brands?.[0] || m.generic;
+    const key = (r: { generic?: string; brand?: string }) =>
+      `${(r.generic || "").trim().toLowerCase()}|${(r.brand || "").trim().toLowerCase()}`;
+    const newKey = key({ generic: m.generic, brand });
+    if (rx.some((r) => key(r) === newKey)) {
+      alert(`${brand} is already in this prescription.`);
+      setSearch("");
+      return;
+    }
+    const row = {
+      generic: m.generic,
+      brand,
+      strength: m.strengths?.[0] || "",
+      dose: "1 tablet",
+      frequency: "OD",
+      timing: "Night",
+      food: "After food",
+      duration: "30 days",
+      instruction: "",
+    };
+    setRx((old) => {
+      // Fill the empty starter row instead of leaving a blank line above the medicine.
+      const isBlank = (r: RxItem) => !(r.generic || "").trim() && !(r.brand || "").trim();
+      const kept = old.length > 0 && isBlank(old[old.length - 1]) ? old.slice(0, -1) : old;
+      return [...kept, row];
+    });
     setSearch("");
   }
 

@@ -110,9 +110,11 @@ export async function loadPatientHistory(patient: Patient) {
 
 /** One-time: give UHIDs to people in old prescriptions/appointments and tag old prescriptions. */
 export async function backfillUhids(onProgress?: (done: number, total: number) => void) {
-  const [records, appointments] = await Promise.all([
+  const [records, appointments, followUps] = await Promise.all([
     getDocs(query(collection(db, "patientRecords"), limit(5000))).then(asDocs),
     getDocs(query(collection(db, "appointments"), limit(5000))).then(asDocs),
+    // Old follow-ups (incl. ones imported from the old dashboard) may be a patient's only record.
+    getDocs(query(collection(db, "followUps"), limit(5000))).then(asDocs).catch(() => []),
   ]);
   const items = [
     ...records.filter((r) => !r.uhid).map((r) => ({
@@ -123,15 +125,22 @@ export async function backfillUhids(onProgress?: (done: number, total: number) =
       id: `a:${a.id}`, name: String(a.patientName || a.name || ""), mobile: a.mobile, email: String(a.email || ""),
       at: Number((a.createdAt as { seconds?: number } | undefined)?.seconds || 0) * 1000,
     })),
+    ...followUps.filter((f) => !f.uhid).map((f) => ({
+      id: `f:${f.id}`, name: String(f.patient || ""), mobile: f.mobile, email: String(f.email || ""),
+      at: /^\d{12,14}$/.test(f.id) ? Number(f.id) : 0,
+    })),
   ];
   const groups = groupPeople(items);
   let done = 0;
   for (const g of groups) {
     const patient = await getOrCreatePatient({ name: g.name, mobile: g.mobile10, age: g.age, sex: g.sex, email: g.email });
-    const recordIds = g.ids.filter((id) => id.startsWith("r:")).map((id) => id.slice(2));
-    for (let i = 0; i < recordIds.length; i += 400) {
+    const links: [string, string][] = [
+      ...g.ids.filter((id) => id.startsWith("r:")).map((id) => ["patientRecords", id.slice(2)] as [string, string]),
+      ...g.ids.filter((id) => id.startsWith("f:")).map((id) => ["followUps", id.slice(2)] as [string, string]),
+    ];
+    for (let i = 0; i < links.length; i += 400) {
       const batch = writeBatch(db);
-      for (const id of recordIds.slice(i, i + 400)) batch.set(doc(db, "patientRecords", id), { uhid: patient.uhid }, { merge: true });
+      for (const [col, id] of links.slice(i, i + 400)) batch.set(doc(db, col, id), { uhid: patient.uhid }, { merge: true });
       await batch.commit();
     }
     done += 1;

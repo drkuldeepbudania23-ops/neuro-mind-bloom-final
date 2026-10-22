@@ -276,7 +276,7 @@ function norm(v: string): string {
  * Exact / prefix code matches rank first, then name starts, then other matches.
  */
 const HINGLISH: Record<string, string[]> = {
-  neend: ["sleep", "insomnia"], nind: ["sleep", "insomnia"], udasi: ["depress"], udas: ["depress"],
+  neend: ["insomnia", "sleep"], nind: ["insomnia", "sleep"], udasi: ["depress"], udas: ["depress"],
   ghabrahat: ["anxiety", "panic"], chinta: ["anxiety", "worry"], dar: ["phobi", "anxiety"], darr: ["phobi", "anxiety"],
   vaham: ["obsess"], vehem: ["obsess"], shak: ["delusion", "paranoid"], sharab: ["alcohol"], daru: ["alcohol"],
   afeem: ["opioid"], afim: ["opioid"], doda: ["opioid"], smack: ["opioid"], heroin: ["opioid"], ganja: ["cannab"],
@@ -286,12 +286,17 @@ const HINGLISH: Record<string, string[]> = {
   pagal: ["psychos", "schizo"], dhat: ["dhat"], shighrapatan: ["premature"], napunsakta: ["erectile"],
 };
 
+/** Rough word stem: "depression" → "depress", "anxiety" → "anxi"; short words unchanged. */
+function stem(word: string): string {
+  return word.length > 6 ? word.slice(0, word.length - 3) : word;
+}
+
 export function searchDiagnoses(query: string, limit = 30): DiagnosisOption[] {
   const q = norm(query);
   if (!q) return [];
   const words = q.split(" ");
   const alts = words.map((w) => [w, ...(HINGLISH[w] ?? [])]);
-  const scored: { d: DiagnosisOption; score: number; i: number }[] = [];
+  const scored: { d: DiagnosisOption; score: number; i: number; alt: number }[] = [];
   diagnosisOptions.forEach((d, i) => {
     const codes = `${d.icd10} ${d.icd11}`.toLowerCase();
     const name = norm(d.name);
@@ -299,17 +304,28 @@ export function searchDiagnoses(query: string, limit = 30): DiagnosisOption[] {
     if (!alts.every((opts) => opts.some((w) => hay.includes(w)))) return;
     const c10 = d.icd10.toLowerCase();
     const c11 = d.icd11.toLowerCase();
+    // "depression" should also find "Depressive …", "anxiety" → "Anxious …": compare word stems.
+    const stems = alts[0].map(stem);
     let score = 6;
     if (c10 === q || c11 === q) score = 0;
     else if ((c10 && c10.startsWith(q)) || (c11 && c11.startsWith(q))) score = 1;
-    else if (name.startsWith(q)) score = 2;
-    else if (name.split(" ").some((w) => alts[0].some((a) => w.startsWith(a)))) score = 3;
+    else if (name.startsWith(q) || stems.some((st) => name.startsWith(st))) score = 2;
+    else if (name.split(" ").some((w) => stems.some((st) => w.startsWith(st)))) score = 3;
     else if (name.includes(q)) score = 4;
     else if (codes.includes(q)) score = 5;
-    scored.push({ d, score, i });
+    // Which search word matched (user's word, then Hinglish synonyms in priority order).
+    const words2 = name.split(" ");
+    const alt = stems.findIndex((st) => words2.some((w) => w.startsWith(st)));
+    scored.push({ d, score, i, alt: alt < 0 ? 99 : alt });
   });
+  // Same score: main categories (shorter codes, e.g. F32 before F32.1) first, then list order.
+  const depth = (d: DiagnosisOption) => (d.icd10 || d.icd11 || "~~~~~~~~").length;
   return scored
-    .sort((a, b) => a.score - b.score || (a.score <= 1 ? a.d.icd10.localeCompare(b.d.icd10) : a.i - b.i))
+    .sort(
+      (a, b) =>
+        a.score - b.score ||
+        (a.score <= 1 ? a.d.icd10.localeCompare(b.d.icd10) : a.alt - b.alt || depth(a.d) - depth(b.d) || a.i - b.i)
+    )
     .slice(0, limit)
     .map((x) => x.d);
 }
