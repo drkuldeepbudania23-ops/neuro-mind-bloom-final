@@ -85,7 +85,7 @@ service cloud.firestore {
         && data.keys().hasAll(['patientName', 'mobile', 'service', 'status', 'createdAt'])
         && shortString(data.patientName, 80) && data.patientName.size() >= 2
         && data.mobile is string && data.mobile.matches('^[0-9]{10,13}$')
-        && shortString(data.service, 80)
+        && shortString(data.get('service', ''), 80)
         && data.status == 'pending'
         && data.createdAt == request.time
         && shortString(data.get('name', ''), 80)
