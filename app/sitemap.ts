@@ -25,6 +25,9 @@ const CORE: [string, number][] = [
   ["/international", 0.5],
   ["/feedback", 0.4],
   ["/recovery-stories", 0.5],
+  ["/privacy-policy", 0.3],
+  ["/terms-and-conditions", 0.3],
+  ["/refund-policy", 0.3],
 ];
 
 function urls(path: string) {
