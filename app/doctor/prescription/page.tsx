@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { medicines } from "../../../data/medicines";
 import { psychiatryBrands } from "../../../data/psychiatryBrands";
 import { complaintOptions, diagnosisOptions, diagnosisLabel, searchDiagnoses } from "../../data/psychiatrySearch";
+import { FREQUENCY_OPTIONS, TIMING_OPTIONS, timingForFrequency } from "../../../lib/rx/frequency";
 import { auth, db } from "../../../lib/firebase";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import EpinResetButton from "../EpinResetButton";
@@ -734,9 +735,16 @@ export default function PrescriptionPage() {
 
   function updateRx(index: number, key: keyof RxItem, value: string) {
     setRx((old) =>
-      old.map((item, i) =>
-        i === index ? { ...item, [key]: value } : item
-      )
+      old.map((item, i) => {
+        if (i !== index) return item;
+        const next = { ...item, [key]: value };
+        // Changing the frequency (TDS, 8 hourly, BD…) also sets a matching timing.
+        if (key === "frequency") {
+          const t = timingForFrequency(value);
+          if (t) next.timing = t;
+        }
+        return next;
+      })
     );
   }
 
@@ -1372,19 +1380,12 @@ export default function PrescriptionPage() {
                     updateRx(index, "frequency", e.target.value)
                   }
                 >
-                  <option>OD</option>
-                  <option>BD</option>
-                  <option>TDS</option>
-                  <option>QID</option>
-                  <option>HS</option>
-                  <option>SOS</option>
-                  <option>STAT</option>
-                  <option>1-0-0</option>
-                  <option>0-1-0</option>
-                  <option>0-0-1</option>
-                  <option>1-0-1</option>
-                  <option>1-1-1</option>
-                  <option>1/2-0-1/2</option>
+                  {!(FREQUENCY_OPTIONS as readonly string[]).includes(item.frequency) && item.frequency && (
+                    <option>{item.frequency}</option>
+                  )}
+                  {FREQUENCY_OPTIONS.map((f) => (
+                    <option key={f}>{f}</option>
+                  ))}
                 </select>
               </Field>
 
@@ -1396,12 +1397,12 @@ export default function PrescriptionPage() {
                     updateRx(index, "timing", e.target.value)
                   }
                 >
-                  <option>Morning</option>
-                  <option>Afternoon</option>
-                  <option>Evening</option>
-                  <option>Night</option>
-                  <option>Morning & Night</option>
-                  <option>As required</option>
+                  {!(TIMING_OPTIONS as readonly string[]).includes(item.timing) && item.timing && (
+                    <option>{item.timing}</option>
+                  )}
+                  {TIMING_OPTIONS.map((t) => (
+                    <option key={t}>{t}</option>
+                  ))}
                 </select>
               </Field>
 
