@@ -31,7 +31,7 @@ export default function BookNowMenu({
 }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const buttonRef = useRef<HTMLAnchorElement>(null);
   const menuId = useId();
 
   useEffect(() => {
@@ -58,13 +58,25 @@ export default function BookNowMenu({
 
   return (
     <div ref={wrapperRef} className="relative">
-      <button
+      {/* A real link: if JavaScript has not loaded yet (slow mobile data, in-app browsers)
+          a tap goes straight to the booking page; once loaded it opens the two-option menu. */}
+      <a
         ref={buttonRef}
-        type="button"
+        href={localePath("/book-appointment", lang)}
+        role="button"
         aria-haspopup="true"
         aria-expanded={open}
         aria-controls={menuId}
-        onClick={() => setOpen((v) => !v)}
+        onClick={(event) => {
+          event.preventDefault();
+          setOpen((v) => !v);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === " ") {
+            event.preventDefault();
+            setOpen((v) => !v);
+          }
+        }}
         className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-saffron-500 font-semibold text-forest-900 shadow-[0_6px_18px_rgba(232,147,28,0.35)] transition hover:bg-saffron-400 ${
           compact ? "px-4 py-2 text-sm" : "px-5 py-2.5 text-[15px]"
         }`}
@@ -72,7 +84,7 @@ export default function BookNowMenu({
         <CalendarIcon size={18} />
         <span>{tr(nav.bookNow, lang)}</span>
         <ChevronDownIcon size={16} className={`transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
+      </a>
 
       {open && (
         <div
