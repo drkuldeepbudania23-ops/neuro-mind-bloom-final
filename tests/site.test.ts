@@ -46,7 +46,7 @@ test("UPI payment link and payment page URL", async () => {
   assert.throws(() => upiPaymentLink({ vpa: "a@okaxis", payeeName: "x", amount: 0, note: "" }));
   assert.equal(
     paymentPageUrl({ appointmentId: "AbC123xyz", amount: 1500, serviceCode: "psychotherapy-first", lang: "hi" }),
-    "https://neuromindbloom.com/hi/pay?a=AbC123xyz&amt=1500&s=psychotherapy-first"
+    "https://www.neuromindbloom.com/hi/pay?a=AbC123xyz&amt=1500&s=psychotherapy-first"
   );
 });
 

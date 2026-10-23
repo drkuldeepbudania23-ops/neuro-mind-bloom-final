@@ -196,5 +196,5 @@ export function upiPaymentLink(params: { vpa: string; payeeName: string; amount:
 /** Public link to the payment-QR page for an appointment. */
 export function paymentPageUrl(params: { appointmentId: string; amount: number; serviceCode: string; lang?: "en" | "hi" }): string {
   const q = new URLSearchParams({ a: params.appointmentId, amt: String(Math.round(params.amount)), s: params.serviceCode });
-  return `${WEBSITE.url}${params.lang === "hi" ? "/hi" : ""}/pay?${q.toString()}`;
+  return `${SITE_URL}${params.lang === "hi" ? "/hi" : ""}/pay?${q.toString()}`;
 }

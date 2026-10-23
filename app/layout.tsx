@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s | Neuro Mind Bloom",
   },
   description:
-    "Confidential psychiatry, de-addiction, sexual health and psychotherapy care with Dr. Kuldeep Budania (MBBS, MD Psychiatry). Video consultation across India, based in Ajmer, Rajasthan. Hindi & English.",
+    "Dr. Kuldeep Budania (MD Psychiatry): confidential psychiatry, de-addiction & sexual health care. Online video consultation across India, Ajmer based.",
   keywords: [
     "online psychiatrist India", "psychiatrist Ajmer", "psychiatrist Rajasthan",
     "de addiction psychiatrist Rajasthan", "nasha mukti Ajmer", "sex specialist Ajmer",
