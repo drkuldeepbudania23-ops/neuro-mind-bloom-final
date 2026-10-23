@@ -13,11 +13,37 @@ import { getAuth, type Auth } from "firebase-admin/auth";
  */
 let app: App | null = null;
 
+/**
+ * Parse the service-account JSON, tolerating common copy-paste slips
+ * (BOM, surrounding quotes, a missing first "{" or last "}").
+ */
+export function parseServiceAccount(raw: string): Record<string, unknown> {
+  let text = raw.replace(/^﻿/, "").trim();
+  if ((text.startsWith("'") && text.endsWith("'")) || (text.startsWith("`") && text.endsWith("`"))) {
+    text = text.slice(1, -1).trim();
+  }
+  const candidates = [text];
+  if (!text.startsWith("{")) candidates.push(`{${text}`);
+  if (!text.endsWith("}")) candidates.push(`${text}}`);
+  if (!text.startsWith("{") && !text.endsWith("}")) candidates.push(`{${text}}`);
+  for (const c of candidates) {
+    try {
+      const parsed = JSON.parse(c);
+      if (parsed && typeof parsed === "object" && parsed.private_key && parsed.client_email) return parsed;
+    } catch {
+      // try next
+    }
+  }
+  throw new Error(
+    "FIREBASE_SERVICE_ACCOUNT_JSON is not a valid service-account JSON (paste the whole downloaded file, from { to })."
+  );
+}
+
 function loadServiceAccount() {
   const b64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
   const raw = b64 ? Buffer.from(b64, "base64").toString("utf8") : process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
   if (!raw) return null;
-  const parsed = JSON.parse(raw);
+  const parsed = parseServiceAccount(raw);
   return {
     projectId: parsed.project_id,
     clientEmail: parsed.client_email,
