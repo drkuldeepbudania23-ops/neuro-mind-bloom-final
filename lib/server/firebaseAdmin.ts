@@ -45,8 +45,8 @@ function loadServiceAccount() {
   if (!raw) return null;
   const parsed = parseServiceAccount(raw);
   return {
-    projectId: parsed.project_id,
-    clientEmail: parsed.client_email,
+    projectId: String(parsed.project_id || ""),
+    clientEmail: String(parsed.client_email || ""),
     privateKey: String(parsed.private_key || "").replace(/\\n/g, "\n"),
   };
 }
