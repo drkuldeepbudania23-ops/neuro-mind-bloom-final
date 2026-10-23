@@ -36,7 +36,6 @@ export const STATS: readonly { value: string; valueHi?: string; label: { en: str
   RATING.url
     ? { value: `${RATING.value}★`, label: { en: `Patient rating · ${RATING.source.en}`, hi: `मरीज़ों की रेटिंग · ${RATING.source.hi}` }, href: RATING.url }
     : { value: `${RATING.value}★`, label: { en: "Patient rating", hi: "मरीज़ों की रेटिंग" } },
-  { value: "Kota", valueHi: "कोटा", label: { en: "Former Doctor, Medical College", hi: "पूर्व चिकित्सक, मेडिकल कॉलेज" } },
 ];
 
 export const CLINIC = {
