@@ -19,6 +19,10 @@ type Props = {
     preferredTime?: string;
     language?: string;
   };
+  /** Appointment already confirmed? (changes the message wording) */
+  confirmed?: boolean;
+  /** Server auto-send needs a real appointment record; off for walk-in links. */
+  allowAuto?: boolean;
 };
 
 /**
@@ -26,7 +30,7 @@ type Props = {
  * payment link that shows the clinic UPI QR and the amount to pay — via WhatsApp or email.
  * Amount can be edited before sending (e.g. after a discount).
  */
-export default function SendPaymentQR({ appointment }: Props) {
+export default function SendPaymentQR({ appointment, confirmed = true, allowAuto = true }: Props) {
   const code =
     appointment.serviceCode && getService(appointment.serviceCode)
       ? appointment.serviceCode
@@ -44,8 +48,8 @@ export default function SendPaymentQR({ appointment }: Props) {
 
   const message =
     lang === "hi"
-      ? `नमस्ते ${name},\nNeuro Mind Bloom में आपका अपॉइंटमेंट कन्फर्म हो गया है${when ? ` (${when})` : ""}।\n${service.label.hi}: ₹${amt}\n\nभुगतान के लिए इस लिंक पर QR कोड स्कैन करें:\n${link}\n\nभुगतान के बाद स्क्रीनशॉट इसी WhatsApp पर भेजें।\n— डॉ. कुलदीप बुडानिया`
-      : `Hello ${name},\nYour Neuro Mind Bloom appointment is confirmed${when ? ` (${when})` : ""}.\n${service.label.en}: ₹${amt}\n\nPlease scan the payment QR code at this link:\n${link}\n\nAfter paying, kindly send the screenshot on this WhatsApp.\n— Dr. Kuldeep Budania`;
+      ? `नमस्ते ${name},\n${confirmed ? `Neuro Mind Bloom में आपका अपॉइंटमेंट कन्फर्म हो गया है${when ? ` (${when})` : ""}।` : `Neuro Mind Bloom में परामर्श के लिए भुगतान विवरण${when ? ` (${when})` : ""}।`}\n${service.label.hi}: ₹${amt}\n\nभुगतान के लिए इस लिंक पर QR कोड स्कैन करें:\n${link}\n\nभुगतान के बाद स्क्रीनशॉट इसी WhatsApp पर भेजें।\n— डॉ. कुलदीप बुडानिया`
+      : `Hello ${name},\n${confirmed ? `Your Neuro Mind Bloom appointment is confirmed${when ? ` (${when})` : ""}.` : `Payment details for your Neuro Mind Bloom consultation${when ? ` (${when})` : ""}.`}\n${service.label.en}: ₹${amt}\n\nPlease scan the payment QR code at this link:\n${link}\n\nAfter paying, kindly send the screenshot on this WhatsApp.\n— Dr. Kuldeep Budania`;
 
   /** Server sends the payment link automatically (WhatsApp Cloud API + email), if configured. */
   async function sendAutomatically() {
@@ -109,7 +113,7 @@ export default function SendPaymentQR({ appointment }: Props) {
             Open QR page
           </a>
         )}
-        {valid && (
+        {valid && allowAuto && (
           <button type="button" onClick={sendAutomatically} style={{ ...btn, background: "#0f5c4d", border: 0, cursor: "pointer" }}>
             Auto-send (WhatsApp + Email)
           </button>

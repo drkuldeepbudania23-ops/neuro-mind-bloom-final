@@ -451,9 +451,9 @@ export default function DoctorAppointmentsPage() {
                     </div>
                   )}
 
-                  {status.toLowerCase() === "confirmed" &&
+                  {statusOf(appointment) !== "cancelled" &&
                     !["Paid", "Discount", "Exempt"].includes(appointment.paymentStatus || "") && (
-                      <SendPaymentQR appointment={appointment} />
+                      <SendPaymentQR appointment={appointment} confirmed={statusOf(appointment) !== "pending"} />
                     )}
                 </div>
               </div>
