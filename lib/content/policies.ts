@@ -257,24 +257,28 @@ export const REFUND: Policy = {
     hi: "Neuro Mind Bloom में ऑनलाइन मनोरोग परामर्श और साइकोथेरेपी सत्रों के कैंसलेशन, री-शेड्यूल और रिफ़ंड के नियम।",
   },
   intro: {
-    en: "We try to keep this simple and fair. All services are consultations delivered online or in person — nothing is shipped.",
-    hi: "हम इसे आसान और निष्पक्ष रखने की कोशिश करते हैं। सभी सेवाएँ ऑनलाइन या व्यक्तिगत परामर्श हैं — कोई सामान नहीं भेजा जाता।",
+    en: "In short: fees are non-refundable once your appointment is confirmed, except when we cancel or cannot provide the consultation. All services are consultations delivered online or in person — nothing is shipped.",
+    hi: "संक्षेप में: अपॉइंटमेंट कन्फ़र्म होने के बाद फ़ीस वापस नहीं होती, सिवाय तब जब हम कैंसल करें या परामर्श न दे पाएँ। सभी सेवाएँ ऑनलाइन या व्यक्तिगत परामर्श हैं — कोई सामान नहीं भेजा जाता।",
   },
   sections: [
     {
-      h: { en: "1. If you cancel or reschedule", hi: "1. अगर आप कैंसल या री-शेड्यूल करते हैं" },
+      h: { en: "1. Once your appointment is confirmed", hi: "1. अपॉइंटमेंट कन्फ़र्म होने के बाद" },
       p: [
         {
-          en: "24 hours or more before your appointment: you may reschedule free of charge, or cancel for a full refund.",
-          hi: "अपॉइंटमेंट से 24 घंटे या उससे पहले: आप मुफ़्त में री-शेड्यूल कर सकते हैं, या कैंसल करके पूरा रिफ़ंड ले सकते हैं।",
+          en: "Fees are non-refundable once your appointment has been confirmed by the doctor's team. This applies to cancellation by the patient for any reason and to missed appointments.",
+          hi: "डॉक्टर की टीम द्वारा अपॉइंटमेंट कन्फ़र्म होने के बाद फ़ीस वापस नहीं होती। यह नियम मरीज़ की ओर से किसी भी कारण से कैंसल करने और अपॉइंटमेंट छूट जाने, दोनों पर लागू है।",
         },
         {
-          en: "Less than 24 hours before: you may reschedule once free of charge to a slot within the next 14 days. Refunds are not given for cancellations made within 24 hours.",
-          hi: "24 घंटे से कम समय पहले: आप अगले 14 दिनों के किसी स्लॉट में एक बार मुफ़्त री-शेड्यूल कर सकते हैं। 24 घंटे के अंदर कैंसल करने पर रिफ़ंड नहीं दिया जाता।",
+          en: "Rescheduling: if you inform us at least 24 hours before your appointment, you may move it once, free of charge, to another available slot within the next 14 days.",
+          hi: "री-शेड्यूल: अगर आप अपॉइंटमेंट से कम से कम 24 घंटे पहले बता दें, तो अगले 14 दिनों में किसी उपलब्ध स्लॉट में एक बार मुफ़्त री-शेड्यूल कर सकते हैं।",
         },
         {
-          en: "No-show: if you do not join within 15 minutes of the appointment time without informing us, the session is treated as used and no refund is given.",
-          hi: "न आना (नो-शो): अगर आप बिना बताए अपॉइंटमेंट के समय के 15 मिनट के अंदर नहीं जुड़ते, तो सत्र इस्तेमाल हुआ माना जाएगा और रिफ़ंड नहीं मिलेगा।",
+          en: "No-show: if you do not join within 15 minutes of the appointment time, the session is treated as used.",
+          hi: "न आना (नो-शो): अगर आप अपॉइंटमेंट के समय के 15 मिनट के अंदर नहीं जुड़ते, तो सत्र इस्तेमाल हुआ माना जाएगा।",
+        },
+        {
+          en: "Before confirmation: if you paid but your appointment has not yet been confirmed and you cancel, or we cannot offer you a slot, the full amount is refunded.",
+          hi: "कन्फ़र्म होने से पहले: अगर आपने भुगतान कर दिया है पर अपॉइंटमेंट अभी कन्फ़र्म नहीं हुआ और आप कैंसल करते हैं, या हम आपको स्लॉट नहीं दे पाते, तो पूरी राशि लौटाई जाएगी।",
         },
       ],
     },
@@ -299,8 +303,8 @@ export const REFUND: Policy = {
       h: { en: "3. When refunds are not given", hi: "3. कब रिफ़ंड नहीं मिलता" },
       p: [
         {
-          en: "Once a consultation or therapy session has been completed, the fee is not refundable — including when the doctor's medical advice or prescription is different from what you expected. Fees for completed sessions of a therapy package are not refundable; unused, pre-paid sessions are refunded on request.",
-          hi: "परामर्श या थेरेपी सत्र पूरा होने के बाद फ़ीस वापस नहीं होती — तब भी जब डॉक्टर की सलाह या पर्चा आपकी उम्मीद से अलग हो। थेरेपी पैकेज के पूरे हो चुके सत्रों की फ़ीस वापस नहीं होती; पहले से भुगतान किए गए जो सत्र इस्तेमाल नहीं हुए, उनका अनुरोध पर रिफ़ंड होता है।",
+          en: "Apart from the cases in section 2, no refund is given after confirmation — including when the doctor's medical advice or prescription is different from what you expected, or for completed consultations and therapy sessions.",
+          hi: "भाग 2 की स्थितियों को छोड़कर, कन्फ़र्म होने के बाद कोई रिफ़ंड नहीं मिलता — तब भी जब डॉक्टर की सलाह या पर्चा आपकी उम्मीद से अलग हो, और पूरे हो चुके परामर्श या थेरेपी सत्रों पर भी।",
         },
       ],
     },
