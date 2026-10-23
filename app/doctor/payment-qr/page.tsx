@@ -116,7 +116,8 @@ export default function PaymentQrPage() {
   }
 
   const digits = mobile.replace(/\D/g, "").slice(-10);
-  const ready = name.trim().length >= 2 && digits.length === 10;
+  // WhatsApp enquiries often arrive with only a number — the name is optional.
+  const ready = digits.length === 10;
 
   const appointment = useMemo(
     () => ({
@@ -170,7 +171,7 @@ export default function PaymentQrPage() {
         )}
         {pickedPaid && <p style={s.warn}>Is appointment ka payment pehle se record hai.</p>}
 
-        <label style={s.label}>Patient name
+        <label style={s.label}>Patient name (optional)
           <input style={s.input} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} />
         </label>
         <label style={s.label}>Mobile (WhatsApp)
@@ -199,7 +200,7 @@ export default function PaymentQrPage() {
             allowAuto={Boolean(picked)}
           />
         ) : (
-          <p style={s.warn}>Naam aur 10-digit mobile number daalein — phir WhatsApp / Email / QR page buttons dikhenge.</p>
+          <p style={s.warn}>10-digit mobile number daalein (naam baad mein bhi chalega) — phir WhatsApp / Email / QR page buttons dikhenge.</p>
         )}
       </section>
 
