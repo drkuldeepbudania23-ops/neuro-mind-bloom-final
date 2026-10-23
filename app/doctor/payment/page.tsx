@@ -260,6 +260,9 @@ export default function PaymentPage() {
       }}
     >
       <h1>Payment / Discount / Exemption</h1>
+      <p style={{ margin: "0 0 12px" }}>
+        Patient ko payment QR / link bhejna hai? <a href="/doctor/payment-qr" style={{ color: "#176b87", fontWeight: 700 }}>Send Payment QR →</a>
+      </p>
 
       <div
         style={{

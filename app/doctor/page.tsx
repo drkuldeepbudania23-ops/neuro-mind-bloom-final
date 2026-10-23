@@ -12,6 +12,7 @@ export default function DoctorDashboard() {
     ["E-Prescription","/doctor/prescription"],
     ["Follow-up","/doctor/follow-up"],
     ["Payment","/doctor/payment"],
+    ["Send Payment QR","/doctor/payment-qr"],
     ["Video Consultations","/doctor/video"],
     ["Patients (UHID & History)","/doctor/patients"],
     ["Security (2FA)","/doctor/security"],
