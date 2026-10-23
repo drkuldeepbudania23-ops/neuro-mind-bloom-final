@@ -1,0 +1,447 @@
+import { batch } from "./_build";
+
+type P = [string, string];
+const BOOK: P = ["You can book an online consultation for a confidential assessment", "गोपनीय जाँच के लिए ऑनलाइन परामर्श बुक कर सकते हैं"];
+const CRISIS: P = ["Thoughts of suicide or self-harm — call Tele-MANAS 14416 or 112 now", "आत्महत्या या ख़ुद को नुकसान के विचार — अभी Tele-MANAS 14416 या 112 पर कॉल करें"];
+
+export const AWARENESS_ARTICLES = batch("awareness", [
+  {
+    slug: "mental-illness-myths-and-facts",
+    title: ["10 common myths about mental illness — and the facts", "मानसिक बीमारी के 10 आम मिथक — और सच्चाई"],
+    excerpt: ["'Only weak people get depressed', 'psychiatric medicines are addictive', 'therapy is just talking' — common myths in India and what the evidence says.", "'सिर्फ़ कमज़ोर लोग डिप्रेशन में जाते हैं', 'मानसिक दवाओं की लत लगती है', 'थेरेपी बस बातें हैं' — भारत के आम मिथक और सबूत क्या कहते हैं।"],
+    related: ["depression-treatment-india", "online-psychiatrist-india", "schizophrenia-treatment-india"],
+    refs: ["who-mental-disorders", "nmhs"],
+    intro: [
+      ["Myths delay treatment and add shame to suffering.", "मिथक इलाज में देरी करते हैं और तकलीफ़ में शर्म जोड़ते हैं।"],
+      ["India's National Mental Health Survey found a large treatment gap for most conditions.", "भारत के राष्ट्रीय मानसिक स्वास्थ्य सर्वे में ज़्यादातर स्थितियों में इलाज का बड़ा अंतर पाया गया।"],
+    ],
+    key: [
+      ["Mental illness is common and treatable", "मानसिक बीमारी आम है और इलाज योग्य है"],
+      ["It is not caused by weakness, karma or lack of willpower", "यह कमज़ोरी, कर्म या इच्छाशक्ति की कमी से नहीं होती"],
+      ["Most people with mental illness are not violent", "मानसिक बीमारी वाले ज़्यादातर लोग हिंसक नहीं होते"],
+    ],
+    sym: [
+      ["Myth: 'Antidepressants are addictive' — Fact: they do not cause addiction, though stopping should be gradual", "मिथक: 'एंटीडिप्रेसेंट की लत लगती है' — सच: इनकी लत नहीं लगती, पर बंद धीरे-धीरे करना चाहिए"],
+      ["Myth: 'Marriage will cure it' — Fact: illness needs treatment, and untreated illness can strain a marriage", "मिथक: 'शादी से ठीक हो जाएगा' — सच: बीमारी को इलाज चाहिए, बिना इलाज शादी पर दबाव पड़ता है"],
+      ["Myth: 'Children don't get mental illness' — Fact: half of conditions start before age 14", "मिथक: 'बच्चों को मानसिक बीमारी नहीं होती' — सच: आधी स्थितियाँ 14 साल से पहले शुरू होती हैं"],
+    ],
+    cause: [
+      ["Lack of awareness", "जागरूकता की कमी"],
+      ["Portrayal in films and media", "फ़िल्मों और मीडिया में चित्रण"],
+      ["Fear of social judgement", "समाज के आँकने का डर"],
+    ],
+    risk: [
+      ["Delayed help-seeking", "मदद लेने में देरी"],
+      ["Reliance on unproven remedies", "बिना सबूत के उपायों पर भरोसा"],
+      ["Stopping treatment early", "इलाज जल्दी बंद करना"],
+    ],
+    mgmt: [
+      ["Learn from reliable sources such as WHO and government programmes", "WHO और सरकारी कार्यक्रमों जैसे भरोसेमंद स्रोतों से जानें"],
+      ["Talk openly within the family", "परिवार में खुलकर बात करें"],
+      ["Consult a qualified professional early", "योग्य विशेषज्ञ से जल्दी सलाह"],
+    ],
+    help: [BOOK, ["Symptoms affecting work, study or relationships", "लक्षणों से काम, पढ़ाई या रिश्तों पर असर"], CRISIS],
+    faq: [
+      ["Will I need medicines for life?", "क्या मुझे ज़िंदगी भर दवा लेनी होगी?", "Most people need medicines for a limited period; duration depends on the condition and response.", "ज़्यादातर लोगों को सीमित समय के लिए दवा चाहिए; अवधि बीमारी और असर पर निर्भर है।"],
+      ["Is mental illness hereditary?", "क्या मानसिक बीमारी वंशानुगत है?", "Genes raise risk for some conditions, but environment and life events also matter; it is not destiny.", "कुछ स्थितियों में जीन जोखिम बढ़ाते हैं, पर माहौल और जीवन की घटनाएँ भी मायने रखती हैं; यह तय भाग्य नहीं।"],
+    ],
+    tags: ["myths", "mithak", "stigma"],
+    video: ["myths", "awareness"],
+  },
+  {
+    slug: "patient-rights-mental-healthcare-act",
+    title: ["Your rights under the Mental Healthcare Act 2017", "मेंटल हेल्थकेयर एक्ट 2017 के तहत आपके अधिकार"],
+    excerpt: ["India's MHCA 2017 guarantees access to care, dignity, confidentiality, advance directives and decriminalised attempted suicide. Key rights explained simply.", "भारत का MHCA 2017 देखभाल तक पहुँच, गरिमा, गोपनीयता, एडवांस डायरेक्टिव और आत्महत्या के प्रयास को अपराध न मानने की गारंटी देता है। मुख्य अधिकार आसान भाषा में।"],
+    related: ["online-psychiatrist-india", "suicide-prevention-crisis-support-india", "psychiatrist-rajasthan"],
+    refs: ["mhca", "nmhs"],
+    intro: [
+      ["The Mental Healthcare Act 2017 is a rights-based law for people with mental illness in India.", "मेंटल हेल्थकेयर एक्ट 2017 भारत में मानसिक बीमारी वाले लोगों के लिए अधिकार-आधारित क़ानून है।"],
+      ["Knowing these rights helps patients and families make informed decisions.", "इन अधिकारों को जानना मरीज़ों और परिवारों को सोच-समझकर फ़ैसले लेने में मदद करता है।"],
+    ],
+    key: [
+      ["Right to access affordable mental healthcare", "सस्ती मानसिक स्वास्थ्य देखभाल तक पहुँच का अधिकार"],
+      ["Right to make an advance directive and nominate a representative", "एडवांस डायरेक्टिव बनाने और प्रतिनिधि नामित करने का अधिकार"],
+      ["A person who attempts suicide is presumed to be under severe stress and should get care, not punishment", "आत्महत्या का प्रयास करने वाले को गंभीर तनाव में माना जाता है और उसे सज़ा नहीं, देखभाल मिलनी चाहिए"],
+    ],
+    sym: [
+      ["Right to confidentiality of information", "जानकारी की गोपनीयता का अधिकार"],
+      ["Right to live in the community and not be chained or isolated", "समुदाय में रहने और ज़ंजीर या अलगाव से मुक्ति का अधिकार"],
+      ["Right to information about diagnosis and treatment", "निदान और इलाज की जानकारी का अधिकार"],
+    ],
+    cause: [
+      ["Historical neglect and abuse in institutions", "संस्थानों में ऐतिहासिक उपेक्षा और दुर्व्यवहार"],
+      ["India's commitment to the UN disability rights convention", "UN विकलांगता अधिकार सम्मेलन के प्रति भारत की प्रतिबद्धता"],
+      ["Need for consent-based care", "सहमति-आधारित देखभाल की ज़रूरत"],
+    ],
+    risk: [
+      ["Unaware patients may not claim rights", "अनजान मरीज़ अधिकार न माँग पाएँ"],
+      ["Unregulated 'centres' that confine people", "अनियमित 'केंद्र' जो लोगों को बंद रखते हैं"],
+      ["Insurance exclusions despite legal requirements", "क़ानूनी ज़रूरत के बावजूद बीमा में बहिष्करण"],
+    ],
+    mgmt: [
+      ["Ask questions about your diagnosis and options", "अपने निदान और विकल्पों के बारे में सवाल पूछें"],
+      ["Consider an advance directive if you have a recurrent illness", "बार-बार होने वाली बीमारी हो तो एडवांस डायरेक्टिव पर विचार करें"],
+      ["Insurance must cover mental illness on par with physical illness", "बीमा को मानसिक बीमारी शारीरिक बीमारी के बराबर कवर करनी चाहिए"],
+      ["Complaints can go to the State Mental Health Authority", "शिकायत राज्य मानसिक स्वास्थ्य प्राधिकरण को जा सकती है"],
+    ],
+    help: [BOOK, ["Rights being violated in a facility", "किसी संस्था में अधिकारों का उल्लंघन"], CRISIS],
+    faq: [
+      ["Is attempted suicide still a crime?", "क्या आत्महत्या का प्रयास अब भी अपराध है?", "Under the MHCA 2017, a person who attempts suicide is presumed to have severe stress and should receive care.", "MHCA 2017 के तहत आत्महत्या का प्रयास करने वाले को गंभीर तनाव में माना जाता है और उसे देखभाल मिलनी चाहिए।"],
+      ["Does health insurance cover psychiatric treatment?", "क्या हेल्थ इंश्योरेंस मानसिक इलाज कवर करता है?", "The law requires parity; check your policy terms and ask the insurer in writing.", "क़ानून बराबरी की माँग करता है; अपनी पॉलिसी की शर्तें देखें और बीमा कंपनी से लिखित में पूछें।"],
+    ],
+    tags: ["mhca", "rights", "adhikar", "law"],
+    video: ["awareness"],
+  },
+  {
+    slug: "tele-manas-14416-guide",
+    title: ["Tele-MANAS 14416: India's free mental health helpline", "Tele-MANAS 14416: भारत की मुफ़्त मानसिक स्वास्थ्य हेल्पलाइन"],
+    excerpt: ["Tele-MANAS offers free, 24×7 mental health support in many Indian languages. How to call, what to expect and when to use other services.", "Tele-MANAS कई भारतीय भाषाओं में मुफ़्त, 24×7 मानसिक स्वास्थ्य सहायता देता है। कॉल कैसे करें, क्या उम्मीद रखें और कब दूसरी सेवाएँ लें।"],
+    related: ["suicide-prevention-crisis-support-india", "online-psychiatrist-india", "depression-treatment-india"],
+    refs: ["telemanas", "mhca"],
+    intro: [
+      ["Tele-MANAS is the Government of India's national tele-mental health programme.", "Tele-MANAS भारत सरकार का राष्ट्रीय टेली-मानसिक स्वास्थ्य कार्यक्रम है।"],
+      ["Call 14416 or 1-800-891-4416 from anywhere in India, free of charge.", "भारत में कहीं से भी 14416 या 1-800-891-4416 पर मुफ़्त कॉल करें।"],
+    ],
+    key: [
+      ["Available 24 hours, all days", "चौबीसों घंटे, हर दिन उपलब्ध"],
+      ["Trained counsellors with escalation to specialists", "प्रशिक्षित काउंसलर, ज़रूरत पर विशेषज्ञों तक"],
+      ["Support in multiple regional languages", "कई क्षेत्रीय भाषाओं में सहायता"],
+    ],
+    sym: [
+      ["Feeling overwhelmed, anxious or low", "भारी, चिंतित या उदास महसूस करना"],
+      ["Worry about a family member's mental health", "परिवार के किसी सदस्य के मानसिक स्वास्थ्य की चिंता"],
+      ["Thoughts of self-harm", "ख़ुद को नुकसान के विचार"],
+    ],
+    cause: [
+      ["Shortage of mental health professionals in many areas", "कई क्षेत्रों में मानसिक स्वास्थ्य विशेषज्ञों की कमी"],
+      ["Need for immediate, anonymous support", "तुरंत, गुमनाम सहायता की ज़रूरत"],
+      ["Distance and cost barriers", "दूरी और ख़र्च की रुकावटें"],
+    ],
+    risk: [
+      ["Waiting too long before seeking help", "मदद लेने में बहुत देर करना"],
+      ["Using helplines instead of emergency services when life is at immediate risk", "जान को तुरंत ख़तरे में आपातकालीन सेवा की जगह सिर्फ़ हेल्पलाइन"],
+      ["Not following up with ongoing care", "आगे की देखभाल न लेना"],
+    ],
+    mgmt: [
+      ["Call 14416, choose your language, describe your concern", "14416 पर कॉल करें, भाषा चुनें, अपनी चिंता बताएँ"],
+      ["Follow the counsellor's advice on next steps", "अगले क़दमों पर काउंसलर की सलाह मानें"],
+      ["For immediate danger, call 112 or go to the nearest emergency department", "तुरंत ख़तरे में 112 पर कॉल करें या नज़दीकी इमरजेंसी जाएँ"],
+      ["Arrange ongoing treatment with a psychiatrist", "मनोचिकित्सक के साथ आगे का इलाज तय करें"],
+    ],
+    help: [CRISIS, BOOK, ["Repeated crises — a regular treatment plan is needed", "बार-बार संकट — नियमित इलाज योजना ज़रूरी"]],
+    faq: [
+      ["Is Tele-MANAS confidential?", "क्या Tele-MANAS गोपनीय है?", "Yes, calls are handled confidentially by trained staff.", "हाँ, प्रशिक्षित कर्मचारी कॉल को गोपनीय रूप से संभालते हैं।"],
+      ["Can Tele-MANAS prescribe medicines?", "क्या Tele-MANAS दवा लिख सकता है?", "It mainly offers counselling and referral; ongoing treatment is through a psychiatrist.", "यह मुख्य रूप से काउंसलिंग और रेफ़रल देता है; आगे का इलाज मनोचिकित्सक से।"],
+    ],
+    tags: ["helpline", "14416", "tele manas"],
+    video: ["awareness", "suicide"],
+  },
+  {
+    slug: "when-to-see-a-psychiatrist",
+    title: ["When should you see a psychiatrist? 8 signs", "मनोचिकित्सक से कब मिलें? 8 संकेत"],
+    excerpt: ["Persistent sadness, worry, sleep loss, substance use or changes in behaviour — clear signs it is time for a professional assessment.", "लगातार उदासी, चिंता, नींद की कमी, नशा या व्यवहार में बदलाव — साफ़ संकेत कि पेशेवर जाँच का समय है।"],
+    related: ["online-psychiatrist-india", "depression-treatment-india", "anxiety-phobia-treatment-india"],
+    refs: ["mhgap", "who-mental-disorders"],
+    intro: [
+      ["Many people wait years before consulting, often until a crisis.", "बहुत से लोग सालों तक इंतज़ार करते हैं, अक्सर संकट आने तक।"],
+      ["Early consultation usually means shorter, simpler treatment.", "जल्दी परामर्श का मतलब आमतौर पर छोटा, आसान इलाज।"],
+    ],
+    key: [
+      ["Duration (two weeks or more) and impact on daily life are key", "अवधि (दो हफ़्ते या ज़्यादा) और रोज़मर्रा पर असर मुख्य हैं"],
+      ["You don't need to be 'very ill' to consult", "परामर्श के लिए 'बहुत बीमार' होना ज़रूरी नहीं"],
+      ["Physical symptoms with no medical cause may be psychological", "बिना मेडिकल वजह के शारीरिक लक्षण मानसिक हो सकते हैं"],
+    ],
+    sym: [
+      ["Sadness, loss of interest or hopelessness for two weeks", "दो हफ़्ते तक उदासी, रुचि ख़त्म या निराशा"],
+      ["Constant worry, panic attacks or repeated checking", "लगातार चिंता, पैनिक अटैक या बार-बार जाँचना"],
+      ["Sleep loss, hearing voices, extreme suspicion or unusual excitement", "नींद की कमी, आवाज़ें सुनना, अत्यधिक शक या असामान्य उत्तेजना"],
+      ["Alcohol, tobacco or drug use that is hard to control", "शराब, तंबाकू या नशा जिस पर क़ाबू न हो"],
+    ],
+    cause: [
+      ["Life stress, loss or trauma", "जीवन का तनाव, नुकसान या आघात"],
+      ["Biological vulnerability", "जैविक संवेदनशीलता"],
+      ["Physical illness and medicines", "शारीरिक बीमारी और दवाएँ"],
+    ],
+    risk: [
+      ["Family history of mental illness", "मानसिक बीमारी का पारिवारिक इतिहास"],
+      ["Substance use", "नशे का सेवन"],
+      ["Chronic illness or pain", "पुरानी बीमारी या दर्द"],
+    ],
+    mgmt: [
+      ["Note symptoms, duration and what helps or worsens them", "लक्षण, अवधि और क्या बढ़ाता-घटाता है, नोट करें"],
+      ["Bring previous prescriptions and reports", "पुराने पर्चे और रिपोर्ट साथ लाएँ"],
+      ["A family member can join with your consent", "आपकी सहमति से परिवार का सदस्य शामिल हो सकता है"],
+    ],
+    help: [BOOK, ["Any of these signs lasting two weeks or more", "इनमें से कोई संकेत दो हफ़्ते या ज़्यादा"], CRISIS],
+    faq: [
+      ["Will the first consultation include medicines?", "क्या पहले परामर्श में दवा दी जाएगी?", "Only if needed. Many people are advised therapy and lifestyle changes first.", "सिर्फ़ ज़रूरत पर। बहुत से लोगों को पहले थेरेपी और जीवनशैली बदलाव की सलाह दी जाती है।"],
+      ["How long is a consultation?", "परामर्श कितनी देर का होता है?", "The first consultation is longer to understand your history; follow-ups are shorter.", "पहला परामर्श इतिहास समझने के लिए लंबा होता है; फ़ॉलो-अप छोटे।"],
+    ],
+    tags: ["psychiatrist kab", "doctor kab dikhaye", "signs"],
+    video: ["psychiatrist", "awareness"],
+  },
+  {
+    slug: "black-magic-or-mental-illness",
+    title: ["Black magic, spirits or mental illness?", "जादू-टोना, ऊपरी हवा या मानसिक बीमारी?"],
+    excerpt: ["Hearing voices, possession-like episodes or sudden behaviour change are often blamed on black magic. Why medical assessment is essential — alongside your faith.", "आवाज़ें सुनना, 'हवा' जैसे दौरे या अचानक व्यवहार बदलना अक्सर जादू-टोने पर डाला जाता है। आस्था के साथ-साथ मेडिकल जाँच क्यों ज़रूरी है।"],
+    related: ["psychosis-psychiatrist-india", "dissociative-disorders-treatment-india", "seizure-disorders-psychiatry-india"],
+    refs: ["who-schizophrenia", "icd11"],
+    intro: [
+      ["Across India, many families first visit faith healers when someone behaves unusually.", "भारत में कई परिवार किसी के असामान्य व्यवहार पर पहले झाड़-फूँक करने वालों के पास जाते हैं।"],
+      ["Faith can give comfort, but conditions such as psychosis, dissociation and epilepsy need medical treatment.", "आस्था सहारा दे सकती है, पर साइकोसिस, डिसोसिएशन और मिर्गी जैसी स्थितियों को मेडिकल इलाज चाहिए।"],
+    ],
+    key: [
+      ["Treatment and faith can go together", "इलाज और आस्था साथ चल सकते हैं"],
+      ["Delayed treatment of psychosis worsens outcome", "साइकोसिस के इलाज में देरी से नतीजा बिगड़ता है"],
+      ["Chaining, beating or starving a person is harmful and illegal", "व्यक्ति को ज़ंजीर में बाँधना, पीटना या भूखा रखना नुकसानदेह और ग़ैरक़ानूनी है"],
+    ],
+    sym: [
+      ["Hearing voices or seeing things others don't", "ऐसी आवाज़ें सुनना या चीज़ें देखना जो दूसरों को नहीं"],
+      ["Episodes of altered consciousness, shaking or speaking in another voice", "बदली हुई चेतना, काँपना या दूसरी आवाज़ में बोलने के दौरे"],
+      ["Sudden suspicion, aggression or withdrawal", "अचानक शक, आक्रामकता या अलग-थलग होना"],
+    ],
+    cause: [
+      ["Psychotic disorders such as schizophrenia", "स्किज़ोफ़्रेनिया जैसे साइकोटिक विकार"],
+      ["Dissociative (conversion) disorders after stress", "तनाव के बाद डिसोसिएटिव (कन्वर्ज़न) विकार"],
+      ["Epilepsy, substance use or other medical causes", "मिर्गी, नशा या अन्य मेडिकल वजहें"],
+    ],
+    risk: [
+      ["Family history of psychosis", "साइकोसिस का पारिवारिक इतिहास"],
+      ["Cannabis or other drug use", "गांजा या अन्य नशा"],
+      ["Severe stress or conflict at home", "घर में गंभीर तनाव या टकराव"],
+    ],
+    mgmt: [
+      ["Medical and psychiatric assessment to find the cause", "वजह जानने के लिए मेडिकल और मनोचिकित्सकीय जाँच"],
+      ["Antipsychotics, psychotherapy or epilepsy treatment as needed", "ज़रूरत के अनुसार एंटीसाइकोटिक, साइकोथेरेपी या मिर्गी का इलाज"],
+      ["Family education and stress reduction", "परिवार को जानकारी और तनाव कम करना"],
+      ["Prayer and rituals can continue if they comfort the person, without harmful practices", "प्रार्थना और रीति-रिवाज जारी रह सकते हैं अगर सुकून दें, नुकसानदेह तरीक़ों के बिना"],
+    ],
+    help: [["Hearing voices, extreme fear or not sleeping for days", "आवाज़ें सुनना, अत्यधिक डर या कई दिन न सोना"], ["Aggression or risk to self or others — urgent care", "आक्रामकता या ख़ुद/दूसरों को ख़तरा — तुरंत देखभाल"], BOOK],
+    faq: [
+      ["Do psychiatrists disrespect religious beliefs?", "क्या मनोचिकित्सक धार्मिक आस्था का अनादर करते हैं?", "No. Beliefs are respected; the aim is to treat illness alongside the person's faith.", "नहीं। आस्था का सम्मान होता है; लक्ष्य व्यक्ति की आस्था के साथ बीमारी का इलाज है।"],
+      ["Why did the episodes stop after a ritual?", "रस्म के बाद दौरे क्यों रुक गए?", "Some stress-related episodes settle with reassurance, but they often return without addressing the cause.", "कुछ तनाव वाले दौरे भरोसे से शांत हो जाते हैं, पर वजह पर काम न हो तो अक्सर लौटते हैं।"],
+    ],
+    tags: ["jadu tona", "upri hawa", "bhoot pret", "black magic"],
+    video: ["psychosis", "myths"],
+  },
+  {
+    slug: "workplace-mental-health-guide",
+    title: ["Mental health at work: a guide for employees", "काम पर मानसिक स्वास्थ्य: कर्मचारियों के लिए गाइड"],
+    excerpt: ["Long hours, targets and job insecurity affect mental health. Recognising burnout, setting boundaries and seeking help without risking your job.", "लंबे घंटे, टारगेट और नौकरी की अनिश्चितता मानसिक स्वास्थ्य पर असर डालते हैं। थकान पहचानना, सीमाएँ तय करना और नौकरी जोखिम में डाले बिना मदद लेना।"],
+    related: ["workplace-stress-india", "stress-management-india", "depression-treatment-india"],
+    refs: ["who-mental-disorders", "mhca"],
+    intro: [
+      ["The WHO identifies heavy workload, low control and poor support as workplace risks to mental health.", "WHO भारी काम, कम नियंत्रण और कम सहारे को कार्यस्थल पर मानसिक स्वास्थ्य के जोखिम मानता है।"],
+      ["Burnout is an occupational phenomenon of exhaustion, cynicism and reduced effectiveness.", "बर्नआउट थकावट, उदासीनता और कम असर वाली काम से जुड़ी स्थिति है।"],
+    ],
+    key: [
+      ["Burnout and depression overlap; depression needs treatment", "बर्नआउट और डिप्रेशन मिलते-जुलते हैं; डिप्रेशन को इलाज चाहिए"],
+      ["Your health information is confidential under the MHCA 2017", "MHCA 2017 के तहत आपकी स्वास्थ्य जानकारी गोपनीय है"],
+      ["Small boundaries protect long-term performance", "छोटी सीमाएँ लंबे समय के प्रदर्शन की रक्षा करती हैं"],
+    ],
+    sym: [
+      ["Dreading Monday, feeling drained", "सोमवार से डर, थका हुआ महसूस करना"],
+      ["Irritability, poor sleep, headaches", "चिड़चिड़ापन, ख़राब नींद, सिरदर्द"],
+      ["Mistakes, procrastination, detachment", "ग़लतियाँ, टालमटोल, अलगाव"],
+    ],
+    cause: [
+      ["Excessive workload and long hours", "ज़्यादा काम और लंबे घंटे"],
+      ["Conflict, bullying or unclear roles", "टकराव, बुलिंग या अस्पष्ट भूमिका"],
+      ["Job insecurity", "नौकरी की अनिश्चितता"],
+    ],
+    risk: [
+      ["Always-on email and messaging", "हमेशा चालू ईमेल और मैसेज"],
+      ["Shift work and travel", "शिफ़्ट और सफ़र"],
+      ["Using alcohol to unwind", "आराम के लिए शराब"],
+    ],
+    mgmt: [
+      ["Set fixed offline hours and take regular breaks", "तय ऑफ़लाइन घंटे और नियमित ब्रेक"],
+      ["Discuss priorities with your manager", "मैनेजर के साथ प्राथमिकताओं पर बात"],
+      ["Use employee assistance programmes if available", "उपलब्ध हो तो कर्मचारी सहायता कार्यक्रम"],
+      ["Consult early; consultations can be scheduled outside work hours online", "जल्दी सलाह लें; ऑनलाइन परामर्श काम के बाद भी हो सकता है"],
+    ],
+    help: [BOOK, ["Low mood, anxiety or sleep problems for more than two weeks", "दो हफ़्ते से ज़्यादा उदासी, चिंता या नींद की समस्या"], CRISIS],
+    faq: [
+      ["Do I have to tell my employer about my treatment?", "क्या मुझे नियोक्ता को अपने इलाज के बारे में बताना होगा?", "Generally no. Share only what you choose; medical certificates can avoid diagnosis details if you prefer.", "आमतौर पर नहीं। वही बताएँ जो आप चाहें; चाहें तो मेडिकल सर्टिफ़िकेट में निदान का विवरण न हो।"],
+      ["Is burnout a medical diagnosis?", "क्या बर्नआउट मेडिकल निदान है?", "ICD-11 lists it as an occupational phenomenon, not a disease; depression and anxiety must still be checked.", "ICD-11 में यह काम से जुड़ी स्थिति है, बीमारी नहीं; डिप्रेशन और चिंता की जाँच फिर भी ज़रूरी है।"],
+    ],
+    tags: ["office stress", "burnout", "kaam ka tanav"],
+    video: ["stress", "burnout"],
+  },
+  {
+    slug: "exercise-for-mental-health",
+    title: ["Exercise for mental health: how much helps?", "मानसिक स्वास्थ्य के लिए व्यायाम: कितना फ़ायदेमंद?"],
+    excerpt: ["Regular physical activity reduces depression and anxiety symptoms and improves sleep. How much, what type, and how to start when motivation is low.", "नियमित शारीरिक गतिविधि डिप्रेशन और चिंता के लक्षण घटाती है और नींद सुधारती है। कितना, किस तरह का, और कम प्रेरणा में शुरुआत कैसे करें।"],
+    related: ["depression-treatment-india", "stress-management-india", "generalized-anxiety-disorder-india"],
+    refs: ["nice-depression", "who-live-life"],
+    intro: [
+      ["Physical activity is recommended as part of treatment for mild depression.", "हल्के डिप्रेशन के इलाज में शारीरिक गतिविधि की सलाह दी जाती है।"],
+      ["It also supports recovery in anxiety, addiction and severe mental illness.", "यह चिंता, नशा और गंभीर मानसिक बीमारी में भी रिकवरी में मदद करती है।"],
+    ],
+    key: [
+      ["WHO advises at least 150 minutes of moderate activity a week for adults", "WHO वयस्कों को हफ़्ते में कम से कम 150 मिनट मध्यम गतिविधि की सलाह देता है"],
+      ["Any movement is better than none", "कुछ न करने से कोई भी गतिविधि बेहतर"],
+      ["Group activity adds social benefit", "समूह गतिविधि से सामाजिक फ़ायदा भी"],
+    ],
+    sym: [
+      ["Low energy and motivation", "कम ऊर्जा और प्रेरणा"],
+      ["Restlessness and tension", "बेचैनी और तनाव"],
+      ["Poor sleep", "ख़राब नींद"],
+    ],
+    cause: [
+      ["Sedentary jobs and screen time", "बैठे-बैठे काम और स्क्रीन टाइम"],
+      ["Low mood reducing activity, which lowers mood further", "उदासी से गतिविधि घटती है, जिससे मूड और गिरता है"],
+      ["Lack of safe spaces or time", "सुरक्षित जगह या समय की कमी"],
+    ],
+    risk: [
+      ["Weight gain from some psychiatric medicines", "कुछ मानसिक दवाओं से वज़न बढ़ना"],
+      ["Chronic illness", "पुरानी बीमारी"],
+      ["Isolation", "अकेलापन"],
+    ],
+    mgmt: [
+      ["Start with a 10-minute walk daily and build up", "रोज़ 10 मिनट की सैर से शुरू करें और बढ़ाएँ"],
+      ["Choose enjoyable activities: yoga, dance, cricket, cycling", "मज़ेदार गतिविधि चुनें: योग, डांस, क्रिकेट, साइकिल"],
+      ["Schedule activity like an appointment", "गतिविधि को अपॉइंटमेंट की तरह तय करें"],
+      ["Exercise with a friend or family member", "दोस्त या परिवार के साथ व्यायाम"],
+    ],
+    help: [BOOK, ["Low mood not improving despite activity", "गतिविधि के बावजूद उदासी में सुधार न होना"], ["Chest pain, breathlessness or dizziness on exertion — see a physician", "मेहनत पर सीने में दर्द, साँस फूलना या चक्कर — डॉक्टर से मिलें"]],
+    faq: [
+      ["Can exercise replace antidepressants?", "क्या व्यायाम एंटीडिप्रेसेंट की जगह ले सकता है?", "For mild depression it may be enough; for moderate to severe depression it works best alongside treatment.", "हल्के डिप्रेशन में काफ़ी हो सकता है; मध्यम–गंभीर में इलाज के साथ सबसे अच्छा काम करता है।"],
+      ["Is yoga helpful?", "क्या योग मददगार है?", "Yes, yoga combines activity, breathing and relaxation and helps many people.", "हाँ, योग गतिविधि, साँस और रिलैक्सेशन जोड़ता है और बहुतों की मदद करता है।"],
+    ],
+    tags: ["exercise", "vyayam", "yoga", "walk"],
+    video: ["exercise", "depression"],
+  },
+  {
+    slug: "diet-and-mental-health",
+    title: ["Food and mood: diet's role in mental health", "भोजन और मूड: मानसिक स्वास्थ्य में खान-पान की भूमिका"],
+    excerpt: ["A balanced diet with whole grains, vegetables, pulses and regular meals supports mood and energy. What the evidence says and what to avoid.", "साबुत अनाज, सब्ज़ियों, दालों और नियमित भोजन वाला संतुलित आहार मूड और ऊर्जा में मदद करता है। सबूत क्या कहते हैं और किससे बचें।"],
+    related: ["depression-treatment-india", "binge-eating-disorder-india", "stress-management-india"],
+    refs: ["who-live-life", "nice-depression"],
+    intro: [
+      ["Diet affects energy, sleep and inflammation, which all influence mood.", "खान-पान ऊर्जा, नींद और सूजन को प्रभावित करता है, जो सब मूड पर असर डालते हैं।"],
+      ["Food supports mental health but is not a cure for mental illness.", "भोजन मानसिक स्वास्थ्य में मदद करता है पर मानसिक बीमारी का इलाज नहीं है।"],
+    ],
+    key: [
+      ["Traditional Indian meals with dal, sabzi, roti and curd are a good base", "दाल, सब्ज़ी, रोटी और दही वाला पारंपरिक भारतीय भोजन अच्छा आधार है"],
+      ["Skipping meals worsens irritability and fatigue", "भोजन छोड़ने से चिड़चिड़ापन और थकान बढ़ती है"],
+      ["Excess caffeine and sugar can worsen anxiety and sleep", "ज़्यादा कैफ़ीन और चीनी चिंता और नींद बिगाड़ सकते हैं"],
+    ],
+    sym: [
+      ["Energy crashes after sugary snacks", "मीठे स्नैक्स के बाद ऊर्जा गिरना"],
+      ["Emotional eating when stressed", "तनाव में भावनात्मक खाना"],
+      ["Low appetite in depression", "डिप्रेशन में कम भूख"],
+    ],
+    cause: [
+      ["Processed and fried foods replacing home meals", "घर के भोजन की जगह प्रोसेस्ड और तला खाना"],
+      ["Irregular meal timings", "भोजन का अनियमित समय"],
+      ["Vitamin B12, iron or vitamin D deficiency", "विटामिन B12, आयरन या विटामिन D की कमी"],
+    ],
+    risk: [
+      ["Strict vegetarian diet without B12 sources", "B12 स्रोत के बिना सख़्त शाकाहार"],
+      ["Hostel or shift-work eating", "हॉस्टल या शिफ़्ट वाला खाना"],
+      ["Alcohol use", "शराब का सेवन"],
+    ],
+    mgmt: [
+      ["Three regular meals with protein in each", "तीन नियमित भोजन, हर बार प्रोटीन के साथ"],
+      ["Half the plate vegetables; whole grains and pulses", "आधी थाली सब्ज़ियाँ; साबुत अनाज और दालें"],
+      ["Limit tea/coffee to 2–3 cups, none in the evening", "चाय/कॉफ़ी 2–3 कप तक, शाम को नहीं"],
+      ["Check B12 and vitamin D if tired or low", "थकान या उदासी हो तो B12 और विटामिन D जाँचें"],
+    ],
+    help: [BOOK, ["Major changes in eating with low mood", "उदासी के साथ खाने में बड़े बदलाव"], ["Episodes of uncontrolled eating or strong guilt after eating", "बेक़ाबू खाने के दौर या खाने के बाद गहरा अपराधबोध"]],
+    faq: [
+      ["Are there foods that cure depression?", "क्या कोई भोजन डिप्रेशन ठीक करता है?", "No single food cures depression; an overall healthy pattern supports recovery.", "कोई एक भोजन डिप्रेशन ठीक नहीं करता; कुल मिलाकर स्वस्थ खान-पान रिकवरी में मदद करता है।"],
+      ["Should I take supplements?", "क्या सप्लीमेंट लूँ?", "Only to correct a proven deficiency, as advised by your doctor.", "सिर्फ़ साबित कमी को ठीक करने के लिए, डॉक्टर की सलाह से।"],
+    ],
+    tags: ["diet", "khana", "nutrition", "food mood"],
+    video: ["depression"],
+  },
+  {
+    slug: "helping-a-friend-in-crisis",
+    title: ["How to help a friend who talks about suicide", "आत्महत्या की बात करने वाले दोस्त की मदद कैसे करें"],
+    excerpt: ["Asking directly about suicide does not put the idea in someone's head. Steps to listen, keep them safe and connect them with help.", "आत्महत्या के बारे में सीधे पूछने से किसी के मन में विचार नहीं आता। सुनने, सुरक्षित रखने और मदद से जोड़ने के क़दम।"],
+    related: ["suicide-prevention-crisis-support-india", "depression-treatment-india", "teen-depression-india"],
+    refs: ["who-suicide", "telemanas"],
+    intro: [
+      ["Most people who are thinking of suicide give some warning signs.", "आत्महत्या के बारे में सोचने वाले ज़्यादातर लोग कुछ चेतावनी संकेत देते हैं।"],
+      ["A caring, non-judgemental response from a friend can be life-saving.", "दोस्त की परवाह भरी, बिना आँके प्रतिक्रिया जान बचा सकती है।"],
+    ],
+    key: [
+      ["Ask directly: 'Are you thinking of ending your life?'", "सीधे पूछें: 'क्या तुम अपनी ज़िंदगी ख़त्म करने के बारे में सोच रहे हो?'"],
+      ["Listen more than you talk; don't argue or lecture", "बोलने से ज़्यादा सुनें; बहस या उपदेश न दें"],
+      ["Don't promise to keep it secret if their life is at risk", "जान ख़तरे में हो तो राज़ रखने का वादा न करें"],
+    ],
+    sym: [
+      ["Talking about death, being a burden or no way out", "मौत, बोझ होने या कोई रास्ता न होने की बात"],
+      ["Giving away belongings or saying goodbye", "चीज़ें बाँटना या अलविदा कहना"],
+      ["Sudden calm after a period of distress", "परेशानी के बाद अचानक शांति"],
+    ],
+    cause: [
+      ["Depression and other mental illness", "डिप्रेशन और अन्य मानसिक बीमारी"],
+      ["Relationship breakdown, exam or financial crisis", "रिश्ता टूटना, परीक्षा या आर्थिक संकट"],
+      ["Alcohol or drug use", "शराब या नशा"],
+    ],
+    risk: [
+      ["Previous attempt", "पहले का प्रयास"],
+      ["Access to means such as pesticides or medicines", "कीटनाशक या दवाओं जैसे साधनों तक पहुँच"],
+      ["Isolation", "अकेलापन"],
+    ],
+    mgmt: [
+      ["Stay with them if risk is immediate", "तुरंत ख़तरा हो तो उनके साथ रहें"],
+      ["Remove or lock away means of self-harm", "ख़ुद को नुकसान के साधन हटाएँ या बंद करें"],
+      ["Call Tele-MANAS 14416 together or 112 in an emergency", "साथ में Tele-MANAS 14416 पर कॉल करें या इमरजेंसी में 112"],
+      ["Help them book a consultation and follow up later", "परामर्श बुक कराने में मदद करें और बाद में हालचाल लें"],
+    ],
+    help: [CRISIS, ["A plan or means already arranged — go to emergency now", "योजना या साधन तैयार — अभी इमरजेंसी जाएँ"], BOOK],
+    faq: [
+      ["Will asking about suicide make it more likely?", "क्या आत्महत्या के बारे में पूछने से ख़तरा बढ़ता है?", "No. Asking directly is shown to reduce distress and opens the door to help.", "नहीं। सीधे पूछने से परेशानी घटती है और मदद का रास्ता खुलता है।"],
+      ["What if they get angry?", "अगर वे नाराज़ हो जाएँ तो?", "Stay calm, express care and keep the door open; their safety matters more than the friendship being comfortable.", "शांत रहें, परवाह जताएँ और रास्ता खुला रखें; दोस्ती के आराम से ज़्यादा उनकी सुरक्षा मायने रखती है।"],
+    ],
+    tags: ["suicide help", "dost ki madad", "crisis"],
+    video: ["suicide"],
+  },
+  {
+    slug: "online-psychiatry-consultation-guide",
+    title: ["Online psychiatry consultation: a step-by-step guide", "ऑनलाइन मनोचिकित्सा परामर्श: क़दम-दर-क़दम गाइड"],
+    excerpt: ["How booking, the video call, e-prescription and follow-ups work, what can and can't be done online, and how to prepare for your first consultation.", "बुकिंग, वीडियो कॉल, ई-प्रिस्क्रिप्शन और फ़ॉलो-अप कैसे होते हैं, ऑनलाइन क्या हो सकता है और क्या नहीं, और पहले परामर्श की तैयारी कैसे करें।"],
+    related: ["online-psychiatry-consultation", "online-psychiatrist-india", "psychiatrist-rajasthan"],
+    refs: ["tpg", "mhca"],
+    intro: [
+      ["Online consultations follow India's Telemedicine Practice Guidelines.", "ऑनलाइन परामर्श भारत के टेलीमेडिसिन प्रैक्टिस दिशानिर्देशों का पालन करते हैं।"],
+      ["They are suitable for most non-emergency mental health concerns and follow-ups for patients in India.", "भारत में मरीज़ों के लिए ज़्यादातर ग़ैर-आपातकालीन मानसिक समस्याओं और फ़ॉलो-अप के लिए उपयुक्त।"],
+    ],
+    key: [
+      ["Consultations are for patients physically present in India", "परामर्श भारत में मौजूद मरीज़ों के लिए हैं"],
+      ["Some medicine categories cannot be prescribed online", "कुछ दवा श्रेणियाँ ऑनलाइन नहीं लिखी जा सकतीं"],
+      ["Emergencies need in-person care", "आपातकाल में आमने-सामने देखभाल"],
+    ],
+    sym: [
+      ["Wanting a private consultation from home", "घर से निजी परामर्श चाहना"],
+      ["No psychiatrist nearby", "पास में मनोचिकित्सक न होना"],
+      ["Need for regular follow-up without travel", "बिना सफ़र नियमित फ़ॉलो-अप की ज़रूरत"],
+    ],
+    cause: [
+      ["Distance and travel costs", "दूरी और सफ़र का ख़र्च"],
+      ["Work or study schedules", "काम या पढ़ाई का समय"],
+      ["Privacy concerns", "निजता की चिंता"],
+    ],
+    risk: [
+      ["Poor connection — keep a phone backup", "ख़राब कनेक्शन — फ़ोन बैकअप रखें"],
+      ["Missing physical examination needs", "शारीरिक जाँच की ज़रूरत छूटना"],
+      ["Crisis situations unsuitable for video care", "संकट की स्थितियाँ जो वीडियो के लिए उपयुक्त नहीं"],
+    ],
+    mgmt: [
+      ["Book a slot online and complete payment", "ऑनलाइन स्लॉट बुक करें और भुगतान करें"],
+      ["Join the video call from a quiet room; keep ID and old reports ready", "शांत कमरे से वीडियो कॉल; पहचान-पत्र और पुरानी रिपोर्ट तैयार"],
+      ["Receive the e-prescription and advice after the call", "कॉल के बाद ई-प्रिस्क्रिप्शन और सलाह"],
+      ["Book follow-ups as advised", "सलाह के अनुसार फ़ॉलो-अप बुक करें"],
+    ],
+    help: [BOOK, ["Need for tests or examination — local doctor or in-person visit", "जाँच या परीक्षण की ज़रूरत — स्थानीय डॉक्टर या आमने-सामने"], CRISIS],
+    faq: [
+      ["Can family members join?", "क्या परिवार के सदस्य जुड़ सकते हैं?", "Yes, with the patient's consent.", "हाँ, मरीज़ की सहमति से।"],
+      ["Is an online prescription valid at pharmacies?", "क्या ऑनलाइन पर्चा फ़ार्मेसी में मान्य है?", "Yes, prescriptions issued under the Telemedicine Practice Guidelines are valid, except for restricted categories.", "हाँ, टेलीमेडिसिन दिशानिर्देशों के तहत जारी पर्चे मान्य हैं, प्रतिबंधित श्रेणियों को छोड़कर।"],
+    ],
+    tags: ["online consultation", "video call doctor", "e-prescription"],
+    video: ["online"],
+  },
+]);

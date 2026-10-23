@@ -4,13 +4,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { doc, getDoc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../../../lib/firebase";
+import { SERVICES, getService, serviceCodeFromText } from "../../../lib/site";
 
 export default function PaymentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [patient, setPatient] = useState("");
-  const [service, setService] = useState("consultation");
+  const [service, setService] = useState<string>("psychiatry-consultation");
   const [status, setStatus] = useState("Paid");
   const [discountType, setDiscountType] = useState("amount");
   const [discount, setDiscount] = useState("0");
@@ -32,7 +33,7 @@ export default function PaymentPage() {
       : searchParams.get("paymentKey") || "");
   const [appointmentLoading, setAppointmentLoading] = useState(Boolean(appointmentId));
 
-  const fee = service === "psychotherapy" ? 2000 : 500;
+  const fee = getService(service)?.fee ?? 500;
 
   const finalAmount = useMemo(() => {
     if (status === "Exempt") return 0;
@@ -68,9 +69,11 @@ export default function PaymentPage() {
         }
         const appointment = snapshot.data();
         setPatient(String(appointment.patientName || appointment.name || ""));
-        setService(/psychotherapy|counseling/i.test(String(appointment.service || ""))
-          ? "psychotherapy"
-          : "consultation");
+        setService(
+          String(appointment.serviceCode || "") && getService(String(appointment.serviceCode))
+            ? String(appointment.serviceCode)
+            : serviceCodeFromText(String(appointment.service || ""))
+        );
         const savedPayment = await getDoc(doc(db, "payments", appointmentId));
         if (!active) return;
         const storedStatus = String(appointment.paymentStatus || "");
@@ -288,13 +291,11 @@ export default function PaymentPage() {
           disabled={Boolean(appointmentId)}
           style={input}
         >
-          <option value="consultation">
-            Consultation / Video Consultation - ₹500
-          </option>
-
-          <option value="psychotherapy">
-            Psychotherapy / Counseling 30-45 min - ₹2000
-          </option>
+          {SERVICES.map((item) => (
+            <option key={item.code} value={item.code}>
+              {item.label.en} - ₹{item.fee}
+            </option>
+          ))}
         </select>
 
         <label>

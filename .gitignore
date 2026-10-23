@@ -11,3 +11,7 @@ node_modules/
 .next/
 .vercel/
 .vercel
+
+# Firebase service account keys
+service-account*.json
+*-firebase-adminsdk-*.json

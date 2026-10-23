@@ -1,27 +1,43 @@
+import type { Metadata, Viewport } from "next";
+import { Fraunces, Mukta } from "next/font/google";
 import SeoStructuredData from "./SeoStructuredData";
-import DoctorLoginButton from "./components/DoctorLoginButton";
-import type { Metadata } from "next";
+import { SITE_URL } from "../lib/site";
 import "./globals.css";
 
-const siteUrl = "https://www.neuromindbloom.com";
+// Mukta covers both Latin and Devanagari, so Hindi and English text share one
+// consistent, highly legible typeface. Fraunces is used for display headings.
+const mukta = Mukta({
+  subsets: ["latin", "devanagari"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-mukta",
+  display: "swap",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Online Psychiatrist India | Dr. Kuldeep Budania | Neuro Mind Bloom",
+    default: "Psychiatrist Dr. Kuldeep Budania | Online & Ajmer | Neuro Mind Bloom",
     template: "%s | Neuro Mind Bloom",
   },
   description:
-    "Online psychiatry consultation across India with Dr. Kuldeep Budania, MD Psychiatry. Confidential care for anxiety, depression, OCD, bipolar disorder, schizophrenia, addiction, sleep concerns and psychotherapy. Based in Ajmer, Rajasthan.",
+    "Dr. Kuldeep Budania (MD Psychiatry): confidential psychiatry, de-addiction & sexual health care. Online video consultation across India, Ajmer based.",
   keywords: [
-    "online psychiatrist India", "online psychiatry consultation India", "psychiatrist online India",
-    "online mental health consultation India", "psychiatrist Rajasthan", "psychiatrist Ajmer",
-    "psychiatrist Jaipur", "psychiatrist Kota", "de addiction psychiatrist Rajasthan",
-    "anxiety treatment online India", "depression treatment online India", "OCD psychiatrist India",
-    "addiction psychiatrist India", "psychotherapy online India", "sex specialist India", "sex specialist Ajmer", "sexual health psychiatrist India", "sexual disorders psychiatrist", "performance anxiety treatment", "Dr Kuldeep Budania psychiatrist",
-    "Neuro Mind Bloom"
+    "online psychiatrist India", "psychiatrist Ajmer", "psychiatrist Rajasthan",
+    "de addiction psychiatrist Rajasthan", "nasha mukti Ajmer", "sex specialist Ajmer",
+    "depression treatment online India", "anxiety treatment online India", "OCD psychiatrist India",
+    "psychotherapy online India", "मनोचिकित्सक अजमेर", "नशा मुक्ति", "Dr Kuldeep Budania",
+    "Neuro Mind Bloom",
   ],
-  alternates: { canonical: siteUrl },
+  alternates: {
+    canonical: SITE_URL,
+    languages: { "en-IN": SITE_URL, "hi-IN": `${SITE_URL}/hi`, "x-default": SITE_URL },
+  },
   robots: {
     index: true,
     follow: true,
@@ -30,27 +46,33 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: siteUrl,
+    alternateLocale: ["hi_IN"],
+    url: SITE_URL,
     siteName: "Neuro Mind Bloom",
-    title: "Online Psychiatrist India | Dr. Kuldeep Budania",
-    description: "Confidential online psychiatry consultation across India. Based in Ajmer, Rajasthan.",
-    images: [{ url: "/dr-kuldeep.png", alt: "Dr. Kuldeep Budania - MD Psychiatry" }],
+    title: "Dr. Kuldeep Budania – Psychiatrist | Neuro Mind Bloom",
+    description: "Confidential psychiatry, de-addiction and psychotherapy care. Video consultation across India.",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "Neuro Mind Bloom – Mind Care, Life Care" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Online Psychiatrist India | Dr. Kuldeep Budania",
-    description: "Confidential online psychiatry consultation across India.",
-    images: ["/dr-kuldeep.png"],
+    title: "Dr. Kuldeep Budania – Psychiatrist | Neuro Mind Bloom",
+    description: "Confidential psychiatry, de-addiction and psychotherapy care across India.",
+    images: ["/og-image.jpg"],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#073e45",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-IN">
+    <html lang="en-IN" className={`${mukta.variable} ${fraunces.variable}`}>
       <body>
         <SeoStructuredData />
         {children}
-        <DoctorLoginButton />
       </body>
     </html>
   );

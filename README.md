@@ -1,23 +1,27 @@
-# Neuro Mind Bloom Website
+# Neuro Mind Bloom — website & clinic system
 
-## Run locally
-1. Open this folder in VS Code.
-2. Open Terminal.
-3. Run: `npm install`
-4. Run: `npm run dev`
-5. Open: `http://127.0.0.1:3000`
+Dr. Kuldeep Budania · MBBS, MD Psychiatry · मानसिक रोग, नशा मुक्ति एवं सेक्स रोग विशेषज्ञ
+https://www.neuromindbloom.com
 
-## Included
-- Premium responsive homepage
-- Dr. Kuldeep Budania portrait
-- Psychiatric consultation ₹500
-- Psychotherapy ₹2000
-- Services including sexual disorders
-- Working WhatsApp appointment form
-- FAQ, contact and SEO metadata
+> **Branch `upgrade/dev`** — development of the upgraded site. The live site is NOT modified;
+> the first commit on `main` is the untouched live source. Do not deploy without approval.
 
-## Contact details used
-- Call: 8107639481
-- WhatsApp: 9376315331
-- Email: drkuldeepbudania23@gmail.com
-- Location: Ajmer, Rajasthan
+## Quick start
+```bash
+npm install
+cp .env.example .env.local   # fill DEV Firebase project + Razorpay TEST keys
+npm run dev                  # http://localhost:3000  (Hindi: /hi)
+npm test && npm run typecheck && npm run build
+```
+
+## Docs
+- `docs/COMPARISON.md` — comparison with Dr. Akash Parihar's website
+- `docs/ARCHITECTURE.md` — stack, data model, workflow, security
+- `docs/DEVELOPMENT-PLAN.md` — feature status, phases, test checklist, release steps
+- `docs/CHANGELOG.md` — what each phase changed
+- `docs/GO-LIVE-CHECKLIST.md` — setup, env vars, safe release steps
+- `docs/NOTIFICATIONS.md` — WhatsApp / email automation and template texts
+
+## Where to change things
+- Fees, phone numbers, doctor details, social links → `lib/site.ts`
+- Homepage text (English + Hindi) → `lib/content/home.ts`

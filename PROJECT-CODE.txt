@@ -9,7 +9,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC2bX4cWgV7sKhKmNflLGJSvAU6CqrTizw",
+  apiKey: "<REDACTED — set NEXT_PUBLIC_FIREBASE_API_KEY in .env.local>",
   authDomain: "neuro-mind-bloom.firebaseapp.com",
   projectId: "neuro-mind-bloom",
   storageBucket: "neuro-mind-bloom.firebasestorage.app",
@@ -2492,7 +2492,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC2bX4cWgV7sKhKmNflLGJSvAU6CqrTizw",
+  apiKey: "<REDACTED — set NEXT_PUBLIC_FIREBASE_API_KEY in .env.local>",
   authDomain: "neuro-mind-bloom.firebaseapp.com",
   projectId: "neuro-mind-bloom",
   storageBucket: "neuro-mind-bloom.firebasestorage.app",

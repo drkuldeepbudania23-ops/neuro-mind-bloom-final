@@ -1,3 +1,4 @@
+import { CLINIC, DOCTOR, SERVICES, SOCIAL } from "../lib/site";
 export default function SeoStructuredData() {
   const schema = {
     "@context": "https://schema.org",
@@ -8,8 +9,10 @@ export default function SeoStructuredData() {
         name: "Neuro Mind Bloom",
         url: "https://www.neuromindbloom.com",
         image: "https://www.neuromindbloom.com/dr-kuldeep.png",
-        telephone: "+91-9376315331",
-        email: "drkuldeepbudania23@gmail.com",
+        logo: "https://www.neuromindbloom.com/logo-badge.png",
+        telephone: CLINIC.phone,
+        email: CLINIC.email,
+        sameAs: [SOCIAL.facebook, SOCIAL.instagram, SOCIAL.youtube],
         priceRange: "₹₹",
         medicalSpecialty: "Psychiatric",
         description: "Online psychiatry, de-addiction and psychotherapy consultation across India, based in Ajmer, Rajasthan.",
@@ -25,14 +28,16 @@ export default function SeoStructuredData() {
         "@id": "https://www.neuromindbloom.com/#doctor",
         name: "Dr. Kuldeep Budania",
         jobTitle: "Psychiatrist",
+        alternateName: DOCTOR.name.hi,
         description: "MD Psychiatry providing online psychiatric consultation and psychotherapy.",
         medicalSpecialty: "Psychiatric",
         url: "https://www.neuromindbloom.com",
         image: "https://www.neuromindbloom.com/dr-kuldeep.png",
-        telephone: "+91-9376315331",
+        telephone: CLINIC.phone,
+        sameAs: [SOCIAL.facebook, SOCIAL.instagram, SOCIAL.youtube],
         worksFor: { "@id": "https://www.neuromindbloom.com/#clinic" },
         areaServed: { "@type": "Country", name: "India" },
-        knowsAbout: ["Depression", "Anxiety Disorders", "Obsessive Compulsive Disorder", "Bipolar Disorder", "Schizophrenia", "Addiction Psychiatry", "Sleep Disorders", "Child and Adolescent Psychiatry", "Geriatric Psychiatry", "Psychotherapy"]
+        knowsAbout: ["Depression", "Anxiety Disorders", "Obsessive Compulsive Disorder", "Bipolar Disorder", "Schizophrenia", "Addiction Psychiatry", "Sleep Disorders", "Child and Adolescent Psychiatry", "Geriatric Psychiatry", "Psychotherapy", "Sexual Medicine", "De-addiction"]
       },
       {
         "@type": "Service",
@@ -41,7 +46,13 @@ export default function SeoStructuredData() {
         serviceType: "Online Psychiatry Consultation",
         provider: { "@id": "https://www.neuromindbloom.com/#doctor" },
         areaServed: { "@type": "Country", name: "India" },
-        offers: { "@type": "Offer", price: "500", priceCurrency: "INR", url: "https://www.neuromindbloom.com/book-appointment" },
+        offers: SERVICES.map((service) => ({
+          "@type": "Offer",
+          name: service.label.en,
+          price: String(service.fee),
+          priceCurrency: "INR",
+          url: `https://www.neuromindbloom.com/book-appointment?service=${service.code}`,
+        })),
         availableChannel: { "@type": "ServiceChannel", serviceUrl: "https://www.neuromindbloom.com/book-appointment" }
       },
       {

@@ -28,10 +28,28 @@ test("payment and E-Sign data require an authorized doctor", async () => {
   });
 
   const anonymousDb = environment.unauthenticatedContext().firestore();
-  await assertSucceeds(setDoc(doc(anonymousDb, "appointments/public-booking"), {
+  const validBooking = {
     patientName: "Patient",
+    name: "Patient",
+    mobile: "9876543210",
+    service: "Psychiatric Consultation - \u20B9500",
+    serviceCode: "psychiatry-consultation",
+    preferredDate: "2026-10-20",
+    preferredTime: "11:00",
+    concern: "Poor sleep",
+    mode: "Online",
     status: "pending",
-  }));
+    source: "Website",
+    language: "hi",
+    consent: true,
+    createdAt: serverTimestamp(),
+  };
+  await assertSucceeds(setDoc(doc(anonymousDb, "appointments/public-booking"), validBooking));
+  // Unknown fields, bad mobile, non-pending status and oversized text are rejected.
+  await assertFails(setDoc(doc(anonymousDb, "appointments/extra-field"), { ...validBooking, isAdmin: true }));
+  await assertFails(setDoc(doc(anonymousDb, "appointments/bad-mobile"), { ...validBooking, mobile: "12ab" }));
+  await assertFails(setDoc(doc(anonymousDb, "appointments/confirmed"), { ...validBooking, status: "confirmed" }));
+  await assertFails(setDoc(doc(anonymousDb, "appointments/huge"), { ...validBooking, concern: "x".repeat(2001) }));
   await assertFails(setDoc(doc(anonymousDb, "appointments/forged-booking"), {
     patientName: "Patient",
     paymentStatus: "Paid",
@@ -239,6 +257,38 @@ test("payment and E-Sign data require an authorized doctor", async () => {
   }));
   await assertFails(getDoc(doc(patientDb, "esignPins/doctor-uid")));
   await assertFails(getDoc(doc(patientDb, "patientRecords/record-1")));
+});
+
+test("feedback is create-only for the public; recovery stories need review and consent", async () => {
+  const anonymousDb = environment.unauthenticatedContext().firestore();
+  const doctorDb = environment.authenticatedContext("doctor-uid", { doctor: true }).firestore();
+  const validFeedback = {
+    rating: 5, name: "R.", comment: "Very patient and clear explanation.", consentStore: true, consentDisplay: false,
+    visitDate: "", language: "en", status: "pending", consentText: "I agree", consentVersion: "2026-10",
+    reviewDate: "2026-10-12", createdAt: serverTimestamp(),
+  };
+  await assertSucceeds(setDoc(doc(anonymousDb, "feedback/f1"), validFeedback));
+  await assertFails(setDoc(doc(anonymousDb, "feedback/f2"), { ...validFeedback, status: "approved" }));
+  await assertFails(setDoc(doc(anonymousDb, "feedback/f3"), { ...validFeedback, rating: 6 }));
+  await assertFails(setDoc(doc(anonymousDb, "feedback/f4"), { ...validFeedback, consentStore: false }));
+  await assertFails(setDoc(doc(anonymousDb, "feedback/f5"), { ...validFeedback, mobile: "9876543210" }));
+  await assertFails(getDoc(doc(anonymousDb, "feedback/f1")));
+  await assertFails(updateDoc(doc(anonymousDb, "feedback/f1"), { status: "approved" }));
+  await assertSucceeds(updateDoc(doc(doctorDb, "feedback/f1"), { status: "approved", moderatedAt: "2026-10-12" }));
+  await assertFails(updateDoc(doc(doctorDb, "feedback/f1"), { rating: 1 }));
+  await assertSucceeds(deleteDoc(doc(doctorDb, "feedback/f1")));
+
+  const story = {
+    title: { en: "A", hi: "अ" }, category: "depression", narrative: { en: "", hi: "" }, imageUrl: "", imageAlt: { en: "", hi: "" },
+    fictional: false, doctorReviewed: true, consent: { documented: false, note: "", date: "" }, status: "published", updated: "2026-10-12",
+  };
+  await assertFails(setDoc(doc(doctorDb, "recoveryStories/s1"), story));
+  await assertSucceeds(setDoc(doc(doctorDb, "recoveryStories/s1"), { ...story, status: "draft" }));
+  await assertSucceeds(setDoc(doc(doctorDb, "recoveryStories/s2"), { ...story, fictional: true }));
+  await assertFails(setDoc(doc(doctorDb, "recoveryStories/s3"), { ...story, fictional: true, doctorReviewed: false }));
+  await assertSucceeds(setDoc(doc(doctorDb, "recoveryStories/s4"), { ...story, consent: { documented: true, note: "file", date: "2026-10-01" } }));
+  await assertFails(getDoc(doc(anonymousDb, "recoveryStories/s2")));
+  await assertFails(setDoc(doc(anonymousDb, "recoveryStories/s5"), { ...story, status: "draft" }));
 });
 
 test.after(async () => {

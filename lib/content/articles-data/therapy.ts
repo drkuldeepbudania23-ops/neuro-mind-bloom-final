@@ -1,0 +1,445 @@
+import { batch } from "./_build";
+
+type P = [string, string];
+const BOOK: P = ["You can book a consultation to discuss whether therapy suits your situation", "थेरेपी आपकी स्थिति के लिए सही है या नहीं, इस पर बात करने के लिए परामर्श बुक कर सकते हैं"];
+const CRISIS: P = ["Thoughts of self-harm need urgent help, not a waiting list", "ख़ुद को नुकसान के विचारों में तुरंत मदद चाहिए, इंतज़ार नहीं"];
+
+export const THERAPY_ARTICLES = batch("therapy", [
+  {
+    slug: "first-therapy-session-what-to-expect",
+    title: ["Your first therapy session: what to expect", "पहला थेरेपी सत्र: क्या उम्मीद रखें"],
+    excerpt: ["Nervous about your first session? What the therapist will ask, how goals are set, and how to get the most out of therapy from day one.", "पहले सत्र को लेकर घबराहट? थेरेपिस्ट क्या पूछेंगे, लक्ष्य कैसे तय होते हैं, और पहले दिन से थेरेपी का पूरा फ़ायदा कैसे लें।"],
+    related: ["psychotherapy-counselling", "cbt-cognitive-behaviour-therapy-india", "supportive-psychotherapy-india"],
+    refs: ["mhgap", "mhca"],
+    intro: [
+      ["The first session is mainly about understanding you — your concerns, history and goals.", "पहला सत्र मुख्य रूप से आपको समझने के बारे में है — आपकी चिंताएँ, इतिहास और लक्ष्य।"],
+      ["It is normal to feel nervous; you decide how much to share and at what pace.", "घबराहट सामान्य है; कितना और किस गति से बताना है, यह आप तय करते हैं।"],
+    ],
+    key: [
+      ["Therapy is collaborative — you and the therapist work as a team", "थेरेपी साझेदारी है — आप और थेरेपिस्ट टीम की तरह काम करते हैं"],
+      ["Confidentiality and its limits are explained at the start", "गोपनीयता और उसकी सीमाएँ शुरुआत में समझाई जाती हैं"],
+      ["Clear goals make progress measurable", "साफ़ लक्ष्य प्रगति को मापने योग्य बनाते हैं"],
+    ],
+    sym: [
+      ["Feeling stuck in the same patterns", "एक ही पैटर्न में फँसा महसूस करना"],
+      ["Stress or emotions affecting daily life", "तनाव या भावनाओं का रोज़मर्रा पर असर"],
+      ["Wanting to understand yourself better", "ख़ुद को बेहतर समझने की इच्छा"],
+    ],
+    cause: [
+      ["Life changes, loss or conflict", "जीवन में बदलाव, नुकसान या टकराव"],
+      ["Long-standing anxiety or low mood", "लंबे समय से चिंता या उदासी"],
+      ["Relationship or work difficulties", "रिश्तों या काम की कठिनाइयाँ"],
+    ],
+    risk: [
+      ["Delaying help until problems become severe", "समस्या गंभीर होने तक मदद टालना"],
+      ["Stigma or fear of being judged", "कलंक या आँके जाने का डर"],
+      ["Unrealistic expectation of a quick fix", "तुरंत हल की अवास्तविक उम्मीद"],
+    ],
+    mgmt: [
+      ["Write down 2–3 things you want to change before the session", "सत्र से पहले 2–3 बातें लिखें जो बदलना चाहते हैं"],
+      ["Be honest, including about what is not working", "ईमानदार रहें, जो काम नहीं कर रहा उसके बारे में भी"],
+      ["Expect homework or practice between sessions", "सत्रों के बीच अभ्यास या होमवर्क की उम्मीद रखें"],
+      ["Review progress every few sessions", "हर कुछ सत्रों में प्रगति की समीक्षा"],
+    ],
+    help: [BOOK, ["Symptoms severe enough to affect work or sleep — see a psychiatrist too", "लक्षण इतने गंभीर कि काम या नींद पर असर — मनोचिकित्सक से भी मिलें"], CRISIS],
+    faq: [
+      ["How many sessions will I need?", "मुझे कितने सत्र लगेंगे?", "Many structured therapies take 6–16 sessions; it depends on the problem and goals.", "कई संरचित थेरेपी में 6–16 सत्र लगते हैं; यह समस्या और लक्ष्यों पर निर्भर है।"],
+      ["What if I don't connect with my therapist?", "अगर थेरेपिस्ट से तालमेल न बने तो?", "Say so. Fit matters, and changing therapists is acceptable.", "बताइए। तालमेल मायने रखता है, और थेरेपिस्ट बदलना ठीक है।"],
+    ],
+    tags: ["therapy", "counselling", "pehla session"],
+    video: ["therapy", "counselling"],
+  },
+  {
+    slug: "psychiatrist-vs-psychologist-vs-counsellor",
+    title: ["Psychiatrist, psychologist or counsellor: who to see?", "मनोचिकित्सक, मनोवैज्ञानिक या काउंसलर: किससे मिलें?"],
+    excerpt: ["The differences in training, what each can do, and how to choose the right mental health professional for your concern in India.", "प्रशिक्षण में अंतर, हर कोई क्या कर सकता है, और भारत में अपनी समस्या के लिए सही मानसिक स्वास्थ्य विशेषज्ञ कैसे चुनें।"],
+    related: ["online-psychiatrist-india", "psychotherapy-counselling", "online-psychiatry-consultation"],
+    refs: ["mhca", "mhgap"],
+    intro: [
+      ["A psychiatrist is a medical doctor (MBBS, MD Psychiatry) who diagnoses mental illness and can prescribe medicines and provide therapy.", "मनोचिकित्सक मेडिकल डॉक्टर (MBBS, MD Psychiatry) होते हैं जो मानसिक रोग का निदान करते हैं और दवा व थेरेपी दे सकते हैं।"],
+      ["Clinical psychologists provide assessment and psychotherapy; counsellors offer supportive talking help.", "क्लिनिकल साइकोलॉजिस्ट जाँच और साइकोथेरेपी देते हैं; काउंसलर सहायक बातचीत से मदद करते हैं।"],
+    ],
+    key: [
+      ["Only medical doctors can prescribe medicines", "सिर्फ़ मेडिकल डॉक्टर दवा लिख सकते हैं"],
+      ["Clinical psychologists in India are RCI-registered", "भारत में क्लिनिकल साइकोलॉजिस्ट RCI में पंजीकृत होते हैं"],
+      ["Many people benefit from a team approach", "कई लोगों को टीम-आधारित देखभाल से फ़ायदा होता है"],
+    ],
+    sym: [
+      ["Severe symptoms, psychosis or suicidal thoughts → psychiatrist", "गंभीर लक्षण, साइकोसिस या आत्महत्या के विचार → मनोचिकित्सक"],
+      ["Mild to moderate stress, relationship or adjustment problems → psychologist or counsellor", "हल्का–मध्यम तनाव, रिश्ते या समायोजन की समस्या → मनोवैज्ञानिक या काउंसलर"],
+      ["Addiction with withdrawal → psychiatrist", "छोड़ने के लक्षणों के साथ नशा → मनोचिकित्सक"],
+    ],
+    cause: [
+      ["Confusion because titles sound similar", "मिलते-जुलते नामों से भ्रम"],
+      ["Stigma around seeing a 'psychiatrist'", "'मनोचिकित्सक' के पास जाने का कलंक"],
+      ["Unregulated titles such as 'life coach'", "'लाइफ़ कोच' जैसे अनियमित पद"],
+    ],
+    risk: [
+      ["Choosing unqualified providers", "अयोग्य लोगों को चुनना"],
+      ["Missing physical causes that need a doctor", "डॉक्टर वाली शारीरिक वजहें छूट जाना"],
+      ["Stopping medicines without medical advice", "डॉक्टर की सलाह के बिना दवा बंद करना"],
+    ],
+    mgmt: [
+      ["Check qualifications and registration (NMC/state council or RCI)", "योग्यता और पंजीकरण जाँचें (NMC/राज्य परिषद या RCI)"],
+      ["Start with a psychiatrist if unsure — they can refer for therapy", "संदेह हो तो मनोचिकित्सक से शुरू करें — वे थेरेपी के लिए भेज सकते हैं"],
+      ["Combine medicines and therapy when advised", "सलाह मिलने पर दवा और थेरेपी साथ"],
+    ],
+    help: [BOOK, ["Symptoms not improving with counselling alone", "सिर्फ़ काउंसलिंग से सुधार न होना"], CRISIS],
+    faq: [
+      ["Does seeing a psychiatrist mean I am 'mad'?", "क्या मनोचिकित्सक से मिलने का मतलब 'पागल' होना है?", "No. Psychiatrists treat common problems like sleep, stress and anxiety every day.", "नहीं। मनोचिकित्सक रोज़ नींद, तनाव और चिंता जैसी आम समस्याओं का इलाज करते हैं।"],
+      ["Will a psychiatrist only give medicines?", "क्या मनोचिकित्सक सिर्फ़ दवा देंगे?", "No. Psychiatrists also offer psychotherapy and advise on lifestyle; medicines are used only when needed.", "नहीं। मनोचिकित्सक साइकोथेरेपी और जीवनशैली की सलाह भी देते हैं; दवा सिर्फ़ ज़रूरत पर।"],
+    ],
+    tags: ["psychiatrist", "psychologist", "counsellor", "kisse mile"],
+    video: ["psychiatrist"],
+  },
+  {
+    slug: "does-online-therapy-work",
+    title: ["Does online therapy really work?", "क्या ऑनलाइन थेरेपी सच में काम करती है?"],
+    excerpt: ["Video therapy can be as effective as in-person sessions for many conditions. What works online, what doesn't, and how to set up for a good session.", "कई स्थितियों में वीडियो थेरेपी आमने-सामने जितनी असरदार हो सकती है। ऑनलाइन क्या काम करता है, क्या नहीं, और अच्छे सत्र की तैयारी कैसे करें।"],
+    related: ["online-psychiatrist-india", "online-psychiatry-consultation", "psychotherapy-counselling"],
+    refs: ["tpg", "telemanas"],
+    intro: [
+      ["Online consultation is recognised under India's Telemedicine Practice Guidelines.", "भारत के टेलीमेडिसिन प्रैक्टिस दिशानिर्देशों के तहत ऑनलाइन परामर्श मान्य है।"],
+      ["It removes travel, saves time and offers privacy for people in smaller towns.", "इससे सफ़र बचता है, समय बचता है और छोटे शहरों के लोगों को निजता मिलती है।"],
+    ],
+    key: [
+      ["Effective for depression, anxiety, OCD, insomnia and follow-ups", "डिप्रेशन, चिंता, OCD, अनिद्रा और फ़ॉलो-अप में असरदार"],
+      ["Emergencies need in-person care", "आपातकाल में आमने-सामने देखभाल चाहिए"],
+      ["A private, quiet space matters", "निजी, शांत जगह ज़रूरी है"],
+    ],
+    sym: [
+      ["Distance or travel making regular visits hard", "दूरी या सफ़र से नियमित जाना कठिन"],
+      ["Worry about being seen at a clinic", "क्लिनिक में देखे जाने की चिंता"],
+      ["Busy work or study schedule", "व्यस्त काम या पढ़ाई"],
+    ],
+    cause: [
+      ["Limited specialists in many districts", "कई ज़िलों में विशेषज्ञों की कमी"],
+      ["Stigma in small communities", "छोटे समुदायों में कलंक"],
+      ["Mobility problems or caregiving duties", "चलने-फिरने की दिक़्क़त या देखभाल की ज़िम्मेदारी"],
+    ],
+    risk: [
+      ["Poor internet or interruptions", "ख़राब इंटरनेट या रुकावटें"],
+      ["Lack of privacy at home", "घर पर निजता की कमी"],
+      ["Situations needing physical examination", "शारीरिक जाँच की ज़रूरत वाली स्थितियाँ"],
+    ],
+    mgmt: [
+      ["Use earphones and a room where you won't be overheard", "ईयरफ़ोन और ऐसा कमरा जहाँ कोई न सुने"],
+      ["Test camera and internet 10 minutes early", "10 मिनट पहले कैमरा और इंटरनेट जाँचें"],
+      ["Keep previous prescriptions and reports ready", "पुराने पर्चे और रिपोर्ट तैयार रखें"],
+      ["Agree on a backup phone number if video drops", "वीडियो कटे तो बैकअप फ़ोन नंबर तय करें"],
+    ],
+    help: [BOOK, ["Need for physical examination or tests — in-person visit", "शारीरिक जाँच या टेस्ट की ज़रूरत — आमने-सामने"], CRISIS],
+    faq: [
+      ["Can medicines be prescribed online?", "क्या ऑनलाइन दवा लिखी जा सकती है?", "Yes, within the Telemedicine Practice Guidelines; some medicine categories cannot be prescribed online.", "हाँ, टेलीमेडिसिन दिशानिर्देशों के अंदर; कुछ दवा श्रेणियाँ ऑनलाइन नहीं लिखी जा सकतीं।"],
+      ["Is online therapy private?", "क्या ऑनलाइन थेरेपी निजी है?", "Sessions are confidential; choose a private space on your side as well.", "सत्र गोपनीय होते हैं; अपनी तरफ़ भी निजी जगह चुनें।"],
+    ],
+    tags: ["online therapy", "video consultation", "online counselling"],
+    video: ["online"],
+  },
+  {
+    slug: "cbt-thought-record-guide",
+    title: ["The CBT thought record: a step-by-step guide", "CBT थॉट रिकॉर्ड: क़दम-दर-क़दम गाइड"],
+    excerpt: ["Learn the core CBT skill: catching an automatic thought, checking the evidence and finding a balanced view. Includes a worked example.", "CBT का मूल कौशल सीखें: अपने-आप आने वाले विचार को पकड़ना, सबूत जाँचना और संतुलित नज़रिया ढूँढना। उदाहरण सहित।"],
+    related: ["cbt-cognitive-behaviour-therapy-india", "depression-treatment-india", "generalized-anxiety-disorder-india"],
+    refs: ["nice-depression", "nice-gad"],
+    intro: [
+      ["CBT is based on the idea that thoughts, feelings and actions influence each other.", "CBT इस विचार पर आधारित है कि विचार, भावनाएँ और काम एक-दूसरे को प्रभावित करते हैं।"],
+      ["A thought record helps you slow down and test upsetting thoughts instead of accepting them as facts.", "थॉट रिकॉर्ड परेशान करने वाले विचारों को तथ्य मानने की बजाय धीमे होकर जाँचने में मदद करता है।"],
+    ],
+    key: [
+      ["Situation → automatic thought → emotion (0–100) → evidence → balanced thought", "स्थिति → अपने-आप आया विचार → भावना (0–100) → सबूत → संतुलित विचार"],
+      ["The goal is a realistic thought, not a forced positive one", "लक्ष्य वास्तविक विचार है, ज़बरदस्ती सकारात्मक नहीं"],
+      ["Practice on paper builds the skill to do it in your head", "काग़ज़ पर अभ्यास से दिमाग़ में करने का कौशल बनता है"],
+    ],
+    sym: [
+      ["All-or-nothing thinking: 'I failed completely'", "सब-या-कुछ नहीं सोच: 'मैं पूरी तरह फ़ेल हो गया'"],
+      ["Mind reading: 'They think I'm useless'", "मन पढ़ना: 'वे मुझे बेकार समझते हैं'"],
+      ["Catastrophising: 'This will ruin everything'", "बात को आपदा बनाना: 'इससे सब बर्बाद हो जाएगा'"],
+    ],
+    cause: [
+      ["Thinking habits learned over years", "सालों में सीखी सोच की आदतें"],
+      ["Low mood biasing attention to the negative", "उदासी से नकारात्मक पर ध्यान"],
+      ["Stressful situations that trigger old beliefs", "तनाव वाली स्थितियाँ जो पुरानी धारणाएँ जगाती हैं"],
+    ],
+    risk: [
+      ["Depression and anxiety", "डिप्रेशन और चिंता"],
+      ["Perfectionism", "परफ़ेक्शनिज़्म"],
+      ["Harsh criticism in childhood", "बचपन में कठोर आलोचना"],
+    ],
+    mgmt: [
+      ["Example: Boss didn't reply → 'He's angry with me' → anxiety 80", "उदाहरण: बॉस ने जवाब नहीं दिया → 'वे मुझसे नाराज़ हैं' → चिंता 80"],
+      ["Evidence for and against: he is in meetings all day; he praised my work last week", "पक्ष और विपक्ष में सबूत: वे दिन भर मीटिंग में हैं; पिछले हफ़्ते मेरे काम की तारीफ़ की"],
+      ["Balanced thought: 'He's probably busy' → anxiety 35", "संतुलित विचार: 'शायद वे व्यस्त हैं' → चिंता 35"],
+      ["Do 3–4 records a week and review them with your therapist", "हफ़्ते में 3–4 रिकॉर्ड करें और थेरेपिस्ट के साथ देखें"],
+    ],
+    help: [BOOK, ["Thoughts too strong to challenge on your own", "विचार इतने तेज़ कि अकेले चुनौती न दे सकें"], CRISIS],
+    faq: [
+      ["Is CBT just positive thinking?", "क्या CBT सिर्फ़ सकारात्मक सोच है?", "No. It is about accurate, balanced thinking and changing behaviour, tested with evidence.", "नहीं। यह सटीक, संतुलित सोच और व्यवहार बदलने के बारे में है, सबूत के साथ।"],
+      ["Can I do CBT on my own?", "क्या मैं ख़ुद CBT कर सकता हूँ?", "Self-help CBT helps mild problems; a therapist helps with moderate to severe symptoms.", "हल्की समस्याओं में सेल्फ़-हेल्प CBT मदद करती है; मध्यम–गंभीर लक्षणों में थेरेपिस्ट।"],
+    ],
+    tags: ["cbt", "thought record", "negative thoughts"],
+    video: ["cbt", "therapy"],
+  },
+  {
+    slug: "mindfulness-for-beginners",
+    title: ["Mindfulness for beginners: a 10-minute practice", "शुरुआत करने वालों के लिए माइंडफ़ुलनेस: 10 मिनट का अभ्यास"],
+    excerpt: ["Mindfulness trains attention to the present moment without judgement. A simple daily practice and how it helps stress, anxiety and relapse prevention.", "माइंडफ़ुलनेस बिना आँके वर्तमान पल पर ध्यान देना सिखाता है। आसान रोज़ का अभ्यास और यह तनाव, चिंता और दोबारा बीमारी रोकने में कैसे मदद करता है।"],
+    related: ["stress-management-india", "generalized-anxiety-disorder-india", "relapse-prevention-counselling-india"],
+    refs: ["nice-depression", "who-live-life"],
+    intro: [
+      ["Mindfulness means noticing thoughts, feelings and body sensations as they are, without getting pulled into them.", "माइंडफ़ुलनेस का मतलब है विचारों, भावनाओं और शरीर की अनुभूतियों को जैसे हैं वैसे देखना, उनमें बहे बिना।"],
+      ["It draws on meditation traditions and is used in therapies such as MBCT and DBT.", "यह ध्यान की परंपराओं से आता है और MBCT और DBT जैसी थेरेपी में इस्तेमाल होता है।"],
+    ],
+    key: [
+      ["The mind will wander — noticing and returning is the practice", "मन भटकेगा — ध्यान देना और लौटना ही अभ्यास है"],
+      ["Short daily practice beats occasional long sessions", "कभी-कभार लंबे सत्र से रोज़ का छोटा अभ्यास बेहतर"],
+      ["Mindfulness-based therapy reduces depression relapse", "माइंडफ़ुलनेस-आधारित थेरेपी डिप्रेशन की वापसी घटाती है"],
+    ],
+    sym: [
+      ["Constant overthinking", "लगातार ज़्यादा सोचना"],
+      ["Reacting quickly with anger or panic", "ग़ुस्से या घबराहट में जल्दी प्रतिक्रिया"],
+      ["Running on 'autopilot' through the day", "दिन भर 'ऑटोपायलट' पर चलना"],
+    ],
+    cause: [
+      ["Busy, multitasking lifestyle", "व्यस्त, मल्टीटास्किंग जीवनशैली"],
+      ["Rumination habits in depression and anxiety", "डिप्रेशन और चिंता में बार-बार सोचने की आदत"],
+      ["Constant digital stimulation", "लगातार डिजिटल उत्तेजना"],
+    ],
+    risk: [
+      ["Long-term stress", "लंबा तनाव"],
+      ["Past episodes of depression", "पहले डिप्रेशन के दौर"],
+      ["Cravings in addiction recovery", "नशा-मुक्ति में तलब"],
+    ],
+    mgmt: [
+      ["Sit comfortably, close eyes, notice the breath for 10 minutes", "आराम से बैठें, आँखें बंद करें, 10 मिनट साँस पर ध्यान"],
+      ["When distracted, name it ('thinking') and return to the breath", "ध्यान भटके तो नाम दें ('सोच रहा हूँ') और साँस पर लौटें"],
+      ["Try mindful walking or eating once a day", "दिन में एक बार ध्यान से चलना या खाना"],
+      ["'Urge surfing': watch a craving rise and fall without acting", "'अर्ज सर्फ़िंग': तलब को उठते-गिरते देखें, उस पर अमल न करें"],
+    ],
+    help: [BOOK, ["Practice brings up distressing memories", "अभ्यास से परेशान करने वाली यादें उभरें"], ["Severe depression or anxiety — combine with treatment", "गंभीर डिप्रेशन या चिंता — इलाज के साथ करें"]],
+    faq: [
+      ["Is mindfulness religious?", "क्या माइंडफ़ुलनेस धार्मिक है?", "It has roots in meditation traditions, but the clinical practice is secular and suits any belief.", "इसकी जड़ें ध्यान परंपराओं में हैं, पर क्लिनिकल अभ्यास धर्मनिरपेक्ष है और हर आस्था के साथ चलता है।"],
+      ["Can mindfulness replace treatment?", "क्या माइंडफ़ुलनेस इलाज की जगह ले सकता है?", "It supports treatment but does not replace it for moderate to severe illness.", "यह इलाज में मदद करता है पर मध्यम–गंभीर बीमारी में उसकी जगह नहीं ले सकता।"],
+    ],
+    tags: ["mindfulness", "dhyan", "meditation"],
+    video: ["mindfulness", "stress"],
+  },
+  {
+    slug: "problem-solving-therapy-steps",
+    title: ["Problem-solving therapy: 6 steps when life feels stuck", "प्रॉब्लम-सॉल्विंग थेरेपी: ज़िंदगी अटकी लगे तो 6 क़दम"],
+    excerpt: ["When problems pile up, a structured problem-solving method reduces overwhelm. The six steps, with an example from everyday Indian life.", "जब समस्याएँ जमा हो जाएँ, संरचित तरीक़ा घबराहट कम करता है। छह क़दम, रोज़मर्रा के भारतीय जीवन के उदाहरण के साथ।"],
+    related: ["stress-management-india", "adjustment-disorder-india", "depression-treatment-india"],
+    refs: ["mhgap", "who-live-life"],
+    intro: [
+      ["Problem-solving therapy is a brief, practical therapy recommended in WHO's mhGAP guidance.", "प्रॉब्लम-सॉल्विंग थेरेपी WHO की mhGAP गाइडेंस में सुझाई गई छोटी, व्यावहारिक थेरेपी है।"],
+      ["It helps break big problems into small, workable steps.", "यह बड़ी समस्याओं को छोटे, संभव क़दमों में बाँटने में मदद करती है।"],
+    ],
+    key: [
+      ["Separate problems you can change from those you cannot", "जो बदल सकते हैं और जो नहीं, उन्हें अलग करें"],
+      ["Brainstorm without judging ideas first", "पहले बिना आँके विचार सोचें"],
+      ["Small action is better than perfect planning", "परफ़ेक्ट योजना से छोटा क़दम बेहतर"],
+    ],
+    sym: [
+      ["Feeling overwhelmed and avoiding decisions", "भारी लगना और फ़ैसले टालना"],
+      ["Going round in circles thinking about problems", "समस्याओं के बारे में घूम-फिर कर सोचना"],
+      ["Low mood linked to practical stresses", "व्यावहारिक तनाव से जुड़ी उदासी"],
+    ],
+    cause: [
+      ["Multiple stresses at once — money, family, work", "एक साथ कई तनाव — पैसा, परिवार, काम"],
+      ["Low confidence in one's ability to cope", "निपटने की क्षमता पर कम भरोसा"],
+      ["Depression reducing energy and focus", "डिप्रेशन से ऊर्जा और ध्यान में कमी"],
+    ],
+    risk: [
+      ["Major life changes", "जीवन में बड़े बदलाव"],
+      ["Isolation and lack of support", "अकेलापन और सहारे की कमी"],
+      ["Using alcohol to cope", "निपटने के लिए शराब"],
+    ],
+    mgmt: [
+      ["1. Define one problem clearly", "1. एक समस्या साफ़-साफ़ लिखें"],
+      ["2. List all possible solutions; 3. Weigh pros and cons", "2. सभी संभव हल लिखें; 3. फ़ायदे-नुकसान तौलें"],
+      ["4. Choose one and plan the steps; 5. Act", "4. एक चुनें और क़दम तय करें; 5. अमल करें"],
+      ["6. Review: what worked, what next?", "6. समीक्षा: क्या काम किया, आगे क्या?"],
+    ],
+    help: [BOOK, ["Problems feel hopeless despite trying", "कोशिश के बावजूद समस्याएँ निराशाजनक लगें"], CRISIS],
+    faq: [
+      ["What if the problem cannot be solved?", "अगर समस्या हल न हो सके तो?", "Then the focus shifts to coping with feelings and finding support — that is also a solution.", "तब भावनाओं से निपटने और सहारा ढूँढने पर ध्यान — वह भी एक हल है।"],
+      ["How long does problem-solving therapy take?", "प्रॉब्लम-सॉल्विंग थेरेपी में कितना समय लगता है?", "Often 4–8 sessions.", "अक्सर 4–8 सत्र।"],
+    ],
+    tags: ["problem solving", "pareshani", "stress"],
+    video: ["stress"],
+  },
+  {
+    slug: "family-role-in-mental-health-treatment",
+    title: ["How families can support mental health treatment", "परिवार मानसिक इलाज में कैसे साथ दे सकता है"],
+    excerpt: ["Families are central to care in India. How to support without controlling, communicate calmly, and look after yourself as a caregiver.", "भारत में देखभाल का केंद्र परिवार है। नियंत्रण किए बिना साथ कैसे दें, शांति से बात कैसे करें, और देखभाल करने वाले के रूप में ख़ुद का ध्यान कैसे रखें।"],
+    related: ["family-therapy-india", "schizophrenia-treatment-india", "relapse-prevention-counselling-india"],
+    refs: ["nice-psychosis", "mhca"],
+    intro: [
+      ["Family involvement improves treatment follow-through and reduces relapse in many conditions.", "परिवार की भागीदारी कई स्थितियों में इलाज जारी रखने में मदद करती है और दोबारा बीमारी घटाती है।"],
+      ["Support works best when it respects the patient's dignity and choices.", "सहारा तब सबसे अच्छा काम करता है जब वह मरीज़ की गरिमा और चुनाव का सम्मान करे।"],
+    ],
+    key: [
+      ["Calm, low-criticism homes reduce relapse", "शांत, कम आलोचना वाले घर से वापसी कम होती है"],
+      ["Under the MHCA 2017 a patient can nominate a representative", "MHCA 2017 के तहत मरीज़ अपना प्रतिनिधि नामित कर सकता है"],
+      ["Caregivers need support too", "देखभाल करने वालों को भी सहारा चाहिए"],
+    ],
+    sym: [
+      ["Frequent arguments about medicines or behaviour", "दवा या व्यवहार पर बार-बार बहस"],
+      ["Family members feeling exhausted or hopeless", "परिवार के सदस्यों का थकना या निराश होना"],
+      ["Over-protection or constant monitoring", "ज़रूरत से ज़्यादा सुरक्षा या लगातार निगरानी"],
+    ],
+    cause: [
+      ["Lack of information about the illness", "बीमारी के बारे में जानकारी की कमी"],
+      ["Stigma and fear of what others will say", "कलंक और 'लोग क्या कहेंगे' का डर"],
+      ["Long duration of illness", "बीमारी की लंबी अवधि"],
+    ],
+    risk: [
+      ["Blaming the person for symptoms", "लक्षणों के लिए व्यक्ति को दोष देना"],
+      ["Stopping treatment when the person feels better", "बेहतर लगने पर इलाज बंद करना"],
+      ["Caregiver burnout", "देखभाल करने वाले की थकान"],
+    ],
+    mgmt: [
+      ["Learn about the condition from the treating team", "इलाज करने वाली टीम से बीमारी के बारे में जानें"],
+      ["Use short, calm sentences; praise small steps", "छोटे, शांत वाक्य; छोटे क़दमों की तारीफ़"],
+      ["Agree on an early-warning sign plan together", "मिलकर शुरुआती चेतावनी संकेतों की योजना बनाएँ"],
+      ["Caregivers: protect your own sleep, breaks and support", "देखभाल करने वाले: अपनी नींद, आराम और सहारे का ध्यान रखें"],
+    ],
+    help: [BOOK, ["Signs of relapse such as sleep loss or withdrawal", "वापसी के संकेत जैसे नींद की कमी या अलग-थलग होना"], CRISIS],
+    faq: [
+      ["Can family attend the consultation?", "क्या परिवार परामर्श में शामिल हो सकता है?", "Yes, with the patient's consent; part of the session may be held privately with the patient.", "हाँ, मरीज़ की सहमति से; सत्र का कुछ हिस्सा मरीज़ के साथ अकेले हो सकता है।"],
+      ["What if the person refuses treatment?", "अगर व्यक्ति इलाज से मना करे तो?", "Keep communication open, discuss with a psychiatrist, and seek urgent help if there is risk to safety.", "बातचीत जारी रखें, मनोचिकित्सक से सलाह लें, और सुरक्षा का ख़तरा हो तो तुरंत मदद लें।"],
+    ],
+    tags: ["family", "caregiver", "parivar"],
+    video: ["family"],
+  },
+  {
+    slug: "therapy-confidentiality-mhca",
+    title: ["Is what I tell my psychiatrist confidential?", "क्या मनोचिकित्सक को बताई बातें गोपनीय रहती हैं?"],
+    excerpt: ["Your right to confidentiality under the Mental Healthcare Act 2017, who can see your records, and the rare situations where information may be shared.", "मेंटल हेल्थकेयर एक्ट 2017 के तहत गोपनीयता का आपका अधिकार, रिकॉर्ड कौन देख सकता है, और वे दुर्लभ स्थितियाँ जब जानकारी साझा हो सकती है।"],
+    related: ["online-psychiatry-consultation", "psychotherapy-counselling", "online-psychiatrist-india"],
+    refs: ["mhca", "tpg"],
+    intro: [
+      ["The Mental Healthcare Act 2017 gives every person with mental illness the right to confidentiality.", "मेंटल हेल्थकेयर एक्ट 2017 मानसिक बीमारी वाले हर व्यक्ति को गोपनीयता का अधिकार देता है।"],
+      ["Fear of exposure stops many people from seeking help; knowing your rights helps.", "बात खुल जाने का डर बहुत लोगों को मदद लेने से रोकता है; अपने अधिकार जानना मदद करता है।"],
+    ],
+    key: [
+      ["Information is not shared with employers, colleges or relatives without consent", "बिना सहमति नियोक्ता, कॉलेज या रिश्तेदारों से जानकारी साझा नहीं होती"],
+      ["You have the right to access your own records", "आपको अपने रिकॉर्ड देखने का अधिकार है"],
+      ["Photos or details of patients cannot be released to media", "मरीज़ों की तस्वीर या जानकारी मीडिया को नहीं दी जा सकती"],
+    ],
+    sym: [
+      ["Worry that family or employer will find out", "परिवार या नियोक्ता को पता चलने की चिंता"],
+      ["Hesitation to share full history", "पूरा इतिहास बताने में हिचक"],
+      ["Avoiding treatment because of insurance or job fears", "बीमा या नौकरी के डर से इलाज टालना"],
+    ],
+    cause: [
+      ["Stigma around mental illness", "मानसिक बीमारी को लेकर कलंक"],
+      ["Lack of awareness of legal rights", "क़ानूनी अधिकारों की जानकारी की कमी"],
+      ["Past breaches of trust", "पहले भरोसा टूटने के अनुभव"],
+    ],
+    risk: [
+      ["Sharing details on public social media groups", "सार्वजनिक सोशल मीडिया ग्रुप में जानकारी साझा करना"],
+      ["Unsecured messaging of reports", "असुरक्षित तरीक़े से रिपोर्ट भेजना"],
+      ["Consulting unregistered providers", "अपंजीकृत लोगों से सलाह"],
+    ],
+    mgmt: [
+      ["Ask how your information is stored and who can access it", "पूछें कि आपकी जानकारी कैसे रखी जाती है और कौन देख सकता है"],
+      ["Exceptions are limited: serious risk to self or others, or legal requirement", "अपवाद सीमित हैं: ख़ुद या दूसरों को गंभीर ख़तरा, या क़ानूनी ज़रूरत"],
+      ["Medical certificates share only what you consent to", "मेडिकल सर्टिफ़िकेट में सिर्फ़ वही जो आपकी सहमति से"],
+    ],
+    help: [BOOK, ["Concern about how your data was handled — raise it with the provider", "आपके डेटा के इस्तेमाल पर चिंता — प्रदाता से बात करें"], CRISIS],
+    faq: [
+      ["Will my college or employer be informed?", "क्या मेरे कॉलेज या नियोक्ता को बताया जाएगा?", "No, not without your written consent, except in rare legal situations.", "नहीं, आपकी लिखित सहमति के बिना नहीं, दुर्लभ क़ानूनी स्थितियों को छोड़कर।"],
+      ["Can my parents see my records if I am an adult?", "अगर मैं वयस्क हूँ तो क्या माता-पिता मेरे रिकॉर्ड देख सकते हैं?", "Not without your consent, unless you have nominated them as your representative for that purpose.", "आपकी सहमति के बिना नहीं, जब तक आपने उन्हें इसके लिए प्रतिनिधि नामित न किया हो।"],
+    ],
+    tags: ["confidential", "privacy", "gopniyata", "mhca"],
+    video: ["psychiatrist"],
+  },
+  {
+    slug: "how-to-choose-a-therapist",
+    title: ["How to choose the right therapist", "सही थेरेपिस्ट कैसे चुनें"],
+    excerpt: ["Qualifications, type of therapy, language, fees and fit — a practical checklist for finding a therapist you can trust, and red flags to avoid.", "योग्यता, थेरेपी का प्रकार, भाषा, फ़ीस और तालमेल — भरोसेमंद थेरेपिस्ट ढूँढने की व्यावहारिक चेकलिस्ट, और किन ख़तरे के संकेतों से बचें।"],
+    related: ["psychotherapy-counselling", "cbt-cognitive-behaviour-therapy-india", "online-psychiatrist-india"],
+    refs: ["mhca", "mhgap"],
+    intro: [
+      ["The relationship with your therapist is one of the strongest predictors of benefit.", "थेरेपिस्ट के साथ रिश्ता फ़ायदे का सबसे मज़बूत संकेतक है।"],
+      ["It is fine to ask questions before starting.", "शुरू करने से पहले सवाल पूछना ठीक है।"],
+    ],
+    key: [
+      ["Check training and registration", "प्रशिक्षण और पंजीकरण जाँचें"],
+      ["Match the therapy type to the problem (e.g., ERP for OCD)", "समस्या के अनुसार थेरेपी (जैसे OCD के लिए ERP)"],
+      ["Therapy in your comfortable language helps", "आपकी आरामदायक भाषा में थेरेपी मदद करती है"],
+    ],
+    sym: [
+      ["Not knowing where to start", "शुरुआत कहाँ से करें, पता न होना"],
+      ["Past therapy that didn't help", "पहले की थेरेपी जो मददगार नहीं रही"],
+      ["Confusion about therapy types", "थेरेपी के प्रकारों को लेकर भ्रम"],
+    ],
+    cause: [
+      ["Unregulated online listings", "अनियमित ऑनलाइन लिस्टिंग"],
+      ["Few specialists in smaller towns", "छोटे शहरों में कम विशेषज्ञ"],
+      ["Cost and time constraints", "ख़र्च और समय की सीमाएँ"],
+    ],
+    risk: [
+      ["Promises of guaranteed cure", "पक्के इलाज के वादे"],
+      ["Pressure to buy packages or products", "पैकेज या उत्पाद ख़रीदने का दबाव"],
+      ["Advice to stop prescribed medicines suddenly", "लिखी दवाएँ अचानक बंद करने की सलाह"],
+    ],
+    mgmt: [
+      ["Ask: What is your training? Which therapy would you use for my problem?", "पूछें: आपका प्रशिक्षण क्या है? मेरी समस्या में कौन-सी थेरेपी?"],
+      ["Agree on goals, frequency and fees upfront", "लक्ष्य, बार-बारता और फ़ीस पहले तय करें"],
+      ["Review fit after 3–4 sessions", "3–4 सत्रों के बाद तालमेल की समीक्षा"],
+    ],
+    help: [BOOK, ["Severe symptoms — psychiatric assessment first", "गंभीर लक्षण — पहले मनोचिकित्सकीय जाँच"], CRISIS],
+    faq: [
+      ["Is a more expensive therapist better?", "क्या महँगा थेरेपिस्ट बेहतर होता है?", "Not necessarily. Training, approach and fit matter more than price.", "ज़रूरी नहीं। क़ीमत से ज़्यादा प्रशिक्षण, तरीक़ा और तालमेल मायने रखता है।"],
+      ["Should therapy feel comfortable all the time?", "क्या थेरेपी हमेशा आरामदायक लगनी चाहिए?", "Not always — working on hard topics can be uncomfortable, but you should feel respected and safe.", "हमेशा नहीं — कठिन विषयों पर काम असहज हो सकता है, पर आपको सम्मानित और सुरक्षित महसूस होना चाहिए।"],
+    ],
+    tags: ["therapist", "choose therapist", "accha counsellor"],
+    video: ["therapy"],
+  },
+  {
+    slug: "progressive-muscle-relaxation-guide",
+    title: ["Progressive muscle relaxation: release stress from your body", "प्रोग्रेसिव मसल रिलैक्सेशन: शरीर से तनाव निकालें"],
+    excerpt: ["Tense and relax muscle groups to calm anxiety, ease tension headaches and help sleep. A 15-minute guided method you can do at home.", "मांसपेशियों को कसकर ढीला छोड़ें और चिंता शांत करें, तनाव वाला सिरदर्द और नींद सुधारें। घर पर करने योग्य 15 मिनट का तरीक़ा।"],
+    related: ["stress-management-india", "generalized-anxiety-disorder-india", "insomnia-treatment-india"],
+    refs: ["nice-gad", "who-live-life"],
+    intro: [
+      ["Progressive muscle relaxation (PMR) teaches you to notice and release physical tension.", "प्रोग्रेसिव मसल रिलैक्सेशन (PMR) शारीरिक तनाव को पहचानना और छोड़ना सिखाता है।"],
+      ["It is part of applied relaxation, a recommended therapy for generalised anxiety.", "यह एप्लाइड रिलैक्सेशन का हिस्सा है, जो सामान्यीकृत चिंता के लिए सुझाई गई थेरेपी है।"],
+    ],
+    key: [
+      ["Tense each muscle group for 5 seconds, release for 15–20 seconds", "हर मांसपेशी समूह को 5 सेकंड कसें, 15–20 सेकंड ढीला छोड़ें"],
+      ["Daily practice for 2–3 weeks builds the skill", "2–3 हफ़्ते रोज़ अभ्यास से कौशल बनता है"],
+      ["Later you can relax quickly without tensing first", "बाद में बिना कसे जल्दी रिलैक्स कर सकते हैं"],
+    ],
+    sym: [
+      ["Tight shoulders, jaw or neck", "कंधे, जबड़े या गर्दन में जकड़न"],
+      ["Tension headaches", "तनाव वाला सिरदर्द"],
+      ["Restlessness and difficulty sleeping", "बेचैनी और सोने में दिक़्क़त"],
+    ],
+    cause: [
+      ["Ongoing stress keeps muscles on guard", "लगातार तनाव मांसपेशियों को चौकन्ना रखता है"],
+      ["Anxiety disorders", "चिंता विकार"],
+      ["Long hours at a desk or phone", "डेस्क या फ़ोन पर लंबे घंटे"],
+    ],
+    risk: [
+      ["Work or exam pressure", "काम या परीक्षा का दबाव"],
+      ["Chronic pain", "पुराना दर्द"],
+      ["Poor posture and inactivity", "ग़लत मुद्रा और निष्क्रियता"],
+    ],
+    mgmt: [
+      ["Start with hands and arms, then face, shoulders, stomach, legs, feet", "हाथ-बाँह से शुरू, फिर चेहरा, कंधे, पेट, पैर, पंजे"],
+      ["Breathe slowly and notice the difference between tension and relaxation", "धीरे साँस लें और कसाव व ढीलेपन में फ़र्क़ महसूस करें"],
+      ["Practise at a set time, such as before bed", "तय समय पर करें, जैसे सोने से पहले"],
+      ["Skip or go gently on painful or injured areas", "दर्द या चोट वाली जगह पर हल्के से करें या छोड़ दें"],
+    ],
+    help: [BOOK, ["Anxiety not improving with relaxation", "रिलैक्सेशन से चिंता में सुधार न होना"], ["Physical symptoms that need medical checking", "शारीरिक लक्षण जिनकी डॉक्टरी जाँच ज़रूरी"]],
+    faq: [
+      ["Can PMR help panic attacks?", "क्या PMR पैनिक अटैक में मदद करता है?", "It lowers overall tension; panic disorder is best treated with CBT, which may include relaxation.", "यह कुल तनाव घटाता है; पैनिक डिसऑर्डर का सबसे अच्छा इलाज CBT है, जिसमें रिलैक्सेशन शामिल हो सकता है।"],
+      ["Is PMR safe for everyone?", "क्या PMR सबके लिए सुरक्षित है?", "Generally yes; people with injuries or pain should tense gently or skip those areas.", "आमतौर पर हाँ; चोट या दर्द वाले हल्के से कसें या वह हिस्सा छोड़ दें।"],
+    ],
+    tags: ["relaxation", "pmr", "tanav", "stress relief"],
+    video: ["relaxation", "stress"],
+  },
+]);

@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { usePathname, useRouter } from "next/navigation";
 import { auth } from "../../lib/firebase";
+import MfaPrompt from "../../components/doctor/MfaPrompt";
 
 export default function DoctorLayout({
   children,
@@ -14,6 +15,7 @@ export default function DoctorLayout({
   const pathname = usePathname();
 
   const [checking, setChecking] = useState(true);
+  const [needMfa, setNeedMfa] = useState(false);
 
   useEffect(() => {
     if (pathname === "/doctor/login") {
@@ -37,6 +39,9 @@ export default function DoctorLayout({
           if (active) router.replace("/login?access=denied");
           return;
         }
+        // 2FA enrolled but its session expired → ask for the code before showing data.
+        const exp = Number(token.claims.mfa_exp || 0);
+        setNeedMfa(token.claims.mfa === true && !(exp > Date.now() / 1000));
         setChecking(false);
       } catch {
         if (active) router.replace("/login");
@@ -66,6 +71,10 @@ export default function DoctorLayout({
         Checking doctor login...
       </div>
     );
+  }
+
+  if (needMfa) {
+    return <MfaPrompt onDone={() => setNeedMfa(false)} />;
   }
 
   return <>{children}</>;

@@ -11,7 +11,8 @@ if (!uid) {
 try {
   const app = initializeApp({
     credential: applicationDefault(),
-    projectId: "neuro-mind-bloom",
+    // Set FIREBASE_PROJECT_ID to the DEV project while testing (defaults to the live project).
+    projectId: process.env.FIREBASE_PROJECT_ID || "neuro-mind-bloom",
   });
   const adminAuth = getAuth(app);
   const user = await adminAuth.getUser(uid);

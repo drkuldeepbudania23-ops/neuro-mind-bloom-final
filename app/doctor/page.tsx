@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signOut } from "firebase/auth";
+import { auth } from "../../lib/firebase";
 import EpinResetButton from "./EpinResetButton";
 
 export default function DoctorDashboard() {
@@ -6,12 +11,30 @@ export default function DoctorDashboard() {
     ["Appointments","/doctor/appointments"],
     ["E-Prescription","/doctor/prescription"],
     ["Follow-up","/doctor/follow-up"],
-    ["Payment","/doctor/payment"]
+    ["Payment","/doctor/payment"],
+    ["Video Consultations","/doctor/video"],
+    ["Patients (UHID & History)","/doctor/patients"],
+    ["Security (2FA)","/doctor/security"],
+    ["Old Data → Cloud","/doctor/data-import"],
+    ["Website: Articles","/doctor/articles"],
+    ["Website: Patient Feedback","/doctor/feedback"],
+    ["Website: Recovery Stories","/doctor/stories"]
   ];
+  const router = useRouter();
+
+  async function logout() {
+    await signOut(auth);
+    router.replace("/login");
+  }
 
   return (
     <main style={{padding:30,maxWidth:1100,margin:"auto"}}>
-      <h1>Doctor Dashboard</h1>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+        <h1>Doctor Dashboard</h1>
+        <button onClick={logout} style={{padding:"10px 18px",borderRadius:999,border:"1px solid #cbd5e1",background:"white",cursor:"pointer",fontWeight:700}}>
+          Sign out
+        </button>
+      </div>
       <p>Manage online consultation workflow from one place.</p>
       <EpinResetButton />
 

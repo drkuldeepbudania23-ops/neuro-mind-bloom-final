@@ -6,9 +6,24 @@ import {
   collection,
   doc,
   onSnapshot,
+  serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
-import { db } from "../../firebase";
+import { auth, db } from "../../firebase";
+import SendPaymentQR from "../../../components/doctor/SendPaymentQR";
+import { logAction } from "../../../lib/client/audit";
+import {
+  addDays,
+  apptDate,
+  dayLabel,
+  filterAppointments,
+  groupByDay,
+  paymentBadge,
+  statusOf,
+  type Range,
+  type StatusFilter,
+} from "../../../lib/appointments";
+import { istDate } from "../../../lib/notifications/templates";
 
 type Appointment = {
   id: string;
@@ -28,6 +43,8 @@ type Appointment = {
   status?: string;
   concern?: string;
   paymentStatus?: string;
+  serviceCode?: string;
+  language?: string;
   createdAt?: any;
 };
 
@@ -36,6 +53,12 @@ export default function DoctorAppointmentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updating, setUpdating] = useState("");
+  const today = istDate();
+  const [range, setRange] = useState<Range>("upcoming");
+  const [pickedDate, setPickedDate] = useState(today);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [search, setSearch] = useState("");
+  const [moving, setMoving] = useState<{ id: string; date: string; time: string } | null>(null);
 
   useEffect(() => {
     const ref = collection(db, "appointments");
@@ -85,10 +108,74 @@ export default function DoctorAppointmentsPage() {
     [appointments]
   );
 
+  const visible = useMemo(
+    () => filterAppointments(appointments, { range, date: pickedDate, status: statusFilter, query: search, today }),
+    [appointments, range, pickedDate, statusFilter, search, today]
+  );
+  const groups = useMemo(() => groupByDay(visible, range === "all"), [visible, range]);
+  const week = useMemo(
+    () =>
+      Array.from({ length: 7 }, (_, i) => {
+        const d = addDays(today, i);
+        const items = appointments.filter((a) => apptDate(a) === d && statusOf(a) !== "cancelled");
+        return { d, count: items.length };
+      }),
+    [appointments, today]
+  );
+  const todayCount = week[0].count;
+  const unpaidConfirmed = appointments.filter(
+    (a) => statusOf(a) === "confirmed" && !["Paid", "Discount", "Exempt"].includes(a.paymentStatus || "")
+  ).length;
+
+  async function saveReschedule() {
+    if (!moving || !/^\d{4}-\d{2}-\d{2}$/.test(moving.date)) {
+      alert("Choose a date.");
+      return;
+    }
+    try {
+      setUpdating(moving.id);
+      await updateDoc(doc(db, "appointments", moving.id), {
+        date: moving.date,
+        preferredDate: moving.date,
+        time: moving.time,
+        preferredTime: moving.time,
+        rescheduledAt: serverTimestamp(),
+      });
+      logAction("appointment.rescheduled", { appointmentId: moving.id, date: moving.date, time: moving.time });
+      const user = auth.currentUser;
+      if (user) {
+        fetch("/api/notify/doctor", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken: await user.getIdToken(), appointmentId: moving.id, kind: "rescheduled" }),
+        }).catch(() => {});
+      }
+      setMoving(null);
+    } catch (err) {
+      console.error(err);
+      alert("Date/time update nahi ho paya.");
+    } finally {
+      setUpdating("");
+    }
+  }
+
   async function changeStatus(id: string, status: string) {
+    if ((status === "cancelled" || status === "completed") && !window.confirm(`Mark this appointment as ${status}?`)) return;
     try {
       setUpdating(id);
       await updateDoc(doc(db, "appointments", id), { status });
+      logAction("appointment.status", { appointmentId: id, status });
+      if (status === "confirmed") {
+        // Automatic WhatsApp + email "appointment confirmed" (skipped if not configured).
+        const user = auth.currentUser;
+        if (user) {
+          fetch("/api/notify/doctor", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken: await user.getIdToken(), appointmentId: id, kind: "confirmed" }),
+          }).catch(() => {});
+        }
+      }
     } catch (err) {
       console.error(err);
       alert("Status update nahi ho paya.");
@@ -117,19 +204,106 @@ export default function DoctorAppointmentsPage() {
               <div style={numberStyle}>{total}</div>
             </div>
 
-            <div style={statStyle}>
+            <button
+              type="button"
+              onClick={() => { setRange("all"); setStatusFilter("pending"); }}
+              style={{ ...statStyle, border: 0, textAlign: "left", cursor: "pointer", font: "inherit" }}
+              title="Show all pending requests"
+            >
               <b>Pending</b>
               <div style={numberStyle}>{pending}</div>
+            </button>
+
+            <div style={statStyle}>
+              <b>Today</b>
+              <div style={numberStyle}>{todayCount}</div>
             </div>
+
+            <div style={statStyle}>
+              <b>Confirmed · unpaid</b>
+              <div style={{ ...numberStyle, color: unpaidConfirmed ? "#9a3412" : undefined }}>{unpaidConfirmed}</div>
+            </div>
+          </div>
+
+          {/* Next 7 days at a glance — tap a day to see it */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 6, marginTop: 18 }}>
+            {week.map(({ d, count }) => {
+              const active = range === "date" && pickedDate === d;
+              const dt = new Date(`${d}T00:00:00Z`);
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => { setRange("date"); setPickedDate(d); }}
+                  style={{
+                    border: active ? "2px solid #0f5c4d" : "1px solid #e2e8f0",
+                    background: active ? "#e6f2ef" : d === today ? "#f8fafc" : "white",
+                    borderRadius: 10,
+                    padding: "8px 4px",
+                    cursor: "pointer",
+                    textAlign: "center",
+                  }}
+                >
+                  <div style={{ fontSize: 12, color: "#55606b" }}>{dt.toLocaleDateString("en-IN", { weekday: "short", timeZone: "UTC" })}</div>
+                  <div style={{ fontWeight: 800 }}>{dt.getUTCDate()}</div>
+                  <div style={{ fontSize: 12, color: count ? "#0f5c4d" : "#94a3b8", fontWeight: 700 }}>{count || "–"}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Filters */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 14 }}>
+            {([
+              ["today", "Today"],
+              ["tomorrow", "Tomorrow"],
+              ["week", "Next 7 days"],
+              ["upcoming", "Upcoming"],
+              ["all", "All"],
+            ] as [Range, string][]).map(([r, label]) => (
+              <button key={r} type="button" onClick={() => setRange(r)} style={range === r ? chipActive : chip}>
+                {label}
+              </button>
+            ))}
+            <input
+              type="date"
+              value={pickedDate}
+              onChange={(e) => { setPickedDate(e.target.value); setRange("date"); }}
+              style={{ ...chip, padding: "6px 10px" }}
+              aria-label="Pick a date"
+            />
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StatusFilter)} style={{ ...chip, padding: "7px 10px" }}>
+              <option value="all">All status</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search name, mobile, concern"
+              style={{ ...chip, padding: "7px 12px", flex: "1 1 200px", minWidth: 180 }}
+            />
           </div>
         </div>
 
         {loading && <div style={messageStyle}>Appointments loading...</div>}
         {error && <div style={{ ...messageStyle, color: "red" }}>{error}</div>}
 
+        {!loading && !error && visible.length === 0 && (
+          <div style={messageStyle}>No appointments for this filter.</div>
+        )}
+
+        {groups.map((group) => (
+        <section key={group.date || "none"} style={{ marginBottom: 20 }}>
+          <h2 style={{ fontSize: 18, margin: "8px 4px 10px", color: group.date === today ? "#0f5c4d" : "#334155" }}>
+            {dayLabel(group.date, today)} <span style={{ color: "#94a3b8", fontWeight: 500 }}>({group.items.length})</span>
+          </h2>
         <div style={{ display: "grid", gap: 16 }}>
-          {appointments.map((appointment) => {
+          {group.items.map((appointment) => {
             const status = appointment.status || "pending";
+            const badge = paymentBadge(appointment.paymentStatus);
 
             return (
               <div key={appointment.id} style={cardStyle}>
@@ -172,9 +346,11 @@ export default function DoctorAppointmentsPage() {
                       </span>
                     </div>
 
-                    <div>
+                    <div style={{ marginTop: 4 }}>
                       <b>Payment:</b>{" "}
-                      {appointment.paymentStatus || "Pending"}
+                      <span style={{ background: badge.bg, color: badge.color, fontWeight: 700, padding: "2px 10px", borderRadius: 999, fontSize: 13 }}>
+                        {badge.label}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -198,6 +374,32 @@ export default function DoctorAppointmentsPage() {
                       {updating === appointment.id
                         ? "Updating..."
                         : "Confirm Appointment"}
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setMoving({
+                        id: appointment.id,
+                        date: apptDate(appointment) || today,
+                        time: appointment.time || appointment.preferredTime || "",
+                      })
+                    }
+                    style={{ ...linkButton, border: 0, cursor: "pointer", font: "inherit", fontWeight: 700 }}
+                  >
+                    Reschedule
+                  </button>
+
+                  {statusOf(appointment) === "confirmed" && (
+                    <button type="button" onClick={() => changeStatus(appointment.id, "completed")} style={{ ...linkButton, border: 0, cursor: "pointer", font: "inherit", fontWeight: 700 }}>
+                      Mark completed
+                    </button>
+                  )}
+
+                  {statusOf(appointment) !== "cancelled" && statusOf(appointment) !== "completed" && (
+                    <button type="button" onClick={() => changeStatus(appointment.id, "cancelled")} style={{ ...linkButton, border: 0, cursor: "pointer", font: "inherit", fontWeight: 700, color: "#b91c1c" }}>
+                      Cancel
                     </button>
                   )}
 
@@ -236,11 +438,30 @@ export default function DoctorAppointmentsPage() {
                       WhatsApp Patient
                     </a>
                   )}
+
+                  {moving?.id === appointment.id && (
+                    <div style={{ width: "100%", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", background: "#f8fafc", padding: 12, borderRadius: 10 }}>
+                      <b>New date/time:</b>
+                      <input type="date" value={moving.date} min={today} onChange={(e) => setMoving({ ...moving, date: e.target.value })} style={{ padding: 8, borderRadius: 8, border: "1px solid #cbd5e1" }} />
+                      <input type="time" value={moving.time} onChange={(e) => setMoving({ ...moving, time: e.target.value })} style={{ padding: 8, borderRadius: 8, border: "1px solid #cbd5e1" }} />
+                      <button type="button" onClick={saveReschedule} disabled={updating === appointment.id} style={buttonStyle}>
+                        {updating === appointment.id ? "Saving…" : "Save & notify patient"}
+                      </button>
+                      <button type="button" onClick={() => setMoving(null)} style={{ ...linkButton, border: 0, cursor: "pointer", font: "inherit", fontWeight: 700 }}>Close</button>
+                    </div>
+                  )}
+
+                  {status.toLowerCase() === "confirmed" &&
+                    !["Paid", "Discount", "Exempt"].includes(appointment.paymentStatus || "") && (
+                      <SendPaymentQR appointment={appointment} />
+                    )}
                 </div>
               </div>
             );
           })}
         </div>
+        </section>
+        ))}
       </div>
     </main>
   );
@@ -299,6 +520,18 @@ const linkButton = {
   background: "#e9eef5",
   color: "#111",
 };
+
+const chip = {
+  border: "1px solid #cbd5e1",
+  background: "white",
+  borderRadius: 999,
+  padding: "7px 14px",
+  cursor: "pointer",
+  fontWeight: 600,
+  fontSize: 14,
+} as const;
+
+const chipActive = { ...chip, background: "#0f5c4d", color: "white", borderColor: "#0f5c4d" } as const;
 
 const whatsappButton = {
   textDecoration: "none",
