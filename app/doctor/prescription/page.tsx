@@ -242,6 +242,9 @@ export default function PrescriptionPage() {
         setSex(String(a.gender || a.sex || ""));
         setMobile(String(a.mobile || ""));
         setEmail(String(a.email || ""));
+        // Online/video bookings are teleconsultations unless the link says otherwise.
+        const apptMode = String(a.mode || a.consultationMode || "").toLowerCase();
+        if (!type && /online|video|tele/.test(apptMode)) setIsTeleconsultation(true);
 
         const rawConcern = String(a.concern || "").trim();
         if (rawConcern) {
