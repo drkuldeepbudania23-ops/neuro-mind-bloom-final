@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Lang } from "../../lib/i18n";
 import { localePath, tr } from "../../lib/i18n";
 import { footer, nav } from "../../lib/content/home";
+import { POLICIES } from "../../lib/content/policies";
 import { CLINIC, CRISIS_HELPLINE, DOCTOR, WEBSITE } from "../../lib/site";
 import Logo from "./Logo";
 import ShareButton from "./ShareButton";
@@ -111,6 +112,16 @@ export default function SiteFooter({ lang }: { lang: Lang }) {
           <p>
             {tr(footer.disclaimer, lang)}{" "}
             {CRISIS_HELPLINE.name}: <a className="font-semibold text-white" href={`tel:${CRISIS_HELPLINE.number}`}>{CRISIS_HELPLINE.number}</a>
+          </p>
+          <p className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
+            {POLICIES.map((p) => (
+              <Link key={p.slug} className="underline-offset-2 hover:text-white hover:underline" href={localePath(`/${p.slug}`, lang)}>
+                {tr(p.title, lang)}
+              </Link>
+            ))}
+            <Link className="underline-offset-2 hover:text-white hover:underline" href={localePath("/contact", lang)}>
+              {tr(nav.contact, lang)}
+            </Link>
           </p>
           <p className="mt-2">© {year} {CLINIC.name}. {tr(footer.rights, lang)}</p>
         </div>
