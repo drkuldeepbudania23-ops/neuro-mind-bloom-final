@@ -26,7 +26,6 @@ export const PROFILE = {
     },
   ] as L10n[],
   experience: [
-    { en: "Former Doctor, Medical College, Kota", hi: "पूर्व चिकित्सक, मेडिकल कॉलेज, कोटा" },
     { en: "Senior Specialist (Psychiatry)", hi: "सीनियर स्पेशलिस्ट (मनोचिकित्सा)" },
     { en: "8+ years of clinical experience", hi: "8+ वर्षों का क्लिनिकल अनुभव" },
     { en: "14,000+ patients treated", hi: "14,000+ मरीज़ों का इलाज" },
