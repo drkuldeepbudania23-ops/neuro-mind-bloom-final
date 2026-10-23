@@ -68,7 +68,10 @@ export async function verifyDoctorToken(idToken: string, options: { allowPending
     if (decoded.doctor !== true) return null;
     if (!options.allowPendingMfa && !mfaSatisfied(decoded)) return null;
     return decoded.uid;
-  } catch {
+  } catch (error) {
+    // Log only the error code/message (never the token) so setup problems are visible in Vercel logs.
+    const e = error as { code?: string; message?: string };
+    console.error("verifyDoctorToken failed:", e?.code || "", String(e?.message || error).slice(0, 200));
     return null;
   }
 }
