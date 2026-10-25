@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { logAction } from "../../../lib/client/audit";
+import SendFeedbackLink from "../../../components/doctor/SendFeedbackLink";
 import { FEEDBACK_LIMITS, PUBLIC_REVIEWS_ENABLED, type FeedbackDoc, type FeedbackStatus } from "../../../lib/feedback";
 
 /**
@@ -75,6 +76,7 @@ export default function DoctorFeedbackPage() {
       <p style={{ color: "#475569", marginTop: 0 }}>
         Feedback submitted on the website. Edit only to remove identifying or clinical details — never to change meaning.
       </p>
+      <SendFeedbackLink editable title="Send feedback link to a patient (mobile number is enough)" />
       <p style={{ background: PUBLIC_REVIEWS_ENABLED ? "#ecfdf5" : "#f1f5f9", padding: 10, borderRadius: 10 }}>
         Public display is <strong>{PUBLIC_REVIEWS_ENABLED ? "ON" : "OFF"}</strong>.{" "}
         {PUBLIC_REVIEWS_ENABLED

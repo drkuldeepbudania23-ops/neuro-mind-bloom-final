@@ -1,4 +1,5 @@
 import type { L10n } from "./i18n";
+import { WEBSITE } from "./site";
 
 /**
  * Patient feedback (Master Prompt Part 12).
@@ -112,4 +113,25 @@ export function publicFeedback(items: FeedbackDoc[], enabled = PUBLIC_REVIEWS_EN
 
 export function displayName(f: Pick<FeedbackDoc, "name">, lang: "en" | "hi"): string {
   return f.name.trim() || (lang === "hi" ? "गुमनाम" : "Anonymous");
+}
+
+/** Public link to the feedback form, sent to patients after a consultation. */
+export function feedbackPageUrl(lang: "en" | "hi" = "hi"): string {
+  return `${WEBSITE.url}${lang === "hi" ? "/hi" : ""}/feedback`;
+}
+
+/** WhatsApp / e-mail text asking a patient for feedback. Contains no clinical details. */
+export function feedbackRequestMessage(name: string | undefined, lang: "en" | "hi" = "hi"): { subject: string; text: string } {
+  const who = (name || "").trim();
+  const link = feedbackPageUrl(lang);
+  if (lang === "hi") {
+    return {
+      subject: "Neuro Mind Bloom – आपका फ़ीडबैक",
+      text: `नमस्ते${who ? ` ${who}` : ""},\nNeuro Mind Bloom पर परामर्श के लिए धन्यवाद।\n\nआपका अनुभव कैसा रहा? कृपया 1 मिनट निकालकर इस लिंक पर अपना फ़ीडबैक दें:\n${link}\n\nआपका फ़ीडबैक केवल डॉक्टर पढ़ते हैं और आपकी अनुमति के बिना कहीं प्रकाशित नहीं होता।\n— डॉ. कुलदीप बुडानिया`,
+    };
+  }
+  return {
+    subject: "Neuro Mind Bloom – Your feedback",
+    text: `Hello${who ? ` ${who}` : ""},\nThank you for consulting at Neuro Mind Bloom.\n\nHow was your experience? Please take 1 minute to share your feedback here:\n${link}\n\nYour feedback is read only by the doctor and is never published without your consent.\n— Dr. Kuldeep Budania`,
+  };
 }
