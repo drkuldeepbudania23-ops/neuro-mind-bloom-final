@@ -22,7 +22,7 @@ function notFound() {
 /**
  * Patient-facing download of an e-signed prescription.
  * The token is an HMAC-signed, expiring reference (lib/rx/link.ts) — the record
- * id alone cannot be used, and links stop working after 30 days.
+ * id alone cannot be used, and links stop working after RX_LINK_TTL_DAYS (3 days).
  */
 export async function GET(request: Request, context: { params: Promise<{ token: string }> }) {
   try {

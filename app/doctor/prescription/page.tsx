@@ -511,7 +511,7 @@ export default function PrescriptionPage() {
     return digits;
   }
 
-  /** Secure 30-day PDF link from the server (null if the server is not configured yet). */
+  /** Secure 3-day PDF link from the server (null if the server is not configured yet). */
   async function getSecurePrescriptionLink(recordId: string, sendChannel?: "email" | "whatsapp") {
     try {
       const user = auth.currentUser;
@@ -551,7 +551,7 @@ export default function PrescriptionPage() {
       "Your e-prescription from Neuro Mind Bloom is ready.",
       prescriptionId ? `Prescription ID: ${prescriptionId}` : "",
       `Consultation: ${isTeleconsultation ? "Teleconsultation" : "OPD"}`,
-      share ? `Download PDF (secure link, valid 30 days):\n${share.link}` : "Please attach the PDF saved using Print / PDF.",
+      share ? `Download PDF (secure link, valid 3 days):\n${share.link}` : "Please attach the PDF saved using Print / PDF.",
       "— Dr. Kuldeep Budania, Neuro Mind Bloom"
     ].filter(Boolean).join("\n");
 
@@ -591,7 +591,7 @@ export default function PrescriptionPage() {
       prescriptionId ? `Prescription ID: ${prescriptionId}` : "",
       `Consultation: ${isTeleconsultation ? "Teleconsultation" : "OPD"}`,
       "",
-      share ? `Download PDF (secure link, valid 30 days): ${share.link}` : "Please attach the PDF saved using Print / PDF before sending this email.",
+      share ? `Download PDF (secure link, valid 3 days): ${share.link}` : "Please attach the PDF saved using Print / PDF before sending this email.",
       "",
       "Regards,",
       "Dr. Kuldeep Budania",

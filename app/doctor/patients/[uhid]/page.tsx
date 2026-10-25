@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getPatient, loadPatientHistory } from "../../../../lib/client/patients";
 import { buildTimeline, isUhid, type Patient, type TimelineEvent } from "../../../../lib/patients";
+import ResendRxLink from "../../../../components/doctor/ResendRxLink";
 
 const KIND: Record<TimelineEvent["kind"], { label: string; color: string }> = {
   prescription: { label: "Rx", color: "#0f5c4d" },
@@ -93,6 +94,9 @@ export default function PatientHistoryPage() {
                     <div style={{ fontSize: 13, color: "#55606b" }}>{fmt(e.at)}</div>
                     <div style={{ fontWeight: 700 }}>{e.title}</div>
                     {e.detail && <div style={{ color: "#334155", fontSize: 14, overflowWrap: "anywhere" }}>{e.detail}</div>}
+                    {e.kind === "prescription" && e.signed && patient && (
+                      <ResendRxLink recordId={e.refId} name={patient.name} mobile={patient.mobile || patient.mobile10} email={patient.email} />
+                    )}
                   </div>
                 </li>
               ))}

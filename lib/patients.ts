@@ -85,6 +85,8 @@ export type TimelineEvent = {
   title: string;
   detail: string;
   refId: string;
+  /** Prescriptions only: e-signed (so a download link can be sent). */
+  signed?: boolean;
 };
 
 type Doc = Record<string, unknown> & { id: string };
@@ -128,6 +130,7 @@ export function buildTimeline(input: { records: Doc[]; appointments: Doc[]; paym
         .filter(Boolean)
         .join(" — "),
       refId: r.id,
+      signed: Boolean(r.signedAt),
     });
   }
   for (const a of input.appointments) {
