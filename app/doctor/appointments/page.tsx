@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import SendPaymentQR from "../../../components/doctor/SendPaymentQR";
+import SendFeedbackLink from "../../../components/doctor/SendFeedbackLink";
 import { logAction } from "../../../lib/client/audit";
 import {
   addDays,
@@ -455,6 +456,15 @@ export default function DoctorAppointmentsPage() {
                     !["Paid", "Discount", "Exempt"].includes(appointment.paymentStatus || "") && (
                       <SendPaymentQR appointment={appointment} confirmed={statusOf(appointment) !== "pending"} />
                     )}
+
+                  {statusOf(appointment) === "completed" && (
+                    <SendFeedbackLink
+                      name={appointment.name || appointment.patientName}
+                      mobile={appointment.mobile}
+                      email={appointment.email}
+                      language={appointment.language}
+                    />
+                  )}
                 </div>
               </div>
             );
