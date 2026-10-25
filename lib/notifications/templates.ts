@@ -158,8 +158,8 @@ export function renderNotification(kind: NotificationKind, data: NotificationDat
       subject = lang === "hi" ? "आपका ई-प्रिस्क्रिप्शन" : "Your e-prescription";
       text =
         lang === "hi"
-          ? `नमस्ते ${name},\n\nआपका ई-प्रिस्क्रिप्शन तैयार है। सुरक्षित लिंक (30 दिन तक मान्य):\n${link}\n\nदवाइयाँ डॉक्टर की सलाह अनुसार ही लें, अपने आप बंद या कम न करें।`
-          : `Hello ${name},\n\nYour e-prescription is ready. Secure link (valid for 30 days):\n${link}\n\nTake medicines exactly as advised; do not stop or change them on your own.`;
+          ? `नमस्ते ${name},\n\nआपका ई-प्रिस्क्रिप्शन तैयार है। सुरक्षित लिंक (3 दिन तक मान्य):\n${link}\n\nदवाइयाँ डॉक्टर की सलाह अनुसार ही लें, अपने आप बंद या कम न करें।`
+          : `Hello ${name},\n\nYour e-prescription is ready. Secure link (valid for 3 days):\n${link}\n\nTake medicines exactly as advised; do not stop or change them on your own.`;
       break;
 
     case "followup_reminder":

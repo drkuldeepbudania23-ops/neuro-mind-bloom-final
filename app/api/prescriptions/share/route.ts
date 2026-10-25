@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Doctor-only. Body: { idToken, recordId, send?: boolean, channel?: "email" | "whatsapp", lang?: "en" | "hi" }
- * Returns a secure 30-day download link for an e-signed prescription.
+ * Returns a secure 3-day download link (a fresh one on every call) for an e-signed prescription.
  * With send=true it also sends it automatically:
  *   WhatsApp (template with the PDF as a document) + email (PDF attached),
  * for whichever channels are configured (or only `channel`). Unconfigured channels are "skipped".

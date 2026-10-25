@@ -7,7 +7,8 @@ import { createRxToken, purposeSecret, verifyRxToken } from "../rx/link";
 import { canonicalPrescription, hashPrescription, type SignedContent } from "../rx/signing";
 import { CLINIC, DOCTOR, SITE_URL } from "../site";
 
-export const RX_LINK_TTL_DAYS = 30;
+/** Patient download link validity. Short on purpose; the doctor can resend a fresh link any time. */
+export const RX_LINK_TTL_DAYS = 3;
 
 export const DOCTOR_INFO: DoctorInfo = {
   name: DOCTOR.name.en,

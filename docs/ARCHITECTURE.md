@@ -95,7 +95,7 @@ Joins video link (WhatsApp) ◀────────────────�
                                                                 E-sign PIN ─▶ /api/esign/verify-pin
                                 patientRecords saved     ◀────  Save
 Receives PDF on WhatsApp/email ◀───────────────────────────────  Print / PDF / WhatsApp / Email
-Receives secure PDF link  ◀────  /api/rx/<signed token> (30 days)
+Receives secure PDF link  ◀────  /api/rx/<signed token> (3 days)
 Follow-up reminder        ◀────  daily cron 9 AM IST     ◀────  Follow-up reminder date
 ```
 
@@ -114,7 +114,7 @@ Follow-up reminder        ◀────  daily cron 9 AM IST     ◀───�
    constant-time comparison; webhook makes recording idempotent.
 7. Self-assessment answers never leave the browser.
 8. (Phase 3) Doctor signature image removed from `/public` (was downloadable) — embedded only in
-   server code for the PDF. Patient PDF links are HMAC-signed, expire in 30 days, `no-store` + `noindex`.
+   server code for the PDF. Patient PDF links are HMAC-signed, expire in 3 days (resend for a fresh link), `no-store` + `noindex`.
 9. (Phase 3) Notification/export/share routes verify the Firebase ID token **and** the `doctor` claim
    with the Admin SDK. The public booking-notify route only acts on a pending booking created in the
    last 30 minutes, sends only to that booking's own contacts, and only once (transaction).

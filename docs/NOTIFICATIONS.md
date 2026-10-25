@@ -18,12 +18,12 @@ when it is not configured — nothing breaks.
 | Follow-up reminder | Patient | Daily 9:00 AM IST cron, for follow-ups whose **Reminder date** is tomorrow | `nmb_followup_reminder` | ✅ |
 
 The **WhatsApp button** on the prescription page still opens the doctor's own WhatsApp chat with
-the patient — now the message contains a **secure PDF download link** (valid 30 days) instead of
+the patient — now the message contains a **secure PDF download link** (valid 3 days; resend from Patients → history for a fresh link) instead of
 "please attach the PDF".
 
 ## Secure prescription link
 
-`/api/rx/<token>` — the token is HMAC-signed with `RX_LINK_SECRET` and expires after 30 days. Only
+`/api/rx/<token>` — the token is HMAC-signed with `RX_LINK_SECRET` and expires after 3 days. Only
 **e-signed** prescriptions saved to the cloud can be downloaded. The PDF is generated on the server
 (A4, single page when it fits, numbered medicines, registration no., optional TELECONSULTATION
 label, e-signature, footer "Not valid for medicolegal purpose."). Links are `no-store` and `noindex`.
@@ -90,10 +90,10 @@ WhatsApp Business phone app at the same time** — so use a separate number for 
 
 **nmb_prescription_ready** — Header: **Document**
 (en)
-> Hello {{1}}, your e-prescription from Dr. Kuldeep Budania is attached. Secure link (valid 30 days): {{2}}. Take medicines exactly as advised.
+> Hello {{1}}, your e-prescription from Dr. Kuldeep Budania is attached. Secure link (valid 3 days): {{2}}. Take medicines exactly as advised.
 
 (hi)
-> नमस्ते {{1}}, डॉ. कुलदीप बुडानिया का आपका ई-प्रिस्क्रिप्शन संलग्न है। सुरक्षित लिंक (30 दिन): {{2}}। दवाइयाँ सलाह अनुसार ही लें।
+> नमस्ते {{1}}, डॉ. कुलदीप बुडानिया का आपका ई-प्रिस्क्रिप्शन संलग्न है। सुरक्षित लिंक (3 दिन): {{2}}। दवाइयाँ सलाह अनुसार ही लें।
 
 **nmb_followup_reminder** (en)
 > Hello {{1}}, a reminder that your follow-up with Dr. Kuldeep Budania is due on {{2}}. Reply here or book at neuromindbloom.com.
