@@ -41,7 +41,12 @@ export async function createOrderForAppointment(appointmentId: string) {
     body: JSON.stringify(payload),
     cache: "no-store",
   });
-  if (!response.ok) return { error: "gateway" as const };
+  if (!response.ok) {
+    // Log Razorpay's reason (never the keys) so a wrong/mismatched key is easy to spot.
+    const detail = (await response.json().catch(() => ({}))) as { error?: { code?: string; description?: string } };
+    console.warn("razorpay/order gateway", response.status, detail?.error?.code, detail?.error?.description, `key=${keyId.slice(0, 9)}…`);
+    return { error: "gateway" as const };
+  }
   const order = (await response.json()) as { id: string; amount: number; currency: string };
 
   await db.collection("razorpayOrders").doc(order.id).set({
