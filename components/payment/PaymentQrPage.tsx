@@ -102,6 +102,12 @@ export default async function PaymentQrPage({ lang, appointmentId, amount, servi
                 {t(T.ref)}: <span className="font-mono">{appointmentId}</span>
               </p>
 
+              {/* Online payment first: it is recorded in the doctor dashboard automatically.
+                  Razorpay charges the standard fee, so it is offered only when no discount was applied. */}
+              {service && amount === service.fee && (
+                <OnlinePayButton lang={lang} appointmentId={appointmentId} description={service.label.en} primary />
+              )}
+
               {qrSvg ? (
                 <>
                   <div
@@ -144,11 +150,6 @@ export default async function PaymentQrPage({ lang, appointmentId, amount, servi
                   </a>
                   <p className="mt-2 text-xs text-forest-700/80">{t(T.rzpMeHint)}</p>
                 </>
-              )}
-
-              {/* Razorpay charges the standard fee, so it is offered only when no discount was applied. */}
-              {service && amount === service.fee && (
-                <OnlinePayButton lang={lang} appointmentId={appointmentId} description={service.label.en} />
               )}
 
               <div className="mt-6 rounded-2xl bg-forest-50 p-4 text-left">

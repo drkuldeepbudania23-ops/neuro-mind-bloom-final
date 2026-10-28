@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
  * the patient closes the browser before /verify runs.
  */
 export async function POST(request: Request) {
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET || "";
+  const secret = (process.env.RAZORPAY_WEBHOOK_SECRET || "").trim();
   const raw = await request.text();
   const signature = request.headers.get("x-razorpay-signature") || "";
 
