@@ -58,12 +58,72 @@ export function buildOrderPayload(appointmentId: string, serviceCode: string): O
   };
 }
 
+export type QrPayload = {
+  type: "upi_qr";
+  name: string;
+  usage: "single_use";
+  fixed_amount: true;
+  payment_amount: number; // paise
+  description: string;
+  close_by: number; // unix seconds
+  notes: { appointmentId: string; serviceCode: string; source: "nmb-pay-page" };
+};
+
+/** Requested QR validity (Razorpay may cap it shorter; the page then makes a fresh QR). */
+export const QR_VALID_SECONDS = 3 * 24 * 60 * 60;
+
+/**
+ * Per-patient Razorpay UPI QR (amount fixed, reference in notes) so the payment
+ * can be recorded automatically. Only for the FULL standard fee of a known
+ * service: a link whose amount was edited (discount, or tampering) gets null and
+ * falls back to the clinic's static QR + manual entry.
+ */
+export function buildQrPayload(reference: string, serviceCode: string, amountRupees: number, nowSec: number): QrPayload | null {
+  if (!/^[A-Za-z0-9_-]{6,64}$/.test(reference)) return null;
+  const service = getService(serviceCode);
+  if (!service || amountRupees !== service.fee) return null;
+  return {
+    type: "upi_qr",
+    name: "Neuro Mind Bloom",
+    usage: "single_use",
+    fixed_amount: true,
+    payment_amount: service.fee * 100,
+    description: `${service.label.en} · ${reference}`.slice(0, 100),
+    close_by: Math.floor(nowSec) + QR_VALID_SECONDS,
+    notes: { appointmentId: reference, serviceCode, source: "nmb-pay-page" },
+  };
+}
+
+/** Firestore id for the QR of one reference + amount (one active QR per link). */
+export const qrDocId = (reference: string, amountPaise: number) => `${reference}_${amountPaise}`;
+
+/** Pulls what we need out of a `qr_code.credited` webhook event, or null. */
+export function qrCreditFromEvent(event: unknown): { qrId: string; paymentId: string; amountPaise: number; reference: string; serviceCode: string } | null {
+  const e = event as {
+    event?: string;
+    payload?: {
+      qr_code?: { entity?: { id?: string; notes?: Record<string, unknown> } };
+      payment?: { entity?: { id?: string; amount?: number; status?: string } };
+    };
+  };
+  if (e?.event !== "qr_code.credited") return null;
+  const qr = e.payload?.qr_code?.entity;
+  const payment = e.payload?.payment?.entity;
+  const reference = String(qr?.notes?.appointmentId || "");
+  const serviceCode = String(qr?.notes?.serviceCode || "");
+  if (!qr?.id || !payment?.id || typeof payment.amount !== "number") return null;
+  if (qr.notes?.source !== "nmb-pay-page" || !/^[A-Za-z0-9_-]{6,64}$/.test(reference) || !getService(serviceCode)) return null;
+  if (payment.status && payment.status !== "captured") return null;
+  return { qrId: String(qr.id), paymentId: String(payment.id), amountPaise: payment.amount, reference, serviceCode };
+}
+
 /** Payment record in the same shape the doctor's payment screen writes. */
 export function onlinePaymentRecord(params: {
   appointmentId: string;
   serviceCode: string;
   amountPaise: number;
-  razorpayOrderId: string;
+  razorpayOrderId?: string;
+  razorpayQrId?: string;
   razorpayPaymentId: string;
   patientName: string;
 }) {
@@ -81,9 +141,10 @@ export function onlinePaymentRecord(params: {
       discount: 0,
       discountType: "",
       reason: "",
-      mode: "Razorpay",
+      mode: params.razorpayQrId ? "Razorpay UPI QR" : "Razorpay",
       reference: params.razorpayPaymentId,
-      razorpayOrderId: params.razorpayOrderId,
+      ...(params.razorpayOrderId ? { razorpayOrderId: params.razorpayOrderId } : {}),
+      ...(params.razorpayQrId ? { razorpayQrId: params.razorpayQrId } : {}),
       confirmedBy: "razorpay",
     },
   };
