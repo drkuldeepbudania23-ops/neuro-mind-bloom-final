@@ -7,8 +7,9 @@ import { notifyPaymentReceived } from "./appointmentNotify";
 const RAZORPAY_API = "https://api.razorpay.com/v1";
 
 export function razorpayKeys() {
-  const keyId = process.env.RAZORPAY_KEY_ID || "";
-  const keySecret = process.env.RAZORPAY_KEY_SECRET || "";
+  // Trim: keys pasted from the downloaded CSV often carry a stray space/newline.
+  const keyId = (process.env.RAZORPAY_KEY_ID || "").trim();
+  const keySecret = (process.env.RAZORPAY_KEY_SECRET || "").trim();
   return { keyId, keySecret, configured: Boolean(keyId && keySecret) };
 }
 
