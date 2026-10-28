@@ -69,7 +69,7 @@ export type QrPayload = {
   notes: { appointmentId: string; serviceCode: string; source: "nmb-pay-page" };
 };
 
-/** How long a per-patient payment QR stays payable. */
+/** Requested QR validity (Razorpay may cap it shorter; the page then makes a fresh QR). */
 export const QR_VALID_SECONDS = 3 * 24 * 60 * 60;
 
 /**

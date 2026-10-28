@@ -43,11 +43,11 @@ export async function getOrCreatePaymentQr(reference: string, serviceCode: strin
   const ref = db.collection("razorpayQrs").doc(qrDocId(reference, payload.payment_amount));
   const existing = (await ref.get()).data() as QrDoc | undefined;
   if (existing?.status === "paid") return { kind: "paid" };
-  // Keep at least 2 hours of validity on a reused QR.
-  if (existing?.status === "active" && existing.imageUrl && existing.closeBy > nowSec + 2 * 3600) {
+  // Razorpay may shorten close_by (seen: ~2 hours), so reuse while ≥10 min remain;
+  // after that the next page view gets a fresh QR.
+  if (existing?.status === "active" && existing.imageUrl && existing.closeBy > nowSec + 10 * 60) {
     return { kind: "qr", imageUrl: existing.imageUrl, closeBy: existing.closeBy };
   }
-  if (existing) console.info("razorpay/qr replace", existing.status, Math.round(existing.closeBy - nowSec));
 
   const response = await fetch(`${RAZORPAY_API}/payments/qr_codes`, {
     method: "POST",
