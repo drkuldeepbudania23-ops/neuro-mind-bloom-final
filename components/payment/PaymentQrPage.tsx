@@ -1,4 +1,5 @@
 import QRCode from "qrcode";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import type { Lang } from "../../lib/i18n";
 import { localePath, tr } from "../../lib/i18n";
@@ -7,6 +8,7 @@ import Logo from "../site/Logo";
 import { WhatsAppIcon } from "../site/icons";
 import CopyText from "./CopyText";
 import OnlinePayButton from "./OnlinePayButton";
+import { getOrCreatePaymentQr, type PaymentQr } from "../../lib/server/qrPayments";
 
 const T = {
   title: { en: "Pay consultation fee", hi: "परामर्श शुल्क का भुगतान" },
@@ -34,6 +36,15 @@ const T = {
     hi: "यह भुगतान लिंक अधूरा है। कृपया WhatsApp पर क्लिनिक से संपर्क करें।",
   },
   home: { en: "Go to website", hi: "वेबसाइट पर जाएँ" },
+  autoQr: {
+    en: "The amount is already filled in. Your payment is recorded automatically — no screenshot needed.",
+    hi: "राशि पहले से भरी है। आपका भुगतान अपने आप दर्ज हो जाएगा — स्क्रीनशॉट भेजने की ज़रूरत नहीं।",
+  },
+  afterAuto: {
+    en: "Paid with the QR or online button above? It is recorded automatically. Any problem — message us on WhatsApp.",
+    hi: "ऊपर के QR या ऑनलाइन बटन से भुगतान किया? वह अपने आप दर्ज हो जाता है। कोई समस्या हो तो WhatsApp पर बताएँ।",
+  },
+  alreadyPaid: { en: "This payment has already been received. Thank you!", hi: "यह भुगतान पहले ही मिल चुका है। धन्यवाद!" },
 };
 
 export type PaymentQrProps = {
@@ -73,23 +84,35 @@ export default async function PaymentQrPage({ lang, appointmentId, amount, servi
     qrSvg = await QRCode.toString(upiLink, { type: "svg", margin: 1, errorCorrectionLevel: "M", color: { dark: "#062b31", light: "#ffffff" } });
   }
 
+  // Per-patient Razorpay QR (amount fixed, recorded automatically) for the full fee;
+  // any problem → null and the clinic's static QR above is used as before.
+  let autoQr: PaymentQr = null;
+  if (valid && service && amount === service.fee) {
+    autoQr = await getOrCreatePaymentQr(appointmentId, serviceCode, amount).catch((error) => {
+      console.error("pay/qr", error);
+      return null;
+    });
+  }
+
+  if (autoQr?.kind === "paid") {
+    return (
+      <PayShell lang={lang}>
+        <h1 className="text-2xl font-semibold text-forest-900 md:text-3xl">{t(T.title)}</h1>
+        <p className="mt-4 rounded-xl bg-[#e3f6ea] px-4 py-3 font-semibold text-[#14713a]">{t(T.alreadyPaid)}</p>
+        <p className="mt-2 text-sm text-forest-700/80">
+          {t(T.ref)}: <span className="font-mono">{appointmentId}</span>
+        </p>
+      </PayShell>
+    );
+  }
+
   const proofMessage =
     lang === "hi"
       ? `नमस्ते, मैंने ${formatINR(amount ?? 0)} का भुगतान कर दिया है।\nरेफ़रेंस: ${appointmentId}\n(स्क्रीनशॉट संलग्न)`
       : `Hello, I have paid ${formatINR(amount ?? 0)}.\nReference: ${appointmentId}\n(screenshot attached)`;
 
   return (
-    <div className="nmb min-h-screen bg-cream" lang={lang === "hi" ? "hi" : "en"}>
-      <header className="border-b border-forest-100 bg-white">
-        <div className="mx-auto flex h-16 max-w-xl items-center px-4">
-          <Link href={localePath("/", lang)}>
-            <Logo lang={lang} />
-          </Link>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-xl px-4 py-8">
-        <div className="rounded-3xl bg-white p-6 text-center shadow-[0_20px_60px_rgba(6,43,49,0.12)] md:p-8">
+    <PayShell lang={lang}>
           <h1 className="text-2xl font-semibold text-forest-900 md:text-3xl">{t(T.title)}</h1>
 
           {!valid ? (
@@ -108,7 +131,19 @@ export default async function PaymentQrPage({ lang, appointmentId, amount, servi
                 <OnlinePayButton lang={lang} appointmentId={appointmentId} description={service.label.en} primary />
               )}
 
-              {qrSvg ? (
+              {autoQr?.kind === "qr" ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- Razorpay-hosted QR image */}
+                  <img
+                    src={autoQr.imageUrl}
+                    alt={t(T.scan)}
+                    className="mx-auto mt-6 w-64 max-w-full rounded-2xl ring-1 ring-forest-100"
+                  />
+                  <p className="mt-3 text-sm text-forest-800">{t(T.scan)}</p>
+                  <p className="mt-4 rounded-xl bg-[#e3f6ea] px-4 py-3 text-forest-900">{t(T.autoQr)}</p>
+                  <p className="mt-2 text-xs text-forest-700/80">{t(T.merchant)}</p>
+                </>
+              ) : qrSvg ? (
                 <>
                   <div
                     className="mx-auto mt-6 w-64 max-w-full rounded-2xl p-3 ring-1 ring-forest-100 [&>svg]:h-auto [&>svg]:w-full"
@@ -138,7 +173,7 @@ export default async function PaymentQrPage({ lang, appointmentId, amount, servi
                 <p className="mt-6 rounded-xl bg-saffron-100 px-4 py-3 text-forest-900">{t(T.noUpi)}</p>
               )}
 
-              {RAZORPAY_ME_URL && (
+              {RAZORPAY_ME_URL && autoQr?.kind !== "qr" && (
                 <>
                   <a
                     href={RAZORPAY_ME_URL}
@@ -153,7 +188,7 @@ export default async function PaymentQrPage({ lang, appointmentId, amount, servi
               )}
 
               <div className="mt-6 rounded-2xl bg-forest-50 p-4 text-left">
-                <p className="text-forest-900">{t(T.after)}</p>
+                <p className="text-forest-900">{t(autoQr?.kind === "qr" ? T.afterAuto : T.after)}</p>
                 <a
                   href={whatsappLink(proofMessage)}
                   target="_blank"
@@ -165,11 +200,28 @@ export default async function PaymentQrPage({ lang, appointmentId, amount, servi
               </div>
             </>
           )}
+    </PayShell>
+  );
+}
+
+/** Page frame shared by the payment and "already paid" views. */
+function PayShell({ lang, children }: { lang: Lang; children: ReactNode }) {
+  return (
+    <div className="nmb min-h-screen bg-cream" lang={lang === "hi" ? "hi" : "en"}>
+      <header className="border-b border-forest-100 bg-white">
+        <div className="mx-auto flex h-16 max-w-xl items-center px-4">
+          <Link href={localePath("/", lang)}>
+            <Logo lang={lang} />
+          </Link>
         </div>
+      </header>
+
+      <main className="mx-auto max-w-xl px-4 py-8">
+        <div className="rounded-3xl bg-white p-6 text-center shadow-[0_20px_60px_rgba(6,43,49,0.12)] md:p-8">{children}</div>
         <p className="mt-6 text-center text-sm text-forest-700">
           {CLINIC.name} · {CLINIC.phoneDisplay} ·{" "}
           <Link className="underline" href={localePath("/", lang)}>
-            {t(T.home)}
+            {tr(T.home, lang)}
           </Link>
         </p>
       </main>
