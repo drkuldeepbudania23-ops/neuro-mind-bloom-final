@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { feedbackPageUrl, feedbackRequestMessage } from "../../lib/feedback";
+import { gmailComposeUrl, mailtoUrl } from "../../lib/emailCompose";
 
 type Props = {
   /** From an appointment, if available. Mobile alone is enough. */
@@ -31,7 +32,9 @@ export default function SendFeedbackLink({ name = "", mobile = "", email = "", l
   const validMobile = /^[6-9]\d{9}$/.test(digits);
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail.trim());
   const whatsappHref = validMobile ? `https://wa.me/91${digits}?text=${encodeURIComponent(msg.text)}` : "";
-  const emailHref = validEmail ? `mailto:${mail.trim()}?subject=${encodeURIComponent(msg.subject)}&body=${encodeURIComponent(msg.text)}` : "";
+  const draft = validEmail ? { to: mail, subject: msg.subject, body: msg.text } : null;
+  const gmailHref = draft ? gmailComposeUrl(draft) : "";
+  const emailHref = draft ? mailtoUrl(draft) : "";
 
   async function copy(text: string, label: string) {
     try {
@@ -65,10 +68,15 @@ export default function SendFeedbackLink({ name = "", mobile = "", email = "", l
         ) : (
           <span style={muted}>{editable && mob ? "Enter a valid 10-digit mobile" : "No valid mobile"}</span>
         )}
-        {emailHref ? (
-          <a href={emailHref} style={{ ...btn, background: "#1f2937" }}>
-            Feedback via Email
-          </a>
+        {gmailHref ? (
+          <>
+            <a href={gmailHref} target="_blank" rel="noopener noreferrer" style={{ ...btn, background: "#1f2937" }}>
+              Feedback via Email (Gmail)
+            </a>
+            <a href={emailHref} style={altLink}>
+              other mail app
+            </a>
+          </>
         ) : (
           !editable && <span style={muted}>No email</span>
         )}
@@ -90,3 +98,4 @@ const box = { marginTop: 14, padding: 12, borderRadius: 10, background: "#fff8eb
 const input = { padding: "8px 10px", borderRadius: 8, border: "1px solid #cbd5e1", width: 110 } as const;
 const btn = { textDecoration: "none", borderRadius: 8, padding: "9px 14px", fontWeight: 700, color: "white", fontSize: 14 } as const;
 const muted = { fontSize: 13, color: "#55606b" } as const;
+const altLink = { fontSize: 13, color: "#334155", textDecoration: "underline" } as const;

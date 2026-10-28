@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { auth } from "../../lib/firebase";
+import { gmailComposeUrl, isValidEmail, mailtoUrl } from "../../lib/emailCompose";
 
 type Props = { recordId: string; name?: string; mobile?: string; email?: string };
 
@@ -49,10 +50,12 @@ export default function ResendRxLink({ recordId, name = "", mobile = "", email =
       : `Hello${who ? ` ${who}` : ""},\nHere is a new secure link to download your e-prescription (valid for 3 days):\n${link}\n\nTake medicines exactly as advised.\n— Dr. Kuldeep Budania`;
   const digits = mobile.replace(/\D/g, "").slice(-10);
   const whatsappHref = link && /^[6-9]\d{9}$/.test(digits) ? `https://wa.me/91${digits}?text=${encodeURIComponent(text)}` : "";
-  const emailHref =
-    link && email
-      ? `mailto:${email}?subject=${encodeURIComponent(lang === "hi" ? "आपका ई-प्रिस्क्रिप्शन" : "Your e-prescription")}&body=${encodeURIComponent(text)}`
-      : "";
+  const draft =
+    link && isValidEmail(email)
+      ? { to: email, subject: lang === "hi" ? "आपका ई-प्रिस्क्रिप्शन" : "Your e-prescription", body: text }
+      : null;
+  const gmailHref = draft ? gmailComposeUrl(draft) : "";
+  const emailHref = draft ? mailtoUrl(draft) : "";
 
   return (
     <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
@@ -73,10 +76,15 @@ export default function ResendRxLink({ recordId, name = "", mobile = "", email =
           ) : (
             <span style={muted}>No valid mobile</span>
           )}
-          {emailHref && (
-            <a href={emailHref} style={{ ...btn, background: "#1f2937" }}>
-              Send via Email
-            </a>
+          {gmailHref && (
+            <>
+              <a href={gmailHref} target="_blank" rel="noopener noreferrer" style={{ ...btn, background: "#1f2937" }}>
+                Send via Email (Gmail)
+              </a>
+              <a href={emailHref} style={altLink}>
+                other mail app
+              </a>
+            </>
           )}
           <button
             type="button"
@@ -95,3 +103,4 @@ export default function ResendRxLink({ recordId, name = "", mobile = "", email =
 const btn = { textDecoration: "none", borderRadius: 8, padding: "7px 12px", fontWeight: 700, color: "white", fontSize: 13 } as const;
 const select = { padding: "6px 8px", borderRadius: 8, border: "1px solid #cbd5e1" } as const;
 const muted = { fontSize: 13, color: "#55606b" } as const;
+const altLink = { fontSize: 13, color: "#334155", textDecoration: "underline" } as const;

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { auth } from "../../lib/firebase";
 import { CLINIC, getService, paymentPageUrl, serviceCodeFromText } from "../../lib/site";
+import { gmailComposeUrl, isValidEmail, mailtoUrl } from "../../lib/emailCompose";
 
 type Props = {
   appointment: {
@@ -76,11 +77,16 @@ export default function SendPaymentQR({ appointment, confirmed = true, allowAuto
 
   const digits = (appointment.mobile || "").replace(/\D/g, "").slice(-10);
   const whatsappHref = digits.length === 10 ? `https://wa.me/91${digits}?text=${encodeURIComponent(message)}` : "";
-  const emailHref = appointment.email
-    ? `mailto:${appointment.email}?subject=${encodeURIComponent(
-        lang === "hi" ? "Neuro Mind Bloom – भुगतान QR कोड" : "Neuro Mind Bloom – Payment QR code"
-      )}&body=${encodeURIComponent(message)}`
-    : "";
+  const draft =
+    appointment.email && isValidEmail(appointment.email)
+      ? {
+          to: appointment.email,
+          subject: lang === "hi" ? "Neuro Mind Bloom – भुगतान QR कोड" : "Neuro Mind Bloom – Payment QR code",
+          body: message,
+        }
+      : null;
+  const gmailHref = draft ? gmailComposeUrl(draft) : "";
+  const emailHref = draft ? mailtoUrl(draft) : "";
 
   return (
     <div style={box}>
@@ -101,10 +107,15 @@ export default function SendPaymentQR({ appointment, confirmed = true, allowAuto
         ) : (
           <span style={muted}>No valid mobile</span>
         )}
-        {emailHref && valid ? (
-          <a href={emailHref} style={{ ...btn, background: "#1f2937" }}>
-            QR via Email
-          </a>
+        {gmailHref && valid ? (
+          <>
+            <a href={gmailHref} target="_blank" rel="noopener noreferrer" style={{ ...btn, background: "#1f2937" }}>
+              QR via Email (Gmail)
+            </a>
+            <a href={emailHref} style={altLink}>
+              other mail app
+            </a>
+          </>
         ) : (
           <span style={muted}>No email</span>
         )}
@@ -131,3 +142,4 @@ const box = { marginTop: 14, padding: 12, borderRadius: 10, background: "#f0f9f8
 const input = { padding: "8px 10px", borderRadius: 8, border: "1px solid #cbd5e1", width: 110 } as const;
 const btn = { textDecoration: "none", borderRadius: 8, padding: "9px 14px", fontWeight: 700, color: "white" } as const;
 const muted = { fontSize: 13, color: "#55606b" } as const;
+const altLink = { fontSize: 13, color: "#334155", textDecoration: "underline" } as const;

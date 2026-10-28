@@ -11,6 +11,7 @@ import EpinResetButton from "../EpinResetButton";
 import PatientUhid from "../../../components/doctor/PatientUhid";
 import { getOrCreatePatient, getPatient, recordVisit } from "../../../lib/client/patients";
 import { logAction } from "../../../lib/client/audit";
+import { gmailComposeUrl, mailtoUrl } from "../../../lib/emailCompose";
 import { customRows, displayName, searchMedicines } from "../../../lib/rx/medicineCatalogue";
 import { deleteCustomMedicine, loadCustomMedicines, saveCustomMedicine, type SavedCustomMedicine } from "../../../lib/client/customMedicines";
 type RxItem = {
@@ -574,10 +575,13 @@ export default function PrescriptionPage() {
       return;
     }
 
+    // Open the tab first (pop-up blockers); it becomes the Gmail draft if the server can't send.
+    const win = window.open("", "_blank");
     const saved = await savePrescription();
     // Preferred: the server emails the patient with the PDF attached.
     const share = saved?.cloud ? await getSecurePrescriptionLink(saved.id, "email") : null;
     if (share?.delivery?.email.status === "sent") {
+      win?.close();
       setSavedMessage(`Prescription PDF emailed to ${email.trim()}.`);
       setTimeout(() => setSavedMessage(""), 5000);
       return;
@@ -598,7 +602,14 @@ export default function PrescriptionPage() {
       "Neuro Mind Bloom",
     ].filter(Boolean).join("\n");
 
-    window.location.href = `mailto:${email.trim()}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const draft = { to: email, subject, body };
+    if (win) {
+      win.opener = null;
+      win.location.href = gmailComposeUrl(draft);
+    } else {
+      // Pop-up blocked: fall back to the computer's mail app.
+      window.location.href = mailtoUrl(draft);
+    }
   }
 
   const psychBrandResults = useMemo(() => {
