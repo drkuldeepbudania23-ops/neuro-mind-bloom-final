@@ -47,6 +47,7 @@ export async function getOrCreatePaymentQr(reference: string, serviceCode: strin
   if (existing?.status === "active" && existing.imageUrl && existing.closeBy > nowSec + 2 * 3600) {
     return { kind: "qr", imageUrl: existing.imageUrl, closeBy: existing.closeBy };
   }
+  if (existing) console.info("razorpay/qr replace", existing.status, Math.round(existing.closeBy - nowSec));
 
   const response = await fetch(`${RAZORPAY_API}/payments/qr_codes`, {
     method: "POST",
@@ -75,6 +76,7 @@ export async function getOrCreatePaymentQr(reference: string, serviceCode: strin
     status: "active",
   };
   await ref.set({ ...doc, createdAt: FieldValue.serverTimestamp() });
+  console.info("razorpay/qr created", qr.id, "close_by", qr.close_by, "valid_s", Math.round(doc.closeBy - nowSec));
   return { kind: "qr", imageUrl: doc.imageUrl, closeBy: doc.closeBy };
 }
 
