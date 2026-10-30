@@ -16,31 +16,35 @@ export type Me = {
   plans: Plan[];
 };
 
-/** Signed-in resident + their access status. Redirects to the resident login when signed out. */
-export function useResident() {
+/**
+ * Signed-in resident + their access status. Redirects to the resident login when signed out;
+ * `next` is where login returns to (the app home by default, the join page for website purchases).
+ */
+export function useResident(next: "/residents/app" | "/residents/join" = "/residents/app") {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [me, setMe] = useState<Me | null>(null);
   const [error, setError] = useState("");
+  const loginHref = next === "/residents/join" ? "/residents/login?next=/residents/join&mode=signup" : "/residents/login";
 
   const refresh = useCallback(async () => {
     const { status, data } = await api<Me>("/api/residents/me");
-    if (status === 401) return router.replace("/residents/login");
+    if (status === 401) return router.replace(loginHref);
     if (!data.ok) return setError(data.error === "not-configured" ? "The residents section is not set up yet." : "Could not load your account. Please refresh.");
     setError("");
     setMe(data);
-  }, [router]);
+  }, [router, loginHref]);
 
   useEffect(() => {
     return onAuthStateChanged(auth, (u) => {
       if (!u) {
-        router.replace("/residents/login");
+        router.replace(loginHref);
         return;
       }
       setUser(u);
       refresh();
     });
-  }, [refresh, router]);
+  }, [refresh, router, loginHref]);
 
   return { user, me, error, refresh };
 }

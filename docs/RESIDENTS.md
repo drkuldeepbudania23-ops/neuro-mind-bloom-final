@@ -1,18 +1,31 @@
 # Residents' learning section (Phase 1)
 
 Paid learning area for psychiatry residents: notes (PDF), video lectures (YouTube, unlisted)
-and case discussions with comments. Sold on the website only (Razorpay), so the future
-Android/iPhone apps can show the same content without store commission.
+and case discussions with comments.
+
+**Content is app-only; purchase is website-only.** The Android/iPhone apps (Capacitor, loading
+the live site) append `NeuroMindBloomApp/1` to their user-agent (`capacitor.config.ts`,
+`lib/appShell.ts`). `middleware.ts` redirects browsers away from `/residents/app/**` and refuses
+`/api/residents/content/**` outside the app; inside the app it refuses `/api/residents/order` and
+redirects `/residents/join`. The app shows no prices, buy buttons or payment links, and only signs in
+(no account creation), so no store billing or in-app account deletion is required. Nothing under
+`/residents` is linked from the site or indexed; the doctor shares the payment link directly.
 
 ## Pages
 
-| URL | Who | What |
-|---|---|---|
-| `/residents` | Public | About the programme, plans, Join / Sign in |
-| `/residents/login` | Public (noindex) | Email + password sign up / sign in, password reset |
-| `/residents/app` | Signed-in resident (noindex) | Profile, plan purchase / renewal, content list (locked until paid) |
-| `/residents/app/[id]` | Active subscriber | Note PDF (watermarked), video, case + discussion |
-| `/doctor/residents` | Doctor (claim + 2FA) | Content editor, subscribers & payments, comment moderation, plan prices |
+| URL | Who | Where | What |
+|---|---|---|---|
+| `/residents` | Anyone with the link (noindex) | Browser | "Open the app" page — no prices |
+| `/residents/join` | Resident (noindex) | Browser only | Sign up / sign in, profile, plans, Razorpay payment, "now open the app" |
+| `/residents/login` | Resident (noindex) | Both | Sign in (sign-up only in the browser); returns to `/residents/join` in a browser, `/residents/app` in the app |
+| `/residents/app` | Signed-in resident | App only | Access status, content list (locked until paid), profile |
+| `/residents/app/[id]` | Active subscriber | App only | Note PDF (watermarked), video, case + discussion |
+| `/doctor/residents` | Doctor (claim + 2FA) | Browser | Payment link (copy / WhatsApp), content editor, subscribers & payments, comments, plan prices |
+
+The user-agent check is a product boundary, not a security control: content access is still enforced
+server-side by `accessUntil` for every request. Older app builds without the marker are recognised on
+the client through the Capacitor bridge, but the content APIs need the marker — ship the next app build
+before inviting residents.
 
 ## How access works
 
@@ -44,5 +57,6 @@ Android/iPhone apps can show the same content without store commission.
 
 ## Not in Phase 1
 
-- `/residents` is not yet in `sitemap.ts` (the sitemap assumes every page has a Hindi twin); add it at go-live.
-- Android/iPhone app shells (Phase 2–4, see the app plan).
+- `/residents` stays out of `sitemap.ts` on purpose (not public).
+- Android/iPhone app builds with the user-agent marker, in-app PDF viewer, push notifications (Phase 2–4, see the app plan).
+- Store links on `/residents` once the apps are published.

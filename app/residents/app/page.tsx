@@ -8,9 +8,8 @@ import { auth } from "../../../lib/firebase";
 import { api } from "../../../lib/client/residentApi";
 import { CONTENT_LABEL, CONTENT_TYPES, type ContentSummary, type ContentType } from "../../../lib/residents";
 import ProfileForm from "../../../components/residents/ProfileForm";
-import Plans from "../../../components/residents/Plans";
 import { formatDate, useResident } from "../../../components/residents/useResident";
-import { card, chip, field, ghostBtn, linkBtn, page } from "../../../components/residents/ui";
+import { card, chip, field, ghostBtn, page } from "../../../components/residents/ui";
 
 const ICON: Record<ContentType, string> = { note: "📄", video: "🎬", case: "🩺" };
 
@@ -73,20 +72,16 @@ export default function ResidentHome() {
         {me.profile && (
           <>
             <div style={{ ...card, marginTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              {/* App store rules: no prices, buy buttons or payment links inside the app. */}
               {me.active ? (
                 <span>✅ Access active till <strong>{formatDate(me.accessUntil)}</strong>{daysLeft <= 7 ? ` — ${daysLeft} day${daysLeft === 1 ? "" : "s"} left` : ""}</span>
               ) : me.accessUntil ? (
-                <span>Your access ended on <strong>{formatDate(me.accessUntil)}</strong>. Renew to continue.</span>
+                <span>Your access ended on <strong>{formatDate(me.accessUntil)}</strong>.</span>
               ) : (
-                <span>Subscribe to unlock all notes, lectures and case discussions.</span>
+                <span>Your account does not have access yet.</span>
               )}
+              <button type="button" style={ghostBtn} onClick={refresh}>Refresh</button>
             </div>
-
-            {(!me.active || daysLeft <= 7) && (
-              <div style={{ marginTop: 16 }}>
-                <Plans plans={me.plans} renew={me.active} onPaid={refresh} />
-              </div>
-            )}
 
             <div style={{ marginTop: 20, display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
               <button type="button" style={chip(tab === "all")} onClick={() => setTab("all")}>All</button>
@@ -112,7 +107,7 @@ export default function ResidentHome() {
               )}
             </div>
             <p style={{ marginTop: 24, fontSize: 13, color: "#64748b" }}>
-              For learning only — not for treating patients without supervision. <button type="button" style={{ ...linkBtn, fontSize: 13 }} onClick={() => router.push("/residents")}>About the programme</button>
+              For learning only — not for treating patients without supervision.
             </p>
           </>
         )}

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api, uploadNotePdf } from "../../../lib/client/residentApi";
 import { CONTENT_LABEL, CONTENT_TYPES, type ContentType, type Plan } from "../../../lib/residents";
 import { formatINR } from "../../../lib/site";
+import { RESIDENT_JOIN_PATH } from "../../../lib/appShell";
 
 /**
  * Doctor → Residents: write notes / videos / case discussions, see subscribers and payments,
@@ -69,8 +70,10 @@ export default function DoctorResidentsPage() {
       <Link href="/doctor">← Dashboard</Link>
       <h1>Residents (learning section)</h1>
       <p style={{ color: "#475569" }}>
-        Paid content for psychiatry residents at <a href="/residents" target="_blank">/residents</a>. Only residents with active access can open items.
+        Content opens only inside the Neuro Mind Bloom app, for residents with active access. Residents pay on the website through the
+        link below (not shown anywhere on the site or in the app) — send it to them on WhatsApp.
       </p>
+      <JoinLink />
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <button style={tabBtn(tab === "content")} onClick={() => setTab("content")}>Content</button>
         <button style={tabBtn(tab === "residents")} onClick={() => setTab("residents")}>Subscribers & payments</button>
@@ -82,6 +85,32 @@ export default function DoctorResidentsPage() {
       {tab === "comments" && <CommentsTab />}
       {tab === "plans" && <PlansTab />}
     </main>
+  );
+}
+
+function JoinLink() {
+  const [url, setUrl] = useState("");
+  const [copied, setCopied] = useState(false);
+  useEffect(() => setUrl(`${window.location.origin}${RESIDENT_JOIN_PATH}`), []);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  }
+  if (!url) return null;
+  return (
+    <div style={{ ...box, marginTop: 8, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+      <strong>Payment link:</strong>
+      <code style={{ background: "#f1f5f9", padding: "6px 10px", borderRadius: 8, wordBreak: "break-all" }}>{url}</code>
+      <button type="button" style={btn} onClick={copy}>{copied ? "Copied" : "Copy"}</button>
+      <a style={btn} href={`https://wa.me/?text=${encodeURIComponent(`Neuro Mind Bloom residents' programme — subscribe here: ${url}`)}`} target="_blank" rel="noopener noreferrer">
+        Share on WhatsApp
+      </a>
+    </div>
   );
 }
 

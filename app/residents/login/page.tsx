@@ -5,7 +5,13 @@ import { FormEvent, useEffect, useState } from "react";
 import { createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { auth } from "../../../lib/firebase";
+import { isInApp, RESIDENT_APP_PATH, RESIDENT_JOIN_PATH } from "../../../lib/appShell";
 import { card, field, label, page, primaryBtn, linkBtn } from "../../../components/residents/ui";
+
+/** After login: the app home inside the app, the purchase page in a browser (content is app-only). */
+function nextPath(): string {
+  return isInApp() ? RESIDENT_APP_PATH : RESIDENT_JOIN_PATH;
+}
 
 const ERRORS: Record<string, string> = {
   "auth/email-already-in-use": "An account with this email already exists. Please sign in.",
@@ -24,9 +30,12 @@ export default function ResidentLoginPage() {
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const [inApp, setInApp] = useState(false);
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("mode") === "signup") setMode("signup");
+    const app = isInApp();
+    setInApp(app);
+    if (!app && new URLSearchParams(window.location.search).get("mode") === "signup") setMode("signup");
   }, []);
 
   async function submit(e: FormEvent) {
@@ -41,7 +50,7 @@ export default function ResidentLoginPage() {
       } else {
         await signInWithEmailAndPassword(auth, email.trim(), password);
       }
-      router.replace("/residents/app");
+      router.replace(nextPath());
     } catch (error) {
       const code = (error as { code?: string }).code || "";
       setMsg(ERRORS[code] || "Something went wrong. Please try again.");
@@ -63,7 +72,7 @@ export default function ResidentLoginPage() {
   return (
     <main style={page}>
       <div style={{ ...card, maxWidth: 420, margin: "40px auto" }}>
-        <Link href="/residents" style={{ color: "#0b746f", fontWeight: 700, textDecoration: "none" }}>← Residents</Link>
+        {!inApp && <Link href="/residents" style={{ color: "#0b746f", fontWeight: 700, textDecoration: "none" }}>← Residents</Link>}
         <h1 style={{ margin: "12px 0 4px", color: "#062b31" }}>{mode === "signup" ? "Create your account" : "Resident sign in"}</h1>
         <p style={{ marginTop: 0, color: "#475569" }}>Notes, video lectures and case discussions.</p>
         <form onSubmit={submit}>
@@ -86,9 +95,12 @@ export default function ResidentLoginPage() {
           </button>
         </form>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 14, gap: 8, flexWrap: "wrap" }}>
-          <button type="button" style={linkBtn} onClick={() => { setMsg(""); setMode(mode === "signup" ? "signin" : "signup"); }}>
-            {mode === "signup" ? "Have an account? Sign in" : "New here? Create account"}
-          </button>
+          {/* Accounts are created on the website at purchase; the app only signs in. */}
+          {!inApp && (
+            <button type="button" style={linkBtn} onClick={() => { setMsg(""); setMode(mode === "signup" ? "signin" : "signup"); }}>
+              {mode === "signup" ? "Have an account? Sign in" : "New here? Create account"}
+            </button>
+          )}
           {mode === "signin" && <button type="button" style={linkBtn} onClick={reset}>Forgot password</button>}
         </div>
       </div>

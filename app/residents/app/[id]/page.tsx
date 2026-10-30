@@ -36,7 +36,8 @@ export default function ResidentItemPage() {
 
   const load = useCallback(async () => {
     const { status, data } = await api<{ item: Item; comments: Comment[] }>(`/api/residents/content/${encodeURIComponent(id)}`);
-    if (status === 403) return setError("Your access is not active. Please subscribe or renew from the residents home.");
+    // 403 = access not active (no purchase prompts inside the app).
+    if (status === 403) return setError("Your access is not active.");
     if (!data.ok) return setError("This item is not available.");
     setItem(data.item);
     setComments(data.comments);
