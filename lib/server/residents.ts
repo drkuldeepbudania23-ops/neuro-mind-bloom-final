@@ -97,7 +97,17 @@ export async function saveProfile(user: SignedInUser, profile: ResidentProfile) 
 
 // ------------------------------------------------------------------ subscription payments
 
-export async function createResidentOrder(user: SignedInUser, planId: string) {
+export type ResidentOrderError = "not-configured" | "no-profile" | "blocked" | "invalid-plan" | "gateway";
+export type ResidentOrderResult =
+  | { error: ResidentOrderError }
+  | {
+      order: { id: string; amount: number; currency: string };
+      keyId: string;
+      description: string;
+      prefill: Record<string, string>;
+    };
+
+export async function createResidentOrder(user: SignedInUser, planId: string): Promise<ResidentOrderResult> {
   const { keyId, keySecret, configured } = razorpayKeys();
   if (!configured) return { error: "not-configured" as const };
   const resident = await col.residents().doc(user.uid).get();
@@ -135,7 +145,7 @@ export async function createResidentOrder(user: SignedInUser, planId: string) {
     order: { id: order.id, amount: order.amount, currency: order.currency },
     keyId,
     description: `Residents ${plan.label.en} plan`,
-    prefill: { name: String(d.name || ""), contact: String(d.mobile || ""), email: user.email },
+    prefill: { name: String(d.name || ""), contact: String(d.mobile || ""), email: String(user.email || "") },
   };
 }
 
