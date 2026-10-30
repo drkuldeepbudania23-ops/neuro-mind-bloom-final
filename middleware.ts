@@ -11,7 +11,7 @@ import type { NextRequest } from "next/server";
  * Google) and disabled caching for public pages. Security headers now live in
  * next.config.ts; this middleware only handles private-route caching.
  */
-const PRIVATE_PREFIXES = ["/doctor", "/login", "/video", "/verify"];
+const PRIVATE_PREFIXES = ["/doctor", "/login", "/video", "/verify", "/residents/app", "/residents/login"];
 
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
@@ -26,5 +26,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/doctor/:path*", "/login/:path*", "/login", "/video/:path*", "/verify/:path*"],
+  matcher: ["/doctor/:path*", "/login/:path*", "/login", "/video/:path*", "/verify/:path*", "/residents/app/:path*", "/residents/app", "/residents/login"],
 };

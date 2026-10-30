@@ -274,6 +274,18 @@ service cloud.firestore {
 
     // Server-only: 2FA secrets (mfa), rate-limit counters (rateLimits) — covered by the deny-all below.
 
+    // Residents' learning section: residents, residentOrders, residentPayments,
+    // residentContent, residentComments, residentConfig. Read and written ONLY by
+    // the server (/api/residents/**, /api/doctor/residents/**) with the Admin SDK,
+    // which checks the subscription / doctor claim — so no client rule is needed
+    // and the deny-all below blocks direct browser access (even for the doctor).
+    match /residents/{uid} { allow read, write: if false; }
+    match /residentOrders/{orderId} { allow read, write: if false; }
+    match /residentPayments/{paymentId} { allow read, write: if false; }
+    match /residentContent/{contentId} { allow read, write: if false; }
+    match /residentComments/{commentId} { allow read, write: if false; }
+    match /residentConfig/{docId} { allow read, write: if false; }
+
     match /{document=**} {
       allow read, write: if false;
     }

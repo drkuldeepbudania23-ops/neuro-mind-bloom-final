@@ -1,0 +1,29 @@
+rules_version = '2';
+
+// Cloud Storage. Only the doctor may upload residents' note PDFs (from the
+// dashboard). Nobody reads files directly: residents get a 10-minute signed link
+// to their own watermarked copy, made by the server (/api/residents/content/[id]/pdf).
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isDoctor() {
+      return request.auth != null
+        && request.auth.token.get('doctor', false) == true
+        && (request.auth.token.get('mfa', false) != true
+          || request.auth.token.get('mfa_exp', 0) > request.time.toMillis() / 1000);
+    }
+
+    match /residents/notes/{fileName} {
+      allow read: if false;
+      allow create, update: if isDoctor()
+        && fileName.matches('^[A-Za-z0-9_-]{6,64}[.]pdf$')
+        && request.resource.contentType == 'application/pdf'
+        && request.resource.size < 50 * 1024 * 1024;
+      allow delete: if isDoctor();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { qrCreditFromEvent, verifyWebhookSignature } from "../../../../../lib/payments/razorpay";
 import { markOrderPaid } from "../../../../../lib/server/payments";
 import { markQrPaid } from "../../../../../lib/server/qrPayments";
+import { isResidentOrder, markResidentOrderPaid } from "../../../../../lib/server/residents";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,6 +35,12 @@ export async function POST(request: Request) {
 
     const payment = event?.payload?.payment?.entity;
     if ((event?.event === "payment.captured" || event?.event === "order.paid") && payment?.order_id && payment?.id) {
+      // Residents' subscription orders live in their own collection.
+      if (await isResidentOrder(String(payment.order_id))) {
+        const result = await markResidentOrderPaid(String(payment.order_id), String(payment.id), { amountPaise: Number(payment.amount) });
+        if (!result.ok) console.warn("razorpay/webhook resident", result.reason, payment.order_id);
+        return NextResponse.json({ ok: true });
+      }
       const result = await markOrderPaid(String(payment.order_id), String(payment.id), Number(payment.amount));
       if (!result.ok) console.warn("razorpay/webhook", result.reason, payment.order_id);
     }

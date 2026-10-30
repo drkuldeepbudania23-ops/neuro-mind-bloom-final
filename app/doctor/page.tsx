@@ -19,7 +19,8 @@ export default function DoctorDashboard() {
     ["Old Data → Cloud","/doctor/data-import"],
     ["Website: Articles","/doctor/articles"],
     ["Website: Patient Feedback","/doctor/feedback"],
-    ["Website: Recovery Stories","/doctor/stories"]
+    ["Website: Recovery Stories","/doctor/stories"],
+    ["Residents (Learning)","/doctor/residents"]
   ];
   const router = useRouter();
 

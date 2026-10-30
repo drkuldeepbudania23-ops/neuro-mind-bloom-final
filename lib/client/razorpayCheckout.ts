@@ -11,7 +11,7 @@ type RazorpayCtor = new (options: Record<string, unknown>) => RazorpayInstance;
 
 export const PAYMENTS_ENABLED = process.env.NEXT_PUBLIC_RAZORPAY_ENABLED === "true";
 
-function loadRazorpay(): Promise<RazorpayCtor | null> {
+export function loadRazorpay(): Promise<RazorpayCtor | null> {
   return new Promise((resolve) => {
     const w = window as unknown as { Razorpay?: RazorpayCtor };
     if (w.Razorpay) return resolve(w.Razorpay);
