@@ -7,6 +7,7 @@ import { localePath, tr } from "../../lib/i18n";
 import { nav } from "../../lib/content/home";
 import { CLINIC } from "../../lib/site";
 import BookNowMenu from "./BookNowMenu";
+import FestivalBanner from "./FestivalBanner";
 import Logo from "./Logo";
 import ShareButton from "./ShareButton";
 import { CallNowButton, SocialIcons, WhatsAppBookingButton } from "./Social";
@@ -65,6 +66,8 @@ export default function SiteHeader({ lang, path = "/" }: Props) {
   );
 
   return (
+    <>
+    <FestivalBanner lang={lang} />
     <header className="sticky top-0 z-40">
       {/* Top bar: call, language, social icons */}
       <div className="bg-forest-900 text-[13px] text-forest-100">
@@ -160,5 +163,6 @@ export default function SiteHeader({ lang, path = "/" }: Props) {
         </nav>
       )}
     </header>
+    </>
   );
 }
