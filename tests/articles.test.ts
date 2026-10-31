@@ -43,10 +43,10 @@ test("no medicine brand or drug names in article text", () => {
   }
 });
 
-test("library holds 130 articles across the ten categories", () => {
-  const want: Record<string, number> = { depression: 15, anxiety: 15, addiction: 20, sexual: 15, child: 15, sleep: 10, therapy: 10, student: 10, geriatric: 10, awareness: 10 };
+test("library holds 132 articles across the ten categories", () => {
+  const want: Record<string, number> = { depression: 15, anxiety: 15, addiction: 21, sexual: 15, child: 15, sleep: 10, therapy: 10, student: 10, geriatric: 10, awareness: 11 };
   const got: Record<string, number> = {};
   for (const a of ARTICLES) got[a.cat] = (got[a.cat] ?? 0) + 1;
   assert.deepEqual(got, want);
-  assert.equal(ARTICLES.length, 130);
+  assert.equal(ARTICLES.length, 132);
 });
