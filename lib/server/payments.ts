@@ -3,6 +3,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "./firebaseAdmin";
 import { buildOrderPayload, onlinePaymentRecord } from "../payments/razorpay";
 import { notifyPaymentReceived } from "./appointmentNotify";
+import { toWaNumber } from "../whatsapp";
 
 const RAZORPAY_API = "https://api.razorpay.com/v1";
 
@@ -59,12 +60,14 @@ export async function createOrderForAppointment(appointmentId: string) {
     createdAt: FieldValue.serverTimestamp(),
   });
 
+  const contact = toWaNumber(appointment.mobile);
   return {
     order: { id: order.id, amount: order.amount, currency: order.currency },
     keyId,
     prefill: {
       name: String(appointment.patientName || ""),
-      contact: String(appointment.mobile || ""),
+      // With "+", or Razorpay assumes +91 and shows a foreign patient the wrong number.
+      contact: contact ? `+${contact}` : "",
       email: String(appointment.email || ""),
     },
   };
