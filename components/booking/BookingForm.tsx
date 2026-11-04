@@ -10,6 +10,7 @@ import { BOOKING_ERRORS, todayInIndia, validateBooking, type BookingErrorKey } f
 import type { Lang } from "../../lib/i18n";
 import { localePath, tr } from "../../lib/i18n";
 import { CRISIS_HELPLINE, SERVICES, formatINR, getService, whatsappLink } from "../../lib/site";
+import FeeHelpNote from "./FeeHelpNote";
 import { complaintLabel } from "../../app/data/psychiatrySearch";
 import { BOOKING_COMPLAINTS, POPULAR_COMPLAINTS, searchComplaints, type BookingComplaint } from "../../lib/complaints";
 
@@ -228,6 +229,7 @@ export default function BookingForm({ lang }: { lang: Lang }) {
           </section>
         ) : (
           <form onSubmit={onSubmit} noValidate className="grid gap-5 rounded-3xl bg-white p-6 shadow-[0_20px_60px_rgba(6,43,49,0.12)] md:p-8">
+            <FeeHelpNote lang={lang} />
             <fieldset className="grid gap-3">
               <legend className={labelClass}>{t(T.service)}</legend>
               {SERVICES.map((service) => (
