@@ -1,4 +1,5 @@
 import { CLINIC, DOCTOR, WEBSITE } from "../site";
+import { toWaNumber } from "../whatsapp";
 
 /**
  * Bilingual patient/doctor notification texts.
@@ -186,13 +187,9 @@ export function renderNotification(kind: NotificationKind, data: NotificationDat
   };
 }
 
-/** Normalise an Indian mobile number to WhatsApp's international format (91XXXXXXXXXX), or null. */
+/** Normalise a mobile number to WhatsApp's international format, or null. */
 export function toWhatsAppNumber(mobile: string | undefined): string | null {
-  const digits = String(mobile || "").replace(/\D/g, "");
-  if (/^[6-9]\d{9}$/.test(digits)) return `91${digits}`;
-  if (/^0[6-9]\d{9}$/.test(digits)) return `91${digits.slice(1)}`;
-  if (/^91[6-9]\d{9}$/.test(digits)) return digits;
-  return null;
+  return toWaNumber(mobile) || null;
 }
 
 export function isEmail(value: string | undefined): boolean {

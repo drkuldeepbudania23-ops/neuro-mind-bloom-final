@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { feedbackPageUrl, feedbackRequestMessage } from "../../lib/feedback";
 import { gmailComposeUrl, mailtoUrl } from "../../lib/emailCompose";
+import { toWaNumber } from "../../lib/whatsapp";
 
 type Props = {
   /** From an appointment, if available. Mobile alone is enough. */
@@ -28,10 +29,9 @@ export default function SendFeedbackLink({ name = "", mobile = "", email = "", l
 
   const msg = feedbackRequestMessage(nm, lang);
   const link = feedbackPageUrl(lang);
-  const digits = mob.replace(/\D/g, "").slice(-10);
-  const validMobile = /^[6-9]\d{9}$/.test(digits);
+  const waNumber = toWaNumber(mob);
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail.trim());
-  const whatsappHref = validMobile ? `https://wa.me/91${digits}?text=${encodeURIComponent(msg.text)}` : "";
+  const whatsappHref = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(msg.text)}` : "";
   const draft = validEmail ? { to: mail, subject: msg.subject, body: msg.text } : null;
   const gmailHref = draft ? gmailComposeUrl(draft) : "";
   const emailHref = draft ? mailtoUrl(draft) : "";
@@ -66,7 +66,7 @@ export default function SendFeedbackLink({ name = "", mobile = "", email = "", l
             Feedback via WhatsApp
           </a>
         ) : (
-          <span style={muted}>{editable && mob ? "Enter a valid 10-digit mobile" : "No valid mobile"}</span>
+          <span style={muted}>{editable && mob ? "Enter a 10-digit mobile, or + and country code" : "No valid mobile"}</span>
         )}
         {gmailHref ? (
           <>

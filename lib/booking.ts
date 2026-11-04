@@ -1,5 +1,6 @@
 import type { Lang } from "./i18n";
 import { getService, type ServiceCode } from "./site";
+import { toWaNumber } from "./whatsapp";
 
 /**
  * Validation for the public booking form. Mirrors `validPublicAppointment` in
@@ -50,7 +51,10 @@ export type AppointmentDoc = {
 
 export const BOOKING_ERRORS: Record<BookingErrorKey, { en: string; hi: string }> = {
   name: { en: "Please enter the patient's full name.", hi: "कृपया मरीज़ का पूरा नाम लिखें।" },
-  mobile: { en: "Please enter a valid 10-digit mobile number.", hi: "कृपया सही 10 अंकों का मोबाइल नंबर लिखें।" },
+  mobile: {
+    en: "Please enter a valid mobile number. Outside India, start with + and the country code, e.g. +971 50 123 4567.",
+    hi: "कृपया सही मोबाइल नंबर लिखें। भारत के बाहर का नंबर + और कंट्री कोड से लिखें, जैसे +971 50 123 4567।",
+  },
   email: { en: "Please enter a valid email address or leave it empty.", hi: "सही ईमेल लिखें या खाली छोड़ दें।" },
   service: { en: "Please choose a service.", hi: "कृपया सेवा चुनें।" },
   date: { en: "Please choose a preferred date.", hi: "कृपया पसंदीदा तारीख चुनें।" },
@@ -74,6 +78,22 @@ export function isValidIndianMobile(digits: string): boolean {
   return /^[6-9]\d{9}$/.test(digits) || /^91[6-9]\d{9}$/.test(digits);
 }
 
+/**
+ * Mobile as stored on the appointment, or "" if unusable. firestore.rules allow
+ * 10–13 digits and no "+", so a foreign number of 10 digits or fewer is kept
+ * with a "00" prefix: otherwise +65 9123 4567 would be read back as an Indian mobile.
+ */
+export function bookingMobile(raw: string): string {
+  const wa = toWaNumber(raw);
+  if (!wa) return "";
+  if (/^91[6-9]\d{9}$/.test(wa)) {
+    const digits = normaliseMobile(raw);
+    return isValidIndianMobile(digits) ? digits : wa;
+  }
+  if (wa.length > 13) return "";
+  return wa.length <= 10 ? `00${wa}` : wa;
+}
+
 /** Today's date in India (yyyy-mm-dd), independent of the server's timezone. */
 export function todayInIndia(now: Date = new Date()): string {
   const ist = new Date(now.getTime() + (5.5 * 60 + now.getTimezoneOffset()) * 60_000);
@@ -89,13 +109,13 @@ export function validateBooking(
 ): { ok: true; doc: AppointmentDoc } | { ok: false; errors: BookingErrorKey[] } {
   const errors: BookingErrorKey[] = [];
   const name = input.name.trim().replace(/\s+/g, " ");
-  const mobile = normaliseMobile(input.mobile);
+  const mobile = bookingMobile(input.mobile);
   const email = (input.email || "").trim();
   const concern = (input.concern || "").trim();
   const service = getService(input.serviceCode);
 
   if (name.length < 2 || name.length > 80) errors.push("name");
-  if (!isValidIndianMobile(mobile)) errors.push("mobile");
+  if (!mobile) errors.push("mobile");
   if (email && (email.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))) errors.push("email");
   if (!service) errors.push("service");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) errors.push("date");

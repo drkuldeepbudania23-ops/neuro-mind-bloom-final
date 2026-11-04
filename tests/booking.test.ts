@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { normaliseMobile, todayInIndia, validateBooking, type BookingInput } from "../lib/booking";
+import { toWaNumber } from "../lib/whatsapp";
+import { bookingMobile, normaliseMobile, todayInIndia, validateBooking, type BookingInput } from "../lib/booking";
 
 const NOW = new Date("2026-10-11T18:00:00Z"); // 11:30 PM IST, 11 Oct
 const base: BookingInput = {
@@ -39,6 +40,26 @@ test("rejects bad input with specific error keys", () => {
 test("rejects very long concern text", () => {
   const r = validateBooking({ ...base, concern: "x".repeat(2001) }, NOW);
   assert.equal(r.ok, false);
+});
+
+test("foreign numbers can book, and stay within the Firestore rule", () => {
+  const ok = (mobile: string) => {
+    const r = validateBooking({ ...base, mobile }, NOW);
+    assert.equal(r.ok, true, mobile);
+    if (r.ok) assert.match(r.doc.mobile, /^[0-9]{10,13}$/);
+    return r.ok ? r.doc.mobile : "";
+  };
+  assert.equal(ok("+971 50 123 4567"), "971501234567");
+  assert.equal(ok("+1 (415) 555-2671"), "14155552671");
+  assert.equal(ok("+44 7700 900123"), "447700900123");
+  assert.equal(ok("9876543210"), "9876543210");
+  assert.equal(ok("+65 9123 4567"), "006591234567"); // would otherwise look Indian
+  assert.equal(toWaNumber(bookingMobile("+65 9123 4567")), "6591234567");
+});
+
+test("a number with no country code, or too long for the rule, is refused", () => {
+  assert.equal(bookingMobile("4155552671"), "");
+  assert.equal(bookingMobile("+49 1234 567890123"), "");
 });
 
 test("IST date and mobile normalisation", () => {

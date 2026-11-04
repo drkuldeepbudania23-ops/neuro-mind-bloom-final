@@ -23,6 +23,10 @@ const T = {
   },
   name: { en: "Patient's full name", hi: "मरीज़ का पूरा नाम" },
   mobile: { en: "Mobile number (WhatsApp)", hi: "मोबाइल नंबर (WhatsApp)" },
+  mobileHint: {
+    en: "Outside India? Start with + and the country code, e.g. +971 50 123 4567",
+    hi: "भारत के बाहर हैं? + और कंट्री कोड से लिखें, जैसे +971 50 123 4567",
+  },
   email: { en: "Email (optional)", hi: "ईमेल (वैकल्पिक)" },
   service: { en: "Service", hi: "सेवा" },
   date: { en: "Preferred date", hi: "पसंदीदा तारीख" },
@@ -273,10 +277,12 @@ export default function BookingForm({ lang }: { lang: Lang }) {
                   onChange={(e) => update("mobile", e.target.value)}
                   inputMode="tel"
                   autoComplete="tel"
-                  maxLength={15}
+                  maxLength={24}
                   placeholder="98XXXXXXXX"
+                  aria-describedby="booking-mobile-hint"
                   required
                 />
+                <span id="booking-mobile-hint" className="text-xs font-normal text-forest-700/80">{t(T.mobileHint)}</span>
                 {err("mobile")}
               </label>
             </div>

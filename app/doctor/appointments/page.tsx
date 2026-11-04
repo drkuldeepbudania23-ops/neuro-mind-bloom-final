@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import SendPaymentQR from "../../../components/doctor/SendPaymentQR";
+import { toWaNumber } from "../../../lib/whatsapp";
 import SendFeedbackLink from "../../../components/doctor/SendFeedbackLink";
 import { logAction } from "../../../lib/client/audit";
 import {
@@ -425,11 +426,9 @@ export default function DoctorAppointmentsPage() {
                     Payment
                   </Link>
 
-                  {appointment.mobile && (
+                  {toWaNumber(appointment.mobile) && (
                     <a
-                      href={`https://wa.me/91${appointment.mobile
-                        .replace(/\D/g, "")
-                        .slice(-10)}?text=${encodeURIComponent(
+                      href={`https://wa.me/${toWaNumber(appointment.mobile)}?text=${encodeURIComponent(
                         `Namaste ${appointment.name || appointment.patientName || "Patient"}, your Neuro Mind Bloom appointment ${status.toLowerCase() === "confirmed" ? "is confirmed" : "request has been received"}${appointment.date || appointment.preferredDate ? ` for ${appointment.date || appointment.preferredDate}` : ""}${appointment.time || appointment.preferredTime ? ` at ${appointment.time || appointment.preferredTime}` : ""}. For assistance, please reply to this WhatsApp message.`
                       )}`}
                       target="_blank"

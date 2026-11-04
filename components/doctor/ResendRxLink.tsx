@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { auth } from "../../lib/firebase";
 import { gmailComposeUrl, isValidEmail, mailtoUrl } from "../../lib/emailCompose";
+import { toWaNumber } from "../../lib/whatsapp";
 
 type Props = { recordId: string; name?: string; mobile?: string; email?: string };
 
@@ -48,8 +49,8 @@ export default function ResendRxLink({ recordId, name = "", mobile = "", email =
     lang === "hi"
       ? `नमस्ते${who ? ` ${who}` : ""},\nआपका ई-प्रिस्क्रिप्शन डाउनलोड करने का नया सुरक्षित लिंक (3 दिन तक मान्य):\n${link}\n\nदवाइयाँ डॉक्टर की सलाह अनुसार ही लें।\n— डॉ. कुलदीप बुडानिया`
       : `Hello${who ? ` ${who}` : ""},\nHere is a new secure link to download your e-prescription (valid for 3 days):\n${link}\n\nTake medicines exactly as advised.\n— Dr. Kuldeep Budania`;
-  const digits = mobile.replace(/\D/g, "").slice(-10);
-  const whatsappHref = link && /^[6-9]\d{9}$/.test(digits) ? `https://wa.me/91${digits}?text=${encodeURIComponent(text)}` : "";
+  const waNumber = toWaNumber(mobile);
+  const whatsappHref = link && waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}` : "";
   const draft =
     link && isValidEmail(email)
       ? { to: email, subject: lang === "hi" ? "आपका ई-प्रिस्क्रिप्शन" : "Your e-prescription", body: text }
