@@ -12,6 +12,7 @@ import PatientUhid from "../../../components/doctor/PatientUhid";
 import { getOrCreatePatient, getPatient, recordVisit } from "../../../lib/client/patients";
 import { logAction } from "../../../lib/client/audit";
 import { gmailComposeUrl, mailtoUrl } from "../../../lib/emailCompose";
+import { toWaNumber } from "../../../lib/whatsapp";
 import { customRows, displayName, searchMedicines } from "../../../lib/rx/medicineCatalogue";
 import { deleteCustomMedicine, loadCustomMedicines, saveCustomMedicine, type SavedCustomMedicine } from "../../../lib/client/customMedicines";
 type RxItem = {
@@ -505,13 +506,6 @@ export default function PrescriptionPage() {
     window.print();
   }
 
-  function normalizeWhatsAppNumber(value: string) {
-    const digits = value.replace(/\D/g, "");
-    if (digits.length === 10) return `91${digits}`;
-    if (digits.length === 12 && digits.startsWith("91")) return digits;
-    return digits;
-  }
-
   /** Secure 3-day PDF link from the server (null if the server is not configured yet). */
   async function getSecurePrescriptionLink(recordId: string, sendChannel?: "email" | "whatsapp") {
     try {
@@ -536,9 +530,9 @@ export default function PrescriptionPage() {
       return;
     }
 
-    const phone = normalizeWhatsAppNumber(mobile);
-    if (phone.length < 10) {
-      alert("Please enter a valid patient mobile number.");
+    const phone = toWaNumber(mobile);
+    if (!phone) {
+      alert("Please enter a valid patient mobile number (foreign numbers need + and the country code).");
       return;
     }
 

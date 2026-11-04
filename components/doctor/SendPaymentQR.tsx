@@ -4,6 +4,7 @@ import { useState } from "react";
 import { auth } from "../../lib/firebase";
 import { CLINIC, getService, paymentPageUrl, serviceCodeFromText } from "../../lib/site";
 import { gmailComposeUrl, isValidEmail, mailtoUrl } from "../../lib/emailCompose";
+import { toWaNumber } from "../../lib/whatsapp";
 
 type Props = {
   appointment: {
@@ -75,8 +76,8 @@ export default function SendPaymentQR({ appointment, confirmed = true, allowAuto
     }
   }
 
-  const digits = (appointment.mobile || "").replace(/\D/g, "").slice(-10);
-  const whatsappHref = digits.length === 10 ? `https://wa.me/91${digits}?text=${encodeURIComponent(message)}` : "";
+  const waNumber = toWaNumber(appointment.mobile);
+  const whatsappHref = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}` : "";
   const draft =
     appointment.email && isValidEmail(appointment.email)
       ? {

@@ -7,6 +7,7 @@ import { db } from "../../../lib/firebase";
 import SendPaymentQR from "../../../components/doctor/SendPaymentQR";
 import { SERVICES, getService, serviceCodeFromText } from "../../../lib/site";
 import { apptDate, statusOf } from "../../../lib/appointments";
+import { toWaNumber } from "../../../lib/whatsapp";
 
 type Appt = {
   id: string; patientName?: string; name?: string; mobile?: string; email?: string;
@@ -115,18 +116,20 @@ export default function PaymentQrPage() {
     setReference(newReference());
   }
 
-  const digits = mobile.replace(/\D/g, "").slice(-10);
+  const waNumber = toWaNumber(mobile);
   // WhatsApp enquiries often arrive with only a number — the name is optional.
-  const ready = digits.length === 10;
+  const ready = Boolean(waNumber);
+  // Keep the "+": a 10-digit foreign number must not be re-read as an Indian one.
+  const mobileForSend = waNumber ? `+${waNumber}` : "";
 
   const appointment = useMemo(
     () => ({
-      id: reference, name: name.trim(), mobile: digits, email: email.trim(), serviceCode,
+      id: reference, name: name.trim(), mobile: mobileForSend, email: email.trim(), serviceCode,
       date: picked ? apptDate(picked) : undefined,
       time: picked ? picked.time || picked.preferredTime : undefined,
       language: picked?.language,
     }),
-    [reference, name, digits, email, serviceCode, picked]
+    [reference, name, mobileForSend, email, serviceCode, picked]
   );
   const pickedPaid = Boolean(picked && PAID.includes(picked.paymentStatus || ""));
 
@@ -175,7 +178,8 @@ export default function PaymentQrPage() {
           <input style={s.input} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} />
         </label>
         <label style={s.label}>Mobile (WhatsApp)
-          <input style={s.input} value={mobile} onChange={(e) => setMobile(e.target.value)} inputMode="tel" placeholder="98XXXXXXXX" />
+          <input style={s.input} value={mobile} onChange={(e) => setMobile(e.target.value)} inputMode="tel" placeholder="98XXXXXXXX ya +971 50 123 4567" />
+          {ready && <span style={{ ...s.muted, fontWeight: 400 }}>WhatsApp is number par khulega: {mobileForSend}</span>}
         </label>
         <label style={s.label}>Email (optional)
           <input style={s.input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -200,7 +204,7 @@ export default function PaymentQrPage() {
             allowAuto={Boolean(picked)}
           />
         ) : (
-          <p style={s.warn}>10-digit mobile number daalein (naam baad mein bhi chalega) — phir WhatsApp / Email / QR page buttons dikhenge.</p>
+          <p style={s.warn}>Mobile number daalein — India ka 10-digit, ya bahar ka number + aur country code ke saath (jaise +971 50 123 4567). Naam baad mein bhi chalega. Phir WhatsApp / Email / QR page buttons dikhenge.</p>
         )}
       </section>
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { collection, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../../firebase";
+import { toWaNumber } from "../../../lib/whatsapp";
 
 type Appointment = {
   id: string;
@@ -130,9 +131,7 @@ export default function VideoConsultationsPage() {
               appointment.preferredTime ||
               "-";
 
-            const cleanMobile = (appointment.mobile || "")
-              .replace(/\D/g, "")
-              .slice(-10);
+            const cleanMobile = toWaNumber(appointment.mobile);
 
             // The join link is signed by the server (cannot be guessed from the appointment id).
             async function sendJoinLink() {
@@ -153,7 +152,7 @@ export default function VideoConsultationsPage() {
               const text = encodeURIComponent(
                 `Namaste ${patientName}, your Neuro Mind Bloom video consultation is confirmed for ${date} at ${time}.\n\nJoin Video Consultation:\n${videoLink}\n\nPlease open the link at your appointment time and allow camera and microphone access.`
               );
-              const url = `https://wa.me/91${cleanMobile}?text=${text}`;
+              const url = `https://wa.me/${cleanMobile}?text=${text}`;
               if (win) {
                 win.opener = null;
                 win.location.href = url;
