@@ -240,6 +240,7 @@ export const footer = {
     hi: "इस वेबसाइट की जानकारी केवल शिक्षा के लिए है; यह व्यक्तिगत चिकित्सा परामर्श का विकल्प नहीं है।",
   },
   doctorLogin: { en: "Doctor login", hi: "डॉक्टर लॉगिन" },
+  bupRegister: { en: "Buprenorphine register", hi: "ब्यूप्रेनॉर्फिन रजिस्टर" },
   rights: { en: "All rights reserved.", hi: "सर्वाधिकार सुरक्षित।" },
 };
 

@@ -74,6 +74,7 @@ export default function SiteFooter({ lang }: { lang: Lang }) {
             ))}
             <li><Link className="hover:text-white" href={`${home}#fees`}>{tr(nav.fees, lang)}</Link></li>
             <li><Link className="hover:text-white" href="/login" rel="nofollow">{tr(footer.doctorLogin, lang)}</Link></li>
+            <li><a className="hover:text-white" href="https://bup.neuromindbloom.com" target="_blank" rel="nofollow noopener noreferrer">{tr(footer.bupRegister, lang)}</a></li>
           </ul>
         </div>
 
