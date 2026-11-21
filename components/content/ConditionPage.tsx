@@ -16,6 +16,8 @@ import { ArrowRightIcon, CheckIcon, PlusIcon, WhatsAppIcon } from "../site/icons
 import JsonLd from "./JsonLd";
 
 const H = {
+  blocks: { en: "Blocks and towns we serve online", hi: "जिन ब्लॉक और क़स्बों में ऑनलाइन सेवा है" },
+  blockJump: { en: "Find your block", hi: "अपना ब्लॉक चुनें" },
   overview: { en: "Overview", hi: "परिचय" },
   symptoms: { en: "Common symptoms", hi: "आम लक्षण" },
   causes: { en: "Causes", hi: "कारण" },
@@ -77,6 +79,11 @@ function Section({ id, title, children, tone = "white" }: { id: string; title: s
   );
 }
 
+/** Stable in-page anchor for a block, e.g. "Gudha Gorji" → "gudha-gorji". */
+function blockId(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 function Bullets({ items, t, tone = "cream" }: { items: L[]; t: (v: L) => string; tone?: "cream" | "white" }) {
   return (
     <ul className="grid gap-3">
@@ -128,6 +135,7 @@ export default async function ConditionPage({ content, lang }: { content: Condit
 
   // Table of contents (only sections that exist on this page)
   const toc: { id: string; label: string }[] = [
+    ...(content.blocks?.length ? [{ id: "blocks", label: t(H.blocks) }] : []),
     { id: "symptoms", label: heading("symptoms", H.symptoms) },
     { id: "causes", label: hasRisk ? heading("causes", H.causes) : heading("causes", H.causesAndRisk) },
     ...(hasRisk ? [{ id: "risk", label: heading("riskFactors", H.riskFactors) }] : []),
@@ -245,6 +253,30 @@ export default async function ConditionPage({ content, lang }: { content: Condit
             </ul>
           </div>
         </nav>
+
+        {content.blocks?.length ? (
+          <Section id="blocks" title={t(H.blocks)} tone={tone()}>
+            <nav aria-label={t(H.blockJump)} className="flex flex-wrap gap-2 text-sm">
+              {content.blocks.flatMap((g) => g.items).map((x) => (
+                <a key={x.name.en} href={`#${blockId(x.name.en)}`} className="rounded-full bg-forest-50 px-3 py-1 font-medium text-forest-800 hover:bg-forest-100">{t(x.name)}</a>
+              ))}
+            </nav>
+            {content.blocks.map((g) => (
+              <div key={g.district.en} className="mt-8">
+                <h3 className="text-xl font-semibold text-forest-900">{t(g.district)}</h3>
+                {g.intro && <p className="mt-2 leading-relaxed text-forest-800">{t(g.intro)}</p>}
+                <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {g.items.map((x) => (
+                    <li key={x.name.en} id={blockId(x.name.en)} className="scroll-mt-28 rounded-2xl bg-cream p-4 ring-1 ring-forest-100">
+                      <h4 className="font-semibold text-forest-900">{lang === "hi" ? `${t(x.name)} में मनोचिकित्सक` : `Psychiatrist for ${t(x.name)}`}</h4>
+                      <p className="mt-1 leading-relaxed text-forest-700">{t(x.note)}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </Section>
+        ) : null}
 
         <Section id="symptoms" title={heading("symptoms", H.symptoms)} tone={tone()}>
           <ul className="grid gap-3 sm:grid-cols-2">

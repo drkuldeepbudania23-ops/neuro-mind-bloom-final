@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { ARTICLES } from "../lib/content/articles";
 import { CONDITIONS } from "../lib/content/conditions";
 import { ASSESSMENT_ORDER } from "../lib/assessments";
-import { REGIONS } from "../lib/content/regions";
+import { LOCATION_HUBS } from "../lib/content/regions";
 import { SITE_URL } from "../lib/site";
 
 /** Every public page exists in English (/path) and Hindi (/hi/path). */
@@ -42,7 +42,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...CORE.map(([p, pr]) => [p, pr, "weekly"] as [string, number, "weekly"]),
     ...CONDITIONS.map((c) => [`/${c.slug}`, c.category === "service" ? 0.7 : 0.8, "monthly"] as [string, number, "monthly"]),
     ...ARTICLES.map((a) => [`/articles/${a.slug}`, 0.6, "monthly"] as [string, number, "monthly"]),
-    ...REGIONS.map((r) => [`/locations/${r.slug}`, 0.6, "monthly"] as [string, number, "monthly"]),
+    ...LOCATION_HUBS.map((r) => [`/locations/${r.slug}`, 0.6, "monthly"] as [string, number, "monthly"]),
     ...ASSESSMENT_ORDER.map((id) => [`/self-assessment/${id}`, 0.6, "monthly"] as [string, number, "monthly"]),
   ];
 

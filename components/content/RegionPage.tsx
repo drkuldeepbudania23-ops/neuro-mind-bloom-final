@@ -15,6 +15,8 @@ const T = {
   home: { en: "Home", hi: "होम" },
   locations: { en: "Locations", hi: "सेवा क्षेत्र" },
   cities: { en: "Cities we serve online", hi: "जिन शहरों में ऑनलाइन सेवा है" },
+  blocks: { en: "Blocks and towns we serve online", hi: "जिन ब्लॉक और क़स्बों में ऑनलाइन सेवा है" },
+  jump: { en: "Jump to your block", hi: "अपना ब्लॉक चुनें" },
   concerns: { en: "Common reasons people consult", hi: "परामर्श के आम कारण" },
   topics: { en: "Helpful guides", hi: "उपयोगी जानकारी" },
   faq: { en: "Frequently asked questions", hi: "अक्सर पूछे जाने वाले सवाल" },
@@ -22,9 +24,15 @@ const T = {
   cta: { en: "Book a private video consultation", hi: "निजी वीडियो परामर्श बुक करें" },
 };
 
+/** Stable in-page anchor for a block/city, e.g. "Gudha Gorji" → "gudha-gorji". */
+export function anchorId(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 export default function RegionPage({ region, lang }: { region: Region; lang: Lang }) {
   const t = (v: { en: string; hi: string }) => tr(v, lang);
   const hi = lang === "hi";
+  const isDistrict = region.kind === "district";
   const path = `/locations/${region.slug}`;
   const url = `${SITE_URL}${localePath(path, lang)}`;
   const schema = {
@@ -60,18 +68,29 @@ export default function RegionPage({ region, lang }: { region: Region; lang: Lan
             </nav>
             <h1 className={`font-semibold ${hi ? "text-3xl md:text-5xl" : "font-display text-4xl md:text-5xl"}`}>{t(region.h1)}</h1>
             {region.intro.map((p) => <p key={p.en} className="mt-4 max-w-3xl text-lg leading-relaxed text-forest-100">{t(p)}</p>)}
-            <p className="mt-4 text-sm text-forest-200">{t(DOCTOR.name)} · {DOCTOR.degrees} · {t(T.online)}</p>
+            <p className="mt-4 text-sm text-forest-200">{t(DOCTOR.name)} · {DOCTOR.degrees} · {t(region.online ?? T.online)}</p>
             <div className="mt-6"><BookNowMenu lang={lang} align="start" /></div>
           </div>
         </section>
 
         <section className="mx-auto max-w-5xl px-4 py-12 md:px-6">
-          <h2 className="text-2xl font-semibold text-forest-900 md:text-3xl">{t(T.cities)}</h2>
+          <h2 className="text-2xl font-semibold text-forest-900 md:text-3xl">{t(isDistrict ? T.blocks : T.cities)}</h2>
+          {isDistrict && (
+            <nav aria-label={t(T.jump)} className="mt-4 flex flex-wrap gap-2 text-sm">
+              {region.cities.map((c) => (
+                <a key={c.name.en} href={`#${anchorId(c.name.en)}`} className="rounded-full bg-forest-50 px-3 py-1 font-medium text-forest-800 hover:bg-forest-100">{t(c.name)}</a>
+              ))}
+            </nav>
+          )}
           <ul className="mt-6 grid gap-3 sm:grid-cols-2">
             {region.cities.map((c) => (
-              <li key={c.name.en} className="flex gap-3 rounded-2xl bg-white p-5 ring-1 ring-forest-100">
+              <li key={c.name.en} id={anchorId(c.name.en)} className="flex scroll-mt-24 gap-3 rounded-2xl bg-white p-5 ring-1 ring-forest-100">
                 <MapPinIcon size={20} className="mt-0.5 shrink-0 text-saffron-600" />
-                <span><strong className="block text-forest-900">{t(c.name)}</strong><span className="text-forest-700">{t(c.note)}</span></span>
+                {isDistrict ? (
+                  <span><h3 className="font-semibold text-forest-900">{hi ? `${t(c.name)} में मनोचिकित्सक` : `Psychiatrist for ${t(c.name)}`}</h3><span className="text-forest-700">{t(c.note)}</span></span>
+                ) : (
+                  <span><strong className="block text-forest-900">{t(c.name)}</strong><span className="text-forest-700">{t(c.note)}</span></span>
+                )}
               </li>
             ))}
           </ul>

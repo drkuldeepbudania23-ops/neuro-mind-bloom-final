@@ -46,6 +46,9 @@ export type ExtraSection = { id: string; title: L10n; items: L10n[]; tone?: "war
 
 export type FaqItem = { q: L10n; a: L10n };
 
+/** Blocks / towns of one district shown on a location page, each with its own heading and anchor. */
+export type BlockGroup = { district: L10n; intro?: L10n; items: { name: L10n; note: L10n }[] };
+
 /**
  * One condition / service page. Rendered at /<slug> (English) and /hi/<slug> (Hindi)
  * by components/content/ConditionPage.tsx.
@@ -90,4 +93,6 @@ export type ConditionContent = {
   videoKeywords?: string[];
   /** Extra search words, including Hinglish (e.g. "daru", "neend"). */
   keywords?: string[];
+  /** Location pages: every block / town served, grouped by district. */
+  blocks?: BlockGroup[];
 };

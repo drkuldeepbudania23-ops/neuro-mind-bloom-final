@@ -12,7 +12,6 @@ import JsonLd from "./JsonLd";
 const T = {
   home: { en: "Home", hi: "होम" },
   locations: { en: "Locations", hi: "सेवा क्षेत्र" },
-  urgent: { en: "Urgent help", hi: "तुरंत मदद" },
   local: { en: "Finding care", hi: "इलाज कैसे खोजें" },
   learn: { en: "Free educational resources", hi: "मुफ़्त जानकारी" },
   faq: { en: "Frequently asked questions", hi: "अक्सर पूछे जाने वाले सवाल" },
@@ -71,8 +70,6 @@ export default function InternationalPage({ lang }: { lang: Lang }) {
               {I.countries.map((c) => (
                 <li key={c.name.en} className="rounded-3xl bg-cream p-6 ring-1 ring-forest-100">
                   <h3 className="text-xl font-semibold text-forest-900">{t(c.name)}</h3>
-                  <p className="mt-3 text-sm font-semibold uppercase tracking-wide text-[#8a2c17]">{t(T.urgent)}</p>
-                  <p className="text-forest-900">{t(c.urgent)}</p>
                   <p className="mt-3 text-sm font-semibold uppercase tracking-wide text-forest-600">{t(T.local)}</p>
                   <p className="text-forest-800">{t(c.local)}</p>
                   <p className="mt-2 text-sm text-forest-700">{t(c.note)}</p>

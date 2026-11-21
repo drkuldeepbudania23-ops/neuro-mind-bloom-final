@@ -17,12 +17,12 @@ const T = {
     en: "Neuro Mind Bloom is based in Ajmer, Rajasthan. Patients anywhere in India can consult Dr. Kuldeep Budania by private video. No clinic is claimed outside Ajmer.",
     hi: "Neuro Mind Bloom अजमेर, राजस्थान में है। भारत में कहीं के भी मरीज़ डॉ. कुलदीप बुडानिया से निजी वीडियो परामर्श ले सकते हैं। अजमेर के बाहर किसी क्लिनिक का दावा नहीं है।",
   },
-  rajasthan: { en: "Rajasthan — 25 cities", hi: "राजस्थान — 25 शहर" },
+  rajasthan: { en: "Rajasthan — cities and their blocks", hi: "राजस्थान — शहर और उनके ब्लॉक" },
   rajasthanHub: { en: "Psychiatrist in Rajasthan", hi: "राजस्थान में मनोचिकित्सक" },
   ajmer: { en: "Ajmer (home city)", hi: "अजमेर (मुख्य शहर)" },
   north: { en: "North India & all India", hi: "उत्तर भारत और पूरा भारत" },
   intl: { en: "Indians living abroad", hi: "विदेश में रहने वाले भारतीय" },
-  intlText: { en: "Educational information and local helplines; consultations are for patients in India.", hi: "जानकारी और स्थानीय हेल्पलाइन; परामर्श भारत में मौजूद मरीज़ों के लिए है।" },
+  intlText: { en: "Educational information and how to find care locally; consultations are for patients in India.", hi: "जानकारी और वहाँ इलाज कैसे खोजें; परामर्श भारत में मौजूद मरीज़ों के लिए है।" },
 };
 
 export default function LocationsIndex({ lang }: { lang: Lang }) {

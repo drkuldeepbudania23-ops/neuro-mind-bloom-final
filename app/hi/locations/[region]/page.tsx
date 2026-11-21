@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import RegionPage from "../../../../components/content/RegionPage";
-import { REGIONS, REGION_BY_SLUG } from "../../../../lib/content/regions";
+import { LOCATION_HUBS, REGION_BY_SLUG } from "../../../../lib/content/regions";
 import { alternatesFor } from "../../../../lib/i18n";
 import { SITE_URL } from "../../../../lib/site";
 
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return REGIONS.map((r) => ({ region: r.slug }));
+  return LOCATION_HUBS.map((r) => ({ region: r.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ region: string }> }): Promise<Metadata> {

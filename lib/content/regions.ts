@@ -19,6 +19,10 @@ export type Region = {
   concerns: L10n[];
   topics: string[]; // condition slugs
   faqs: FaqItem[];
+  /** "district" hubs list blocks instead of cities. */
+  kind?: "district";
+  /** Overrides the default "online only — no clinic in this region" line. */
+  online?: L10n;
 };
 
 const ELIGIBILITY_FAQ = faq(
@@ -237,4 +241,248 @@ export const REGIONS: Region[] = [
   },
 ];
 
-export const REGION_BY_SLUG = new Map(REGIONS.map((r) => [r.slug, r]));
+
+// ───────────── More major cities for each state hub, and more North-India state hubs ─────────────
+const c = (en: string, hi: string, noteEn: string, noteHi: string): RegionCity => ({ name: b(en, hi), note: b(noteEn, noteHi) });
+
+const MORE_CITIES: Record<string, RegionCity[]> = {
+  "uttar-pradesh": [
+    c("Aligarh", "अलीगढ़", "University students can consult confidentially from their hostel.", "विश्वविद्यालय के छात्र हॉस्टल से गोपनीय परामर्श ले सकते हैं।"),
+    c("Mathura", "मथुरा", "Close to Rajasthan — the same Hindi-speaking care, from home.", "राजस्थान के पास — वही हिंदी परामर्श, घर से।"),
+    c("Firozabad", "फ़िरोज़ाबाद", "Glass-industry shift workers can book around their duty.", "काँच उद्योग के शिफ़्ट कर्मचारी ड्यूटी के हिसाब से बुक कर सकते हैं।"),
+    c("Moradabad", "मुरादाबाद", "Traders and artisans can consult outside work hours.", "व्यापारी और कारीगर काम के समय के बाद परामर्श ले सकते हैं।"),
+    c("Saharanpur", "सहारनपुर", "Families can discuss youth drug use privately in Hindi.", "परिवार युवाओं के नशे पर हिंदी में निजी बात कर सकते हैं।"),
+    c("Muzaffarnagar", "मुज़फ़्फ़रनगर", "Farming families can book an evening slot.", "किसान परिवार शाम का स्लॉट बुक कर सकते हैं।"),
+    c("Jhansi", "झाँसी", "Bundelkhand patients save a long journey to a big city.", "बुंदेलखंड के मरीज़ों का बड़े शहर तक का लंबा सफ़र बचता है।"),
+    c("Ayodhya", "अयोध्या", "Older adults can be assessed with a family member on the call.", "बुज़ुर्गों की जाँच परिवार के सदस्य के साथ कॉल पर हो सकती है।"),
+    c("Shahjahanpur", "शाहजहाँपुर", "Confidential help for alcohol and tablet dependence.", "शराब और गोलियों की लत के लिए गोपनीय मदद।"),
+    c("Rampur", "रामपुर", "Women can consult from home about anxiety or low mood.", "महिलाएँ घर से घबराहट या उदासी पर परामर्श ले सकती हैं।"),
+    c("Etawah", "इटावा", "Students can consult about exam stress and sleep.", "छात्र परीक्षा के तनाव और नींद पर परामर्श ले सकते हैं।"),
+    c("Mirzapur", "मिर्ज़ापुर", "Families in eastern UP can include relatives from other cities.", "पूर्वी UP के परिवार दूसरे शहरों के रिश्तेदारों को जोड़ सकते हैं।"),
+    c("Azamgarh", "आज़मगढ़", "Families of workers in the Gulf can consult together by video.", "खाड़ी देशों में काम करने वालों के परिवार साथ वीडियो परामर्श ले सकते हैं।"),
+    c("Sultanpur", "सुल्तानपुर", "Follow-ups continue by video after the first assessment.", "पहली जाँच के बाद फॉलो-अप वीडियो पर।"),
+  ],
+  "madhya-pradesh": [
+    c("Mandsaur", "मंदसौर", "Part of the licensed opium belt — confidential help for afeem and doda dependence.", "लाइसेंसशुदा अफ़ीम क्षेत्र का हिस्सा — अफ़ीम और डोडा की लत के लिए गोपनीय मदद।"),
+    c("Neemuch", "नीमच", "Close to Chittorgarh — families can discuss doda post use in Hindi.", "चित्तौड़गढ़ के पास — परिवार डोडा पोस्त पर हिंदी में बात कर सकते हैं।"),
+    c("Dewas", "देवास", "Industrial workers can book slots around shifts.", "औद्योगिक कर्मचारी शिफ़्ट के हिसाब से स्लॉट बुक कर सकते हैं।"),
+    c("Satna", "सतना", "Cement-industry families can consult without long travel.", "सीमेंट उद्योग से जुड़े परिवार बिना लंबे सफ़र के परामर्श ले सकते हैं।"),
+    c("Katni", "कटनी", "Railway-junction town — follow-ups from home.", "रेलवे जंक्शन शहर — घर से फॉलो-अप।"),
+    c("Chhindwara", "छिंदवाड़ा", "Tribal and rural families can reach a specialist by phone video.", "आदिवासी और ग्रामीण परिवार फ़ोन वीडियो से विशेषज्ञ तक पहुँच सकते हैं।"),
+    c("Shivpuri", "शिवपुरी", "Saves a long trip to Gwalior for each visit.", "हर बार ग्वालियर के लंबे सफ़र से बचाव।"),
+    c("Morena", "मुरैना", "Near Rajasthan — alcohol de-addiction follow-ups by video.", "राजस्थान के पास — शराब नशा मुक्ति के फॉलो-अप वीडियो पर।"),
+    c("Bhind", "भिंड", "Families can discuss youth behaviour and drug use privately.", "परिवार युवाओं के व्यवहार और नशे पर निजी बात कर सकते हैं।"),
+    c("Vidisha", "विदिशा", "Close to Bhopal — still saves travel and waiting.", "भोपाल के पास — फिर भी सफ़र और इंतज़ार बचता है।"),
+    c("Guna", "गुना", "Older adults can be assessed with family on the call.", "बुज़ुर्गों की जाँच परिवार के साथ कॉल पर हो सकती है।"),
+    c("Khandwa", "खंडवा", "Women can consult from home about anxiety or low mood.", "महिलाएँ घर से घबराहट या उदासी पर परामर्श ले सकती हैं।"),
+    c("Burhanpur", "बुरहानपुर", "Textile workers can consult around shifts.", "कपड़ा कर्मचारी शिफ़्ट के हिसाब से परामर्श ले सकते हैं।"),
+    c("Singrauli", "सिंगरौली", "Mining and power-plant workers can get help for sleep and alcohol use.", "खनन और बिजलीघर कर्मचारी नींद और शराब के लिए मदद ले सकते हैं।"),
+  ],
+  haryana: [
+    c("Sirsa", "सिरसा", "Close to Punjab and Rajasthan — families ask about chitta and doda use.", "पंजाब और राजस्थान के पास — परिवार चिट्टा और डोडा के बारे में पूछते हैं।"),
+    c("Fatehabad", "फ़तेहाबाद", "Young people can consult confidentially about drug use.", "युवा नशे पर गोपनीय परामर्श ले सकते हैं।"),
+    c("Bhiwani", "भिवानी", "Students and sportspeople can consult about stress and sleep.", "छात्र और खिलाड़ी तनाव और नींद पर परामर्श ले सकते हैं।"),
+    c("Jind", "जींद", "Farming families can book after field work.", "किसान परिवार खेत के काम के बाद बुक कर सकते हैं।"),
+    c("Kaithal", "कैथल", "Rural patients save a long trip to a big city.", "ग्रामीण मरीज़ों का बड़े शहर का लंबा सफ़र बचता है।"),
+    c("Kurukshetra", "कुरुक्षेत्र", "University students can consult from campus.", "विश्वविद्यालय के छात्र कैंपस से परामर्श ले सकते हैं।"),
+    c("Yamunanagar", "यमुनानगर", "Industrial workers can book around shifts.", "औद्योगिक कर्मचारी शिफ़्ट के हिसाब से बुक कर सकते हैं।"),
+    c("Panchkula", "पंचकूला", "Professionals can consult discreetly after office hours.", "पेशेवर ऑफ़िस के बाद गोपनीय परामर्श ले सकते हैं।"),
+    c("Rewari", "रेवाड़ी", "Near the Rajasthan border — the same Hindi care.", "राजस्थान सीमा के पास — वही हिंदी परामर्श।"),
+    c("Narnaul (Mahendragarh)", "नारनौल (महेंद्रगढ़)", "Families of servicemen can consult privately.", "फ़ौजी परिवार निजी परामर्श ले सकते हैं।"),
+    c("Jhajjar", "झज्जर", "Factory workers in Bahadurgarh can book flexible slots.", "बहादुरगढ़ के फ़ैक्ट्री कर्मचारी सुविधाजनक स्लॉट बुक कर सकते हैं।"),
+    c("Palwal", "पलवल", "Families can consult without travelling into Delhi.", "परिवार दिल्ली गए बिना परामर्श ले सकते हैं।"),
+  ],
+  punjab: [
+    c("Firozpur", "फ़िरोज़पुर", "Border-district families can seek confidential help for chitta use.", "सीमावर्ती ज़िले के परिवार चिट्टा के लिए गोपनीय मदद ले सकते हैं।"),
+    c("Fazilka", "फ़ाज़िल्का", "Close to Sri Ganganagar — Hindi or Punjabi consultation.", "श्रीगंगानगर के पास — हिंदी या पंजाबी में परामर्श।"),
+    c("Abohar", "अबोहर", "Families near the Rajasthan border can consult from home.", "राजस्थान सीमा के पास के परिवार घर से परामर्श ले सकते हैं।"),
+    c("Sri Muktsar Sahib", "श्री मुक्तसर साहिब", "Young people can consult confidentially about drug use.", "युवा नशे पर गोपनीय परामर्श ले सकते हैं।"),
+    c("Moga", "मोगा", "Families of NRIs can join the same call from abroad.", "NRI परिवार विदेश से उसी कॉल पर जुड़ सकते हैं।"),
+    c("Faridkot", "फ़रीदकोट", "Students can consult about stress, sleep and mood.", "छात्र तनाव, नींद और मूड पर परामर्श ले सकते हैं।"),
+    c("Tarn Taran", "तरन तारन", "Chitta and tablet misuse can be discussed with the family present.", "चिट्टा और गोलियों के इस्तेमाल पर परिवार की मौजूदगी में बात हो सकती है।"),
+    c("Gurdaspur", "गुरदासपुर", "Border-area patients save a long journey.", "सीमा क्षेत्र के मरीज़ों का लंबा सफ़र बचता है।"),
+    c("Hoshiarpur", "होशियारपुर", "Older parents of NRIs can consult with children joining from abroad.", "NRI बच्चों को विदेश से जोड़कर बुज़ुर्ग माता-पिता परामर्श ले सकते हैं।"),
+    c("Kapurthala", "कपूरथला", "Women can consult from home about anxiety or low mood.", "महिलाएँ घर से घबराहट या उदासी पर परामर्श ले सकती हैं।"),
+    c("Sangrur", "संगरूर", "Farming families can book an evening slot.", "किसान परिवार शाम का स्लॉट बुक कर सकते हैं।"),
+    c("Barnala", "बरनाला", "Follow-ups continue by video after the first assessment.", "पहली जाँच के बाद फॉलो-अप वीडियो पर।"),
+    c("Mansa", "मानसा", "Families can seek help for alcohol and opioid use confidentially.", "परिवार शराब और अफ़ीम-स्मैक के लिए गोपनीय मदद ले सकते हैं।"),
+    c("Rupnagar (Ropar)", "रूपनगर (रोपड़)", "Industrial workers can book around shifts.", "औद्योगिक कर्मचारी शिफ़्ट के हिसाब से बुक कर सकते हैं।"),
+  ],
+  "delhi-ncr": [
+    c("Mukherjee Nagar", "मुखर्जी नगर", "Civil-services aspirants can consult about stress, sleep and low mood.", "सिविल सेवा की तैयारी करने वाले तनाव, नींद और उदासी पर परामर्श ले सकते हैं।"),
+    c("Old Rajinder Nagar", "ओल्ड राजिंदर नगर", "Students in PG rooms can consult privately.", "PG में रहने वाले छात्र निजी परामर्श ले सकते हैं।"),
+    c("Laxmi Nagar", "लक्ष्मी नगर", "Coaching students and young professionals can book evening slots.", "कोचिंग छात्र और युवा पेशेवर शाम के स्लॉट बुक कर सकते हैं।"),
+    c("Rohini", "रोहिणी", "Families in north-west Delhi can consult without the commute.", "उत्तर-पश्चिम दिल्ली के परिवार बिना आने-जाने के परामर्श ले सकते हैं।"),
+    c("Dwarka", "द्वारका", "Airport and corporate shift workers can choose late slots.", "एयरपोर्ट और कॉर्पोरेट शिफ़्ट कर्मचारी देर के स्लॉट चुन सकते हैं।"),
+    c("Janakpuri", "जनकपुरी", "Older adults can be assessed with family on the call.", "बुज़ुर्गों की जाँच परिवार के साथ कॉल पर हो सकती है।"),
+    c("Karol Bagh", "करोल बाग़", "Traders can consult outside market hours.", "व्यापारी बाज़ार के समय के बाद परामर्श ले सकते हैं।"),
+    c("Saket", "साकेत", "Professionals value discreet consultation from home.", "पेशेवर घर से गोपनीय परामर्श को महत्व देते हैं।"),
+    c("Shahdara", "शाहदरा", "Families in east Delhi can consult in Hindi.", "पूर्वी दिल्ली के परिवार हिंदी में परामर्श ले सकते हैं।"),
+    c("Sonipat", "सोनीपत", "Students in the education city can consult confidentially.", "एजुकेशन सिटी के छात्र गोपनीय परामर्श ले सकते हैं।"),
+    c("Bahadurgarh", "बहादुरगढ़", "Factory workers can consult before or after duty.", "फ़ैक्ट्री कर्मचारी ड्यूटी से पहले या बाद परामर्श ले सकते हैं।"),
+    c("Meerut", "मेरठ", "Families can consult in Hindi about de-addiction.", "परिवार नशा मुक्ति पर हिंदी में परामर्श ले सकते हैं।"),
+  ],
+};
+
+const NORTH_FAQS = [ELIGIBILITY_FAQ, RX_FAQ, EMERGENCY_FAQ];
+
+const MORE_REGIONS: Region[] = [
+  {
+    slug: "bihar",
+    name: b("Bihar", "बिहार"),
+    title: b("Online Psychiatrist for Bihar – Patna, Gaya, Muzaffarpur & More", "बिहार के लिए ऑनलाइन मनोचिकित्सक – पटना, गया, मुज़फ़्फ़रपुर आदि"),
+    h1: b("Online psychiatry consultation for Bihar", "बिहार के लिए ऑनलाइन मनोरोग परामर्श"),
+    description: b(
+      "Private Hindi video consultation for Bihar — depression, anxiety, exam stress, de-addiction and sexual health. Patna, Gaya, Bhagalpur, Muzaffarpur, Darbhanga and more.",
+      "बिहार के लिए हिंदी में निजी वीडियो परामर्श — डिप्रेशन, घबराहट, परीक्षा का तनाव, नशा मुक्ति और यौन स्वास्थ्य। पटना, गया, भागलपुर, मुज़फ़्फ़रपुर, दरभंगा आदि।"
+    ),
+    intro: [
+      b("Many families in Bihar have a child preparing for competitive exams or a member working in another state. Alcohol has been prohibited in Bihar since 2016, yet dependence, withdrawal and other substance use still need proper, confidential treatment.", "बिहार के कई परिवारों में कोई बच्चा प्रतियोगी परीक्षा की तैयारी कर रहा होता है या कोई सदस्य दूसरे राज्य में काम करता है। 2016 से बिहार में शराबबंदी है, फिर भी लत, उसे छोड़ते समय की तकलीफ़ और दूसरे नशों का सही और गोपनीय इलाज ज़रूरी है।"),
+      b("There is no clinic in Bihar — consultations are by private video from Ajmer, in Hindi.", "बिहार में कोई क्लिनिक नहीं है — परामर्श अजमेर से हिंदी में निजी वीडियो पर होता है।"),
+    ],
+    cities: [
+      c("Patna", "पटना", "Exam aspirants and professionals can consult privately in the evening.", "परीक्षा की तैयारी करने वाले और पेशेवर शाम को निजी परामर्श ले सकते हैं।"),
+      c("Gaya", "गया", "Families can include relatives from other states on the same call.", "परिवार दूसरे राज्यों के रिश्तेदारों को उसी कॉल पर जोड़ सकते हैं।"),
+      c("Bhagalpur", "भागलपुर", "Students and older adults can both consult from home.", "छात्र और बुज़ुर्ग दोनों घर से परामर्श ले सकते हैं।"),
+      c("Muzaffarpur", "मुज़फ़्फ़रपुर", "Traders can consult outside market hours.", "व्यापारी बाज़ार के समय के बाद परामर्श ले सकते हैं।"),
+      c("Darbhanga", "दरभंगा", "Mithila families can consult in Hindi without travelling to Patna.", "मिथिला के परिवार पटना गए बिना हिंदी में परामर्श ले सकते हैं।"),
+      c("Purnia", "पूर्णिया", "Saves a long journey for regular follow-ups.", "नियमित फॉलो-अप में लंबा सफ़र बचता है।"),
+      c("Begusarai", "बेगूसराय", "Industrial workers can book around shifts.", "औद्योगिक कर्मचारी शिफ़्ट के हिसाब से बुक कर सकते हैं।"),
+      c("Arrah", "आरा", "Families can discuss youth drug and tablet use privately.", "परिवार युवाओं के नशे और गोलियों पर निजी बात कर सकते हैं।"),
+      c("Katihar", "कटिहार", "Railway employees can choose slots around duty.", "रेलवे कर्मचारी ड्यूटी के हिसाब से स्लॉट चुन सकते हैं।"),
+      c("Munger", "मुंगेर", "Women can consult from home about anxiety or low mood.", "महिलाएँ घर से घबराहट या उदासी पर परामर्श ले सकती हैं।"),
+      c("Chhapra", "छपरा", "Families of workers in other states can consult together.", "दूसरे राज्यों में काम करने वालों के परिवार साथ परामर्श ले सकते हैं।"),
+      c("Sasaram", "सासाराम", "Students can consult about exam stress and sleep.", "छात्र परीक्षा के तनाव और नींद पर परामर्श ले सकते हैं।"),
+      c("Hajipur", "हाजीपुर", "Close to Patna — still saves travel and waiting.", "पटना के पास — फिर भी सफ़र और इंतज़ार बचता है।"),
+      c("Bihar Sharif", "बिहार शरीफ़", "Older adults can be assessed with family on the call.", "बुज़ुर्गों की जाँच परिवार के साथ कॉल पर हो सकती है।"),
+      c("Siwan", "सीवान", "Families of Gulf workers can consult by video.", "खाड़ी में काम करने वालों के परिवार वीडियो पर परामर्श ले सकते हैं।"),
+      c("Motihari", "मोतिहारी", "Rural patients can reach a specialist by phone video.", "ग्रामीण मरीज़ फ़ोन वीडियो से विशेषज्ञ तक पहुँच सकते हैं।"),
+      c("Bettiah", "बेतिया", "Follow-ups continue by video after the first assessment.", "पहली जाँच के बाद फॉलो-अप वीडियो पर।"),
+    ],
+    concerns: [
+      b("Competitive-exam stress and long preparation years", "प्रतियोगी परीक्षाओं का तनाव और लंबी तैयारी"),
+      b("Alcohol dependence and withdrawal despite prohibition, and other substance use", "शराबबंदी के बावजूद शराब की लत और उसे छोड़ने की तकलीफ़, और दूसरे नशे"),
+      b("Families of workers living in other states", "दूसरे राज्यों में काम करने वालों के परिवार"),
+    ],
+    topics: ["student-exam-stress-india", "alcohol-addiction-treatment-india", "depression-treatment-india", "smack-addiction-treatment-india", "sex-specialist-india", "online-psychiatrist-india"],
+    faqs: NORTH_FAQS,
+  },
+  {
+    slug: "himachal-pradesh",
+    name: b("Himachal Pradesh", "हिमाचल प्रदेश"),
+    title: b("Online Psychiatrist for Himachal Pradesh – Shimla, Mandi, Kangra", "हिमाचल प्रदेश के लिए ऑनलाइन मनोचिकित्सक – शिमला, मंडी, कांगड़ा"),
+    h1: b("Online psychiatry consultation for Himachal Pradesh", "हिमाचल प्रदेश के लिए ऑनलाइन मनोरोग परामर्श"),
+    description: b(
+      "Private Hindi video consultation for Himachal Pradesh — chitta and alcohol de-addiction, depression, anxiety and sleep. Shimla, Mandi, Dharamshala, Solan, Kullu, Una and more.",
+      "हिमाचल प्रदेश के लिए हिंदी में निजी वीडियो परामर्श — चिट्टा और शराब नशा मुक्ति, डिप्रेशन, घबराहट और नींद। शिमला, मंडी, धर्मशाला, सोलन, कुल्लू, ऊना आदि।"
+    ),
+    intro: [
+      b("Families across Himachal increasingly ask about 'chitta' (heroin) use in young people. Mountain distances and winter roads make regular visits hard — video follow-ups help treatment continue.", "हिमाचल भर के परिवार युवाओं में 'चिट्टा' (हेरोइन) के इस्तेमाल के बारे में ज़्यादा पूछने लगे हैं। पहाड़ों की दूरी और सर्दियों की सड़कों की वजह से नियमित आना-जाना मुश्किल है — वीडियो फॉलो-अप से इलाज जारी रहता है।"),
+      b("There is no clinic in Himachal Pradesh — consultations are by private video from Ajmer.", "हिमाचल प्रदेश में कोई क्लिनिक नहीं है — परामर्श अजमेर से निजी वीडियो पर होता है।"),
+    ],
+    cities: [
+      c("Shimla", "शिमला", "Government employees can consult discreetly after office hours.", "सरकारी कर्मचारी ऑफ़िस के बाद गोपनीय परामर्श ले सकते हैं।"),
+      c("Mandi", "मंडी", "Families can discuss chitta use with the young person present.", "परिवार युवा की मौजूदगी में चिट्टा पर बात कर सकते हैं।"),
+      c("Dharamshala (Kangra)", "धर्मशाला (कांगड़ा)", "Families of servicemen can consult from home.", "फ़ौजी परिवार घर से परामर्श ले सकते हैं।"),
+      c("Solan", "सोलन", "Students can consult confidentially from their college.", "छात्र कॉलेज से गोपनीय परामर्श ले सकते हैं।"),
+      c("Baddi", "बद्दी", "Pharma-industry shift workers can book around duty.", "फ़ार्मा उद्योग के शिफ़्ट कर्मचारी ड्यूटी के हिसाब से बुक कर सकते हैं।"),
+      c("Kullu", "कुल्लू", "Tourism workers can choose off-season or late slots.", "पर्यटन कर्मी ऑफ़-सीज़न या देर के स्लॉट चुन सकते हैं।"),
+      c("Hamirpur", "हमीरपुर", "Exam aspirants can consult about stress and sleep.", "परीक्षा की तैयारी करने वाले तनाव और नींद पर परामर्श ले सकते हैं।"),
+      c("Una", "ऊना", "Close to Punjab — Hindi or Punjabi-speaking families welcome.", "पंजाब के पास — हिंदी या पंजाबी बोलने वाले परिवारों का स्वागत है।"),
+      c("Bilaspur", "बिलासपुर", "Older adults can be assessed with family on the call.", "बुज़ुर्गों की जाँच परिवार के साथ कॉल पर हो सकती है।"),
+      c("Chamba", "चंबा", "Remote valleys can reach a specialist by phone video.", "दूर की घाटियाँ फ़ोन वीडियो से विशेषज्ञ तक पहुँच सकती हैं।"),
+    ],
+    concerns: [
+      b("Chitta (heroin) and alcohol use in young people", "युवाओं में चिट्टा (हेरोइन) और शराब"),
+      b("Winter low mood and sleep problems", "सर्दियों में उदासी और नींद की समस्या"),
+      b("Depression and anxiety in students and older adults", "छात्रों और बुज़ुर्गों में डिप्रेशन और घबराहट"),
+    ],
+    topics: ["heroin-addiction-treatment-india", "smack-addiction-treatment-india", "alcohol-addiction-treatment-india", "depression-treatment-india", "online-psychiatrist-india"],
+    faqs: NORTH_FAQS,
+  },
+  {
+    slug: "jammu-kashmir",
+    name: b("Jammu & Kashmir", "जम्मू-कश्मीर"),
+    title: b("Online Psychiatrist for Jammu & Kashmir – Jammu, Srinagar & More", "जम्मू-कश्मीर के लिए ऑनलाइन मनोचिकित्सक – जम्मू, श्रीनगर आदि"),
+    h1: b("Online psychiatry consultation for Jammu & Kashmir", "जम्मू-कश्मीर के लिए ऑनलाइन मनोरोग परामर्श"),
+    description: b(
+      "Private video consultation for Jammu & Kashmir in Hindi or English — depression, anxiety, trauma, de-addiction and sleep. Jammu, Srinagar, Anantnag, Baramulla, Kathua and more.",
+      "जम्मू-कश्मीर के लिए हिंदी या अंग्रेज़ी में निजी वीडियो परामर्श — डिप्रेशन, घबराहट, ट्रॉमा, नशा मुक्ति और नींद। जम्मू, श्रीनगर, अनंतनाग, बारामूला, कठुआ आदि।"
+    ),
+    intro: [
+      b("Video consultation can help when travel is difficult because of distance, weather or other disruption. Depression, anxiety, trauma-related symptoms and opioid use are common reasons to seek help.", "जब दूरी, मौसम या दूसरी रुकावटों से सफ़र मुश्किल हो, तब वीडियो परामर्श मदद कर सकता है। डिप्रेशन, घबराहट, ट्रॉमा से जुड़े लक्षण और अफ़ीम-स्मैक जैसे नशे मदद लेने के आम कारण हैं।"),
+      b("There is no clinic in Jammu & Kashmir — consultations are by private video from Ajmer, and need a working internet connection.", "जम्मू-कश्मीर में कोई क्लिनिक नहीं है — परामर्श अजमेर से निजी वीडियो पर होता है और इसके लिए चालू इंटरनेट ज़रूरी है।"),
+    ],
+    cities: [
+      c("Jammu", "जम्मू", "Families can consult in Hindi without travelling.", "परिवार बिना सफ़र के हिंदी में परामर्श ले सकते हैं।"),
+      c("Srinagar", "श्रीनगर", "Students and professionals can consult privately in English or Hindi.", "छात्र और पेशेवर अंग्रेज़ी या हिंदी में निजी परामर्श ले सकते हैं।"),
+      c("Anantnag", "अनंतनाग", "Families can discuss a young person's drug use confidentially.", "परिवार किसी युवा के नशे पर गोपनीय बात कर सकते हैं।"),
+      c("Baramulla", "बारामूला", "Saves long travel, especially in winter.", "ख़ासकर सर्दियों में लंबा सफ़र बचता है।"),
+      c("Kathua", "कठुआ", "Close to Punjab — the same Hindi care from home.", "पंजाब के पास — घर से वही हिंदी परामर्श।"),
+      c("Udhampur", "उधमपुर", "Families of servicemen can consult privately.", "फ़ौजी परिवार निजी परामर्श ले सकते हैं।"),
+      c("Rajouri", "राजौरी", "Remote families can reach a specialist by phone video.", "दूर के परिवार फ़ोन वीडियो से विशेषज्ञ तक पहुँच सकते हैं।"),
+      c("Sopore", "सोपोर", "Follow-ups continue by video after the first assessment.", "पहली जाँच के बाद फॉलो-अप वीडियो पर।"),
+    ],
+    concerns: [
+      b("Trauma-related stress, anxiety and sleep problems", "ट्रॉमा से जुड़ा तनाव, घबराहट और नींद की समस्या"),
+      b("Opioid (heroin) use in young people", "युवाओं में हेरोइन जैसे नशे"),
+      b("Depression in students and women", "छात्रों और महिलाओं में डिप्रेशन"),
+    ],
+    topics: ["ptsd-trauma-treatment-india", "heroin-addiction-treatment-india", "depression-treatment-india", "generalized-anxiety-disorder-india", "online-psychiatrist-india"],
+    faqs: NORTH_FAQS,
+  },
+];
+
+// Extra cities for the existing (already indexed) hubs.
+MORE_CITIES["delhi-ncr"].push(
+  c("Bahadurgarh", "बहादुरगढ़", "Factory workers can consult before or after duty.", "फ़ैक्ट्री कर्मचारी ड्यूटी से पहले या बाद परामर्श ले सकते हैं।"),
+  c("Dharuhera", "धारूहेड़ा", "Industrial-belt workers can choose early-morning slots.", "औद्योगिक क्षेत्र के कर्मचारी सुबह जल्दी के स्लॉट चुन सकते हैं।"),
+  c("Nuh", "नूंह", "Rural families save a long journey for follow-ups.", "ग्रामीण परिवारों का फॉलो-अप के लिए लंबा सफ़र बचता है।"),
+  c("Hapur", "हापुड़", "Traders can book outside market hours.", "व्यापारी बाज़ार के समय के बाद बुक कर सकते हैं।"),
+  c("Bulandshahr", "बुलंदशहर", "Older adults can be assessed with family on the call.", "बुज़ुर्गों की जाँच परिवार के साथ कॉल पर हो सकती है।"),
+  c("Baghpat", "बागपत", "Farming families can book an evening slot.", "किसान परिवार शाम का स्लॉट बुक कर सकते हैं।"),
+);
+MORE_CITIES.india = [
+  c("Haridwar", "हरिद्वार", "Industrial (SIDCUL) workers can book around shifts.", "औद्योगिक (सिडकुल) कर्मचारी शिफ़्ट के हिसाब से बुक कर सकते हैं।"),
+  c("Rishikesh", "ऋषिकेश", "Tourism workers with irregular hours can choose flexible slots.", "अनियमित समय वाले पर्यटन कर्मी सुविधाजनक स्लॉट चुन सकते हैं।"),
+  c("Roorkee", "रुड़की", "Engineering students can consult confidentially from campus.", "इंजीनियरिंग छात्र कैंपस से गोपनीय परामर्श ले सकते हैं।"),
+  c("Haldwani", "हल्द्वानी", "Gateway to Kumaon — saves long hill journeys.", "कुमाऊँ का प्रवेश द्वार — पहाड़ों के लंबे सफ़र से बचाव।"),
+  c("Rudrapur", "रुद्रपुर", "Factory workers can consult before or after duty.", "फ़ैक्ट्री कर्मचारी ड्यूटी से पहले या बाद परामर्श ले सकते हैं।"),
+  c("Nainital", "नैनीताल", "Older parents living alone can consult with children joining by video.", "अकेले रहने वाले माता-पिता बच्चों को वीडियो पर जोड़कर परामर्श ले सकते हैं।"),
+  c("Thane", "ठाणे", "Long-commute professionals can consult from home after work.", "लंबा सफ़र करने वाले पेशेवर काम के बाद घर से परामर्श ले सकते हैं।"),
+  c("Navi Mumbai", "नवी मुंबई", "IT and port workers can choose late or early slots.", "IT और बंदरगाह कर्मचारी देर या सुबह के स्लॉट चुन सकते हैं।"),
+  c("Nagpur", "नागपुर", "Hindi-speaking families in Vidarbha can consult in their language.", "विदर्भ के हिंदी भाषी परिवार अपनी भाषा में परामर्श ले सकते हैं।"),
+  c("Nashik", "नासिक", "Students and industrial workers can consult privately.", "छात्र और औद्योगिक कर्मचारी निजी परामर्श ले सकते हैं।"),
+  c("Vadodara", "वडोदरा", "Families of Rajasthani traders in Gujarat can consult in Hindi.", "गुजरात में रहने वाले राजस्थानी व्यापारियों के परिवार हिंदी में परामर्श ले सकते हैं।"),
+  c("Rajkot", "राजकोट", "Traders and factory owners can book outside business hours.", "व्यापारी और फ़ैक्ट्री मालिक कामकाज के समय के बाद बुक कर सकते हैं।"),
+  c("Raipur (Chhattisgarh)", "रायपुर (छत्तीसगढ़)", "Hindi video consultation without travelling to a metro city.", "महानगर गए बिना हिंदी में वीडियो परामर्श।"),
+  c("Ranchi", "राँची", "Students and families can consult in Hindi from home.", "छात्र और परिवार घर से हिंदी में परामर्श ले सकते हैं।"),
+  c("Jamshedpur", "जमशेदपुर", "Steel-industry shift workers can book around duty.", "स्टील उद्योग के शिफ़्ट कर्मचारी ड्यूटी के हिसाब से बुक कर सकते हैं।"),
+  c("Bhubaneswar", "भुवनेश्वर", "Students and professionals can consult in English or Hindi.", "छात्र और पेशेवर अंग्रेज़ी या हिंदी में परामर्श ले सकते हैं।"),
+  c("Guwahati", "गुवाहाटी", "Families in the North-East can reach a specialist by video.", "पूर्वोत्तर के परिवार वीडियो से विशेषज्ञ तक पहुँच सकते हैं।"),
+  c("Kochi", "कोच्चि", "Hindi- and English-speaking families can consult from home.", "हिंदी और अंग्रेज़ी बोलने वाले परिवार घर से परामर्श ले सकते हैं।"),
+  c("Coimbatore", "कोयंबटूर", "Rajasthani business families in the South can consult in Hindi.", "दक्षिण में रहने वाले राजस्थानी व्यापारी परिवार हिंदी में परामर्श ले सकते हैं।"),
+  c("Mysuru", "मैसूरु", "Students can consult confidentially from campus.", "छात्र कैंपस से गोपनीय परामर्श ले सकते हैं।"),
+  c("Visakhapatnam", "विशाखापट्टनम", "Port and industrial workers can book flexible slots.", "बंदरगाह और औद्योगिक कर्मचारी सुविधाजनक स्लॉट बुक कर सकते हैं।"),
+  c("Goa", "गोवा", "Hospitality workers with late shifts can choose evening slots.", "देर की शिफ़्ट वाले होटल कर्मचारी शाम के स्लॉट चुन सकते हैं।"),
+];
+
+// Add each new city once only: skip any city already listed on ANY state hub (existing indexed content
+// is never removed or moved, so live pages keep exactly what Google has indexed).
+const seen = new Set<string>();
+for (const r of [...REGIONS, ...MORE_REGIONS]) for (const x of r.cities) seen.add(x.name.en.toLowerCase());
+for (const r of REGIONS) {
+  for (const x of MORE_CITIES[r.slug] ?? []) {
+    const k = x.name.en.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    r.cities.push(x);
+  }
+}
+// New state hubs only where no indexed page covered the state (Bihar, Himachal Pradesh, J&K) — before the all-India hub.
+REGIONS.splice(Math.max(0, REGIONS.findIndex((r) => r.slug === "india")), 0, ...MORE_REGIONS);
+
+/** Every /locations/<slug> hub. (Rajasthan blocks live on the existing Rajasthan city pages.) */
+export const LOCATION_HUBS: Region[] = REGIONS;
+
+export const REGION_BY_SLUG = new Map(LOCATION_HUBS.map((r) => [r.slug, r]));

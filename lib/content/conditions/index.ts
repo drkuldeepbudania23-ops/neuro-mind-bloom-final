@@ -3,6 +3,7 @@ import { ADDICTION } from "./addiction";
 import { ANXIETY_SPECTRUM } from "./anxiety-spectrum";
 import { CHILD_EXTRA, GERIATRIC, NEURO } from "./child-geriatric-neuro";
 import { CITY_PAGES } from "./cities";
+import { DEADDICTION_FAQ, DEADDICTION_PAGES, RAJASTHAN_BLOCKS } from "../rajasthan-blocks";
 import { LIFE_STAGES } from "./life-stages";
 import { MENTAL } from "./mental";
 import { SERVICES_PAGES } from "./services";
@@ -40,7 +41,13 @@ const BASE: ConditionContent[] = [
 ];
 
 /** Original pages + advanced-library sections (risk factors, diagnosis, ICD…). */
-export const CONDITIONS: ConditionContent[] = BASE.map((c) => ({ ...c, ...(ENRICH[c.slug] ?? {}) }));
+export const CONDITIONS: ConditionContent[] = BASE.map((c) => {
+  const page: ConditionContent = { ...c, ...(ENRICH[c.slug] ?? {}) };
+  const blocks = RAJASTHAN_BLOCKS[c.slug];
+  if (!blocks) return page;
+  const faqs = DEADDICTION_PAGES.has(c.slug) && !page.faqs.some((f) => f.q.en === DEADDICTION_FAQ.q.en) ? [...page.faqs, DEADDICTION_FAQ] : page.faqs;
+  return { ...page, blocks, faqs };
+});
 
 const BY_SLUG = new Map(CONDITIONS.map((c) => [c.slug, c]));
 
