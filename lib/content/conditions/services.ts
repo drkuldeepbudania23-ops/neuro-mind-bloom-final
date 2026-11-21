@@ -175,7 +175,8 @@ export const SERVICES_PAGES: ConditionContent[] = [
       { q: { en: "The patient refuses treatment. What can the family do?", hi: "मरीज़ इलाज से मना करता है। परिवार क्या करे?" }, a: { en: "The family can first consult alone. We guide you on how to talk to the patient and bring them for treatment.", hi: "परिवार पहले अकेले परामर्श ले सकता है। हम बताते हैं कि मरीज़ से कैसे बात करें और उसे इलाज के लिए कैसे लाएँ।" } },
       FEES,
     ],
-    related: ["alcohol-addiction-treatment-india", "smack-addiction-treatment-india", "opium-afeem-addiction-india", "doda-post-poppy-husk-addiction-india", "how-to-choose-safe-deaddiction-centre", "psychiatrist-ajmer"],
+    related: ["alcohol-addiction-treatment-india", "smack-addiction-treatment-india", "opium-afeem-addiction-india", "doda-post-poppy-husk-addiction-india", "psychiatrist-ajmer"],
+    articles: ["how-to-choose-safe-deaddiction-centre"],
   },
   {
     slug: "psychiatrist-rajasthan",
