@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { getDoctorUid, verifyPinForUid } from "../pin-store";
 import { adminDb, isAdminConfigured } from "../../../../lib/server/firebaseAdmin";
-import { canonicalPrescription, hashPrescription, newPrescriptionId, signedAtText, validateForSigning } from "../../../../lib/rx/signing";
+import { canonicalPrescription, consultationDateProblem, hashPrescription, newPrescriptionId, signedAtText, validateForSigning } from "../../../../lib/rx/signing";
 import { audit } from "../../../../lib/server/audit";
 import { rateLimitByIp, tooMany } from "../../../../lib/server/rateLimit";
 
@@ -36,6 +36,14 @@ export async function POST(request: Request) {
     if (problem) {
       return NextResponse.json(
         { ok: false, error: problem === "patient-name" ? "Please enter patient name before e-signing." : "Add a diagnosis, medicine or advice before e-signing." },
+        { status: 400 }
+      );
+    }
+
+    const dateProblem = consultationDateProblem(content.consultationDate);
+    if (dateProblem) {
+      return NextResponse.json(
+        { ok: false, error: dateProblem === "future" ? "Consultation date cannot be in the future." : "Consultation date can be at most 30 days old." },
         { status: 400 }
       );
     }

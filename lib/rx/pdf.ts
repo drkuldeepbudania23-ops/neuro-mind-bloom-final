@@ -1,4 +1,5 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFImage, type PDFPage } from "pdf-lib";
+import { consultationDateText } from "./dates";
 
 /**
  * Server-generated e-prescription PDF (A4).
@@ -43,6 +44,8 @@ export type PrescriptionRecord = {
   /** Unique Health ID of the patient, e.g. NMB-000123 */
   uhid?: string;
   appointmentId?: string;
+  /** Date the patient was actually seen (YYYY-MM-DD); may be earlier than the signing date. */
+  consultationDate?: string;
 };
 
 export type DoctorInfo = {
@@ -208,7 +211,7 @@ export async function buildPrescriptionPdf(record: PrescriptionRecord, doctor: D
   };
   cell("Patient", record.patientName, 0, 0);
   cell("Age/Sex", `${record.age || "-"} / ${record.sex || "-"}`, 1, 0);
-  cell("Date", record.date || "", 2, 0);
+  cell("Date", consultationDateText(record.consultationDate) || record.date || "", 2, 0);
   cell("Mobile", record.mobile || "", 0, 1);
   cell("Rx ID", record.prescriptionId || "", 1, 1);
   if (record.uhid) cell("UHID", record.uhid, 2, 1);
@@ -324,7 +327,7 @@ export async function buildPrescriptionPdf(record: PrescriptionRecord, doctor: D
     ["Electronically signed", bold, 9],
     [doctor.name, bold, 10],
     [`${doctor.degrees} - Reg. No. ${doctor.registrationNo}`, font, 8.5],
-    [pdfSafe(record.signedAt), font, 8.5],
+    [record.consultationDate ? `Signed: ${pdfSafe(record.signedAt)}` : pdfSafe(record.signedAt), font, 8.5],
     [`Prescription ID: ${pdfSafe(record.prescriptionId)}`, font, 8.5],
   ];
   sigLines.forEach(([t, f, s], i) => page.drawText(t, { x: sx, y: y - 10 - i * 12, size: s, font: f, color: INK }));

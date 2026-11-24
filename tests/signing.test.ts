@@ -34,3 +34,20 @@ test("Rx ID uses India date; signing time in IST", () => {
   assert.equal(newPrescriptionId(now, () => 42), "NMB-20261012-00000042");
   assert.match(signedAtText(now), /^12\/10\/2026, 0?1:30\s?am$/i);
 });
+
+test("consultation date: only added when set, part of the hash, and range-checked", async () => {
+  const { consultationDateProblem } = await import("../lib/rx/signing");
+  const base = { patientName: "Ramesh", diagnosis: "Depression" };
+  // Old prescriptions (no date) keep exactly the same canonical content → same hash.
+  assert.equal("consultationDate" in canonicalPrescription(base), false);
+  assert.equal(canonicalPrescription({ ...base, consultationDate: "bad" }).consultationDate, undefined);
+  const dated = canonicalPrescription({ ...base, consultationDate: "2026-11-20" });
+  assert.equal(dated.consultationDate, "2026-11-20");
+  assert.notEqual(hashPrescription(dated), hashPrescription(canonicalPrescription(base)));
+  const now = new Date("2026-11-24T06:00:00Z");
+  assert.equal(consultationDateProblem(undefined, now), null);
+  assert.equal(consultationDateProblem("2026-11-24", now), null);
+  assert.equal(consultationDateProblem("2026-11-20", now), null);
+  assert.equal(consultationDateProblem("2026-11-25", now), "future");
+  assert.equal(consultationDateProblem("2026-10-01", now), "too-old");
+});

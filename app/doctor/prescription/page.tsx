@@ -13,6 +13,7 @@ import { getOrCreatePatient, getPatient, recordVisit } from "../../../lib/client
 import { logAction } from "../../../lib/client/audit";
 import { gmailComposeUrl, mailtoUrl } from "../../../lib/emailCompose";
 import { toWaNumber } from "../../../lib/whatsapp";
+import { consultationDateText, istDaysAgo, istToday } from "../../../lib/rx/dates";
 import { customRows, displayName, searchMedicines } from "../../../lib/rx/medicineCatalogue";
 import { deleteCustomMedicine, loadCustomMedicines, saveCustomMedicine, type SavedCustomMedicine } from "../../../lib/client/customMedicines";
 type RxItem = {
@@ -45,6 +46,8 @@ type SavedPrescription = {
   followUp: string;
   signedAt?: string;
   prescriptionId?: string;
+  /** Date the patient was seen (YYYY-MM-DD) — can be a past day for a missed prescription. */
+  consultationDate?: string;
   isTeleconsultation?: boolean;
   consultationType?: "opd" | "teleconsultation";
   paymentClearance?: any;
@@ -113,6 +116,7 @@ export default function PrescriptionPage() {
   const [prescriptionId, setPrescriptionId] = useState("");
   const [signedSnapshot, setSignedSnapshot] = useState("");
   const [isTeleconsultation, setIsTeleconsultation] = useState(false);
+  const [consultationDate, setConsultationDate] = useState(() => istToday());
   const [appointmentId, setAppointmentId] = useState("");
   const [savedPatients, setSavedPatients] = useState<SavedPrescription[]>([]);
   const [patientSearch, setPatientSearch] = useState("");
@@ -135,10 +139,11 @@ export default function PrescriptionPage() {
         advice,
         followUp,
         isTeleconsultation,
+        consultationDate,
       }),
     [
       patientName, age, sex, mobile, email, diagnosis, complaints, history, vitals,
-      rx, investigations, advice, followUp, isTeleconsultation,
+      rx, investigations, advice, followUp, isTeleconsultation, consultationDate,
     ]
   );
 
@@ -184,6 +189,11 @@ export default function PrescriptionPage() {
 
   const isESigned =
     signedSnapshot !== "" && signedSnapshot === prescriptionSnapshot;
+  // A missed prescription can be made for a past consultation date (up to 30 days back).
+  const todayKey = istToday();
+  const oldestConsultationDate = istDaysAgo(30);
+  const isBackdated = Boolean(consultationDate) && consultationDate !== todayKey;
+  const printedDate = consultationDateText(consultationDate) || consultationDateText(todayKey);
   const lastSavedRef = useRef<{ id: string; prescriptionId: string } | null>(null);
 
   useEffect(() => {
@@ -315,6 +325,7 @@ export default function PrescriptionPage() {
     );
     setNmbPaymentClearance(null);
     setAppointmentId("");
+    setConsultationDate(istToday());
     setSignedAt("");
     setPrescriptionId("");
     setSignedSnapshot("");
@@ -362,6 +373,7 @@ export default function PrescriptionPage() {
 
     const rows = records.map((r) => ({
       Date: r.date,
+      "Consultation date": consultationDateText(r.consultationDate) || "",
       "Prescription ID": r.prescriptionId || "",
       "Patient Name": r.patientName,
       Age: r.age,
@@ -416,6 +428,10 @@ export default function PrescriptionPage() {
       alert("Please enter your 8-digit E-Sign PIN.");
       return;
     }
+    if (!consultationDate || consultationDate > todayKey || consultationDate < oldestConsultationDate) {
+      alert("Consultation date can be today or up to 30 days back.");
+      return;
+    }
 
     try {
       setPinBusy(true);
@@ -443,6 +459,7 @@ export default function PrescriptionPage() {
           prescription: {
             patientName, age, sex, mobile, email, diagnosis, complaints, history, vitals, rx,
             investigations, advice, followUp, isTeleconsultation, uhid: patientUhid, appointmentId,
+            consultationDate: isBackdated ? consultationDate : undefined,
           },
         }),
       });
@@ -801,6 +818,7 @@ export default function PrescriptionPage() {
       followUp,
       signedAt: isESigned ? signedAt : undefined,
       prescriptionId: isESigned ? prescriptionId : undefined,
+      ...(isBackdated ? { consultationDate } : {}),
       isTeleconsultation,
       consultationType: isTeleconsultation ? "teleconsultation" : "opd",
       paymentClearance: nmbPaymentClearance || undefined,
@@ -857,6 +875,7 @@ export default function PrescriptionPage() {
     setNmbPinVerified(false);
     setNmbPaymentClearance(null);
     setIsTeleconsultation(false);
+    setConsultationDate(istToday());
     setAppointmentId("");
     window.history.replaceState({}, "", "/doctor/prescription");
   }
@@ -908,7 +927,7 @@ export default function PrescriptionPage() {
             {filteredPatients.slice(0, 50).map((r) => (
               <button key={r.id} type="button" style={s.med} onClick={() => loadSavedPatient(r)}>
                 <strong>{r.patientName} {r.age ? `· ${r.age}` : ""} {r.sex ? `· ${r.sex}` : ""}</strong>
-                <span>{r.mobile || "No mobile"} · {r.date}</span>
+                <span>{r.mobile || "No mobile"} · {r.consultationDate ? `Seen ${consultationDateText(r.consultationDate)} · ` : ""}{r.date}</span>
                 <small>{r.diagnosis || "No diagnosis"}{r.prescriptionId ? ` · ${r.prescriptionId}` : ""}</small>
               </button>
             ))}
@@ -1062,6 +1081,26 @@ export default function PrescriptionPage() {
           />
           <span>Teleconsultation</span>
         </label>
+        <div className="no-print" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "6px 0 10px" }}>
+          <b>Consultation date:</b>
+          <input
+            type="date"
+            style={{ ...s.input, maxWidth: 180 }}
+            value={consultationDate}
+            min={oldestConsultationDate}
+            max={todayKey}
+            aria-label="Consultation date"
+            onChange={(e) => setConsultationDate(e.target.value || todayKey)}
+          />
+          {isBackdated ? (
+            <>
+              <span style={{ color: "#b45309", fontWeight: 700 }}>Past date — missed prescription</span>
+              <button type="button" style={s.secondary} onClick={() => setConsultationDate(todayKey)}>Today</button>
+            </>
+          ) : (
+            <span style={{ fontSize: 12, color: "#64748b" }}>Change only if the patient was seen on an earlier day</span>
+          )}
+        </div>
         <h2>Patient Details</h2>
 
         <div style={s.grid4}>
@@ -1483,7 +1522,7 @@ export default function PrescriptionPage() {
       </section>
 
       <section style={s.signature}>
-        <div>Date: {new Date().toLocaleDateString()}</div>
+        <div>Date: {printedDate}</div>
         <div style={{ textAlign: "right", minWidth: 290 }}>
           {isESigned ? (
             <>
@@ -1491,7 +1530,7 @@ export default function PrescriptionPage() {
               <strong>Dr. Kuldeep Budania</strong><br />
               MD Psychiatry<br />
               Registration No. 30526<br />
-              <span style={{ fontSize: 11 }}>Date/Time: {signedAt}</span><br />
+              <span style={{ fontSize: 11 }}>{isBackdated ? "Signed on" : "Date/Time"}: {signedAt}</span><br />
               <span style={{ fontSize: 11 }}>Prescription ID: {prescriptionId}</span>
             </>
           ) : (
@@ -1519,7 +1558,7 @@ export default function PrescriptionPage() {
         <div className="prescription-patient-details">
           <div><b>Patient:</b> {patientName}</div>
           <div><b>Age/Sex:</b> {age || "-"} / {sex || "-"}</div>
-          <div><b>Date:</b> {new Date().toLocaleDateString()}</div>
+          <div><b>Date:</b> {printedDate}</div>
           <div><b>Mobile:</b> {mobile || "-"}</div>
           {email && <div><b>Email:</b> {email}</div>}
           <div><b>Prescription ID:</b> {prescriptionId || "-"}</div>
@@ -1576,12 +1615,12 @@ export default function PrescriptionPage() {
         )}
 
         <div className="prescription-signature">
-          <div>Date: {new Date().toLocaleDateString()}</div>
+          <div>Date: {printedDate}</div>
           <div>
             <b>Electronically Signed</b><br />
             <b>Dr. Kuldeep Budania</b><br />
             MD Psychiatry · Reg. No. 30526<br />
-            {signedAt}<br />
+            {isBackdated ? `Signed: ${signedAt}` : signedAt}<br />
             Prescription ID: {prescriptionId}
           </div>
         </div>

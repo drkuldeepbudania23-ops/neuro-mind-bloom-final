@@ -1,5 +1,6 @@
 import { createHash, randomInt } from "node:crypto";
 import type { PrescriptionRecord, RxMedicine } from "./pdf";
+import { istDaysAgo, istToday } from "./dates";
 
 /**
  * Server-side e-signing helpers — pure, unit-tested.
@@ -31,6 +32,9 @@ export function canonicalPrescription(input: Record<string, unknown>): SignedCon
   const tele = input.consultationType === "teleconsultation" || input.isTeleconsultation === true;
   out.isTeleconsultation = tele;
   out.consultationType = tele ? "teleconsultation" : "opd";
+  // Added only when present, so prescriptions signed before this field existed keep the same hash.
+  const cd = text(input.consultationDate, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(cd)) out.consultationDate = cd;
   return out as SignedContent;
 }
 
@@ -41,6 +45,21 @@ export function hashPrescription(content: SignedContent): string {
 export function validateForSigning(c: SignedContent): string | null {
   if (!c.patientName || c.patientName.length < 2) return "patient-name";
   if (!(c.rx?.length || c.diagnosis || c.advice)) return "empty";
+  return null;
+}
+
+/** How far back a missed prescription may be dated. */
+export const MAX_BACKDATE_DAYS = 30;
+
+/**
+ * A consultation date may be today or a past day (missed prescriptions),
+ * never in the future and not more than MAX_BACKDATE_DAYS old.
+ */
+export function consultationDateProblem(date: string | undefined, now: Date = new Date()): "future" | "too-old" | null {
+  if (!date) return null;
+  if (date > istToday(now)) return "future";
+  const oldest = istDaysAgo(MAX_BACKDATE_DAYS, now);
+  if (date < oldest) return "too-old";
   return null;
 }
 

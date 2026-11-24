@@ -2,6 +2,7 @@ import Link from "next/link";
 import Logo from "../site/Logo";
 import { CLINIC } from "../../lib/site";
 import type { PrescriptionRecord } from "../../lib/rx/pdf";
+import { consultationDateText } from "../../lib/rx/dates";
 
 /** Web page can show Hindi, so only trim and cap the text. */
 function txt(value: string | undefined): string {
@@ -66,6 +67,7 @@ function ValidCard({ view }: { view: Extract<VerifyView, { status: "valid" }> })
   const r = view.record;
   const rows: [string, string][] = [
     ["Prescription ID", txt(r.prescriptionId)],
+    ...(r.consultationDate ? [["Consultation date · परामर्श तिथि", consultationDateText(r.consultationDate)] as [string, string]] : []),
     ["Signed on · दिनांक", txt(r.signedAt) || txt(r.date)],
     ["Patient · मरीज़", view.maskedName],
     ["Age / Sex", [r.age, r.sex].filter(Boolean).join(" / ") || "-"],
