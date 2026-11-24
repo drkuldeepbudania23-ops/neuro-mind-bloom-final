@@ -21,7 +21,7 @@ export const ADDICTION: ConditionContent[] = [
     slug: "deaddiction-psychiatrist-india",
     category: "addiction",
     name: { en: "De-addiction (Nasha Mukti)", hi: "नशा मुक्ति" },
-    title: { en: "De-addiction Psychiatrist – Nasha Mukti Treatment", hi: "नशा मुक्ति विशेषज्ञ – शराब, अफ़ीम, स्मैक, तंबाकू का इलाज" },
+    title: { en: "De-addiction Psychiatrist (Nasha Mukti Doctor) – Online & Ajmer", hi: "नशा मुक्ति डॉक्टर – शराब, अफ़ीम, स्मैक, तंबाकू छुड़ाने का इलाज" },
     h1: { en: "De-addiction treatment (नशा मुक्ति)", hi: "नशा मुक्ति का वैज्ञानिक इलाज" },
     description: {
       en: "Medical de-addiction for alcohol, opium/doda, smack/heroin, ganja, tobacco, pills and behavioural addictions — safe detox, anti-craving medicines and counselling.",
@@ -76,7 +76,7 @@ export const ADDICTION: ConditionContent[] = [
     slug: "alcohol-addiction-treatment-india",
     category: "addiction",
     name: { en: "Alcohol Addiction", hi: "शराब की लत" },
-    title: { en: "Alcohol Addiction Treatment – Safe Detox", hi: "शराब छुड़ाने का इलाज – सुरक्षित डिटॉक्स" },
+    title: { en: "Alcohol Addiction Treatment – Sharab Chhudane ka Ilaj & Safe Detox", hi: "शराब छुड़ाने का इलाज और दवा – सुरक्षित डिटॉक्स" },
     h1: { en: "Alcohol addiction: safe detox and recovery", hi: "शराब की लत: सुरक्षित डिटॉक्स और छुटकारा" },
     description: {
       en: "Daily drinking, morning drink, tremors or failed attempts to quit? Medical detox and anti-craving medicines make quitting alcohol safe and achievable.",
@@ -124,7 +124,7 @@ export const ADDICTION: ConditionContent[] = [
     slug: "opioid-smack-heroin-opium-doda-addiction-india",
     category: "addiction",
     name: { en: "Opium, Doda, Smack & Heroin", hi: "अफ़ीम, डोडा पोस्त, स्मैक, हेरोइन" },
-    title: { en: "Opium, Doda Post, Smack & Heroin Addiction Treatment", hi: "अफ़ीम, डोडा पोस्त, स्मैक और हेरोइन छुड़ाने का इलाज" },
+    title: { en: "Afeem, Doda Post, Smack & Heroin Chhudane ka Ilaj (Opioid Addiction)", hi: "अफ़ीम, डोडा पोस्त, स्मैक और हेरोइन छुड़ाने का इलाज" },
     h1: { en: "Opioid addiction: afeem, doda, smack, heroin", hi: "अफ़ीम, डोडा पोस्त, स्मैक और हेरोइन की लत का इलाज" },
     description: {
       en: "Body ache, loose motions and restlessness on stopping afeem, doda or smack? Painless, supervised opioid detox and long-term treatment are available.",
@@ -170,7 +170,7 @@ export const ADDICTION: ConditionContent[] = [
     slug: "tobacco-nicotine-addiction-treatment-india",
     category: "addiction",
     name: { en: "Tobacco & Gutka", hi: "तंबाकू और गुटखा" },
-    title: { en: "Quit Tobacco, Gutka, Bidi & Smoking", hi: "तंबाकू, गुटखा, बीड़ी और सिगरेट छुड़ाने का इलाज" },
+    title: { en: "Quit Tobacco, Gutka & Smoking – Tambaku Chhudane ka Ilaj", hi: "तंबाकू, गुटखा, बीड़ी और सिगरेट छुड़ाने का इलाज" },
     h1: { en: "Quit tobacco: smoking, bidi, gutka, khaini", hi: "तंबाकू छोड़ें: सिगरेट, बीड़ी, गुटखा, खैनी" },
     description: {
       en: "Quitting tobacco is much easier with nicotine replacement, other medicines and counselling. Reduce cancer, heart and lung risk.",
@@ -215,7 +215,7 @@ export const ADDICTION: ConditionContent[] = [
     slug: "cannabis-ganja-charas-hash-addiction-india",
     category: "addiction",
     name: { en: "Ganja, Charas & Bhang", hi: "गांजा, चरस और भांग" },
-    title: { en: "Cannabis (Ganja, Charas, Bhang) Addiction Treatment", hi: "गांजा, चरस और भांग की लत का इलाज" },
+    title: { en: "Ganja, Charas & Bhang Addiction – Ganja Chhudane ka Ilaj", hi: "गांजा, चरस और भांग की लत का इलाज" },
     h1: { en: "Cannabis addiction: ganja, charas, bhang", hi: "गांजा, चरस और भांग की लत" },
     description: {
       en: "Daily ganja or charas use, poor motivation, anger or suspiciousness? Cannabis can trigger psychosis in young people — treatment helps.",
@@ -257,7 +257,7 @@ export const ADDICTION: ConditionContent[] = [
     slug: "substance-use-disorders-treatment-india",
     category: "addiction",
     name: { en: "Pills, Cough Syrup & Other Drugs", hi: "गोलियाँ, कफ़ सिरप और दूसरे नशे" },
-    title: { en: "Prescription Pill, Cough Syrup & Drug Addiction Treatment", hi: "नशे की गोलियों, कफ़ सिरप और दूसरे ड्रग्स का इलाज" },
+    title: { en: "Nashe ki Goli & Cough Syrup Addiction Treatment", hi: "नशे की गोलियों, कफ़ सिरप और दूसरे ड्रग्स का इलाज" },
     h1: { en: "Addiction to pills, cough syrup and other drugs", hi: "नींद/दर्द की गोलियों, कफ़ सिरप और दूसरे ड्रग्स की लत" },
     description: {
       en: "Dependence on sleeping pills, painkillers, cough syrup or other drugs? Safe tapering and treatment are available, in confidence.",

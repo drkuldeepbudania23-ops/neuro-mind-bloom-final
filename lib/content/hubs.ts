@@ -28,7 +28,7 @@ export type HubContent = {
 
 export const NASHA_MUKTI: HubContent = {
   slug: "nasha-mukti",
-  title: { en: "Nasha Mukti – Medical De-addiction Treatment", hi: "नशा मुक्ति – डॉक्टरी इलाज से नशा छुड़ाएँ" },
+  title: { en: "Nasha Mukti Treatment – Sharab, Smack, Afeem Chhudane ka Ilaj", hi: "नशा मुक्ति – शराब, स्मैक, अफ़ीम छुड़ाने का डॉक्टरी इलाज" },
   h1: { en: "Nasha Mukti — freedom from addiction is possible", hi: "नशा मुक्ति — अब छुटकारा संभव है" },
   tagline: {
     en: "Alcohol · Afeem · Doda post · Smack · Heroin · Ganja · Tobacco · Pills · Mobile & betting",
