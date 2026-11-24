@@ -299,7 +299,7 @@ export const ADDICTION: ConditionContent[] = [
     slug: "internet-addiction-treatment-india",
     category: "addiction",
     name: { en: "Mobile & Internet Addiction", hi: "मोबाइल और इंटरनेट की लत" },
-    title: { en: "Mobile Phone, Social Media & Internet Addiction", hi: "मोबाइल, सोशल मीडिया और इंटरनेट की लत" },
+    title: { en: "Mobile Phone, Social Media & Internet Addiction | Mobile ki Lat ka Ilaj", hi: "मोबाइल, सोशल मीडिया और इंटरनेट की लत | मोबाइल की लत छुड़ाने का इलाज" },
     h1: { en: "Mobile, social media and internet overuse", hi: "मोबाइल, सोशल मीडिया और इंटरनेट की लत" },
     description: {
       en: "Hours on reels and social media, poor sleep, falling grades or family fights over the phone? Structured treatment helps teenagers and adults.",
@@ -342,7 +342,7 @@ export const ADDICTION: ConditionContent[] = [
     slug: "gaming-disorder-treatment-india",
     category: "addiction",
     name: { en: "Gaming Addiction", hi: "गेमिंग की लत" },
-    title: { en: "Gaming Disorder Treatment (PUBG/BGMI, Free Fire)", hi: "गेमिंग की लत का इलाज (BGMI, Free Fire आदि)" },
+    title: { en: "Gaming Disorder Treatment (PUBG/BGMI, Free Fire) | Gaming Addiction, Game ki Lat", hi: "गेमिंग की लत का इलाज (BGMI, Free Fire आदि) | मोबाइल गेम की लत छुड़ाएँ" },
     h1: { en: "Gaming addiction", hi: "ऑनलाइन/मोबाइल गेम की लत" },
     description: {
       en: "Gaming for hours, skipping school or work, anger when stopped? Gaming disorder is recognised by WHO and is treatable.",
@@ -384,7 +384,7 @@ export const ADDICTION: ConditionContent[] = [
     slug: "gambling-disorder-treatment-india",
     category: "addiction",
     name: { en: "Betting & Gambling", hi: "सट्टा और जुआ" },
-    title: { en: "Online Betting & Gambling Addiction Treatment", hi: "ऑनलाइन सट्टा और जुए की लत का इलाज" },
+    title: { en: "Online Betting & Gambling Addiction Treatment | Satta & Jua ki Lat", hi: "ऑनलाइन सट्टा और जुए की लत का इलाज | सट्टे की लत छुड़ाएँ" },
     h1: { en: "Online betting and gambling addiction", hi: "ऑनलाइन सट्टा और जुए की लत" },
     description: {
       en: "Losing money on betting apps, chasing losses, borrowing or hiding debts? Gambling disorder is treatable — act early.",
@@ -426,7 +426,7 @@ export const ADDICTION: ConditionContent[] = [
     slug: "problematic-pornography-use-treatment-india",
     category: "addiction",
     name: { en: "Pornography Overuse", hi: "पोर्न देखने की आदत" },
-    title: { en: "Problematic Pornography Use – Confidential Help", hi: "पोर्न देखने की आदत – गोपनीय मदद" },
+    title: { en: "Problematic Pornography Use – Confidential Help | Porn Addiction Treatment", hi: "पोर्न देखने की आदत – गोपनीय मदद | पोर्न की लत का इलाज" },
     h1: { en: "Problematic pornography use", hi: "पोर्न देखने की बेकाबू आदत" },
     description: {
       en: "Unable to control porn use, guilt, or effects on relationships and sexual performance? Confidential, non-judgemental treatment is available.",
