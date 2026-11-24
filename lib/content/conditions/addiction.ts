@@ -170,7 +170,7 @@ export const ADDICTION: ConditionContent[] = [
     slug: "tobacco-nicotine-addiction-treatment-india",
     category: "addiction",
     name: { en: "Tobacco & Gutka", hi: "तंबाकू और गुटखा" },
-    title: { en: "Quit Tobacco, Gutka & Smoking – Tambaku Chhudane ka Ilaj", hi: "तंबाकू, गुटखा, बीड़ी और सिगरेट छुड़ाने का इलाज" },
+    title: { en: "Quit Tobacco, Gutka, Bidi & Cigarette – Tambaku Chhudane ka Ilaj", hi: "तंबाकू, गुटखा, बीड़ी और सिगरेट छुड़ाने का इलाज" },
     h1: { en: "Quit tobacco: smoking, bidi, gutka, khaini", hi: "तंबाकू छोड़ें: सिगरेट, बीड़ी, गुटखा, खैनी" },
     description: {
       en: "Quitting tobacco is much easier with nicotine replacement, other medicines and counselling. Reduce cancer, heart and lung risk.",

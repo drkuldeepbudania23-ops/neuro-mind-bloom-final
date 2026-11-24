@@ -473,7 +473,7 @@ const PAGES: ConditionContent[] = [
     category: "addiction",
     group: "substance",
     name: b("Nicotine dependence (cigarettes, vapes, pouches)", "निकोटीन की लत (सिगरेट, वेप, पाउच)"),
-    title: b("Nicotine Dependence – Quit Smoking, Vaping & Pouches", "निकोटीन की लत – सिगरेट, वेपिंग और पाउच छोड़ें"),
+    title: b("Nicotine Addiction – Cigarette, Bidi & Gutka Chhodne ka Ilaj", "निकोटीन की लत – सिगरेट, बीड़ी, गुटखा और वेप छोड़ने का इलाज"),
     h1: b("Nicotine dependence: quitting with medical support", "निकोटीन की लत: डॉक्टर की मदद से छोड़ें"),
     description: b(
       "Can't quit cigarettes, bidis or vapes? Nicotine dependence is a medical condition. Nicotine replacement, medicines and counselling double quit rates.",
