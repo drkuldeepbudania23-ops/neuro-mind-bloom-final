@@ -97,7 +97,7 @@ const PAGES: ConditionContent[] = [
     category: "addiction",
     group: "substance",
     name: b("Opium (afeem) addiction", "अफ़ीम की लत"),
-    title: b("Afeem (Opium) Addiction – Afeem Chhudane ka Ilaj, Rajasthan", "अफ़ीम छुड़ाने का इलाज – लक्षण और डॉक्टरी उपचार (राजस्थान)"),
+    title: b("Opium (Afeem) Addiction – Withdrawal & Treatment in Rajasthan | Afeem Chhudane ka Ilaj", "अफ़ीम की लत – छोड़ने के लक्षण और इलाज (राजस्थान) | अफ़ीम छुड़ाने का इलाज"),
     h1: b("Opium (afeem) addiction: treatment and recovery", "अफ़ीम की लत: इलाज और सुधार"),
     description: b(
       "Daily afeem use, body pain and loose motions when you stop? Opium dependence is treatable with supervised withdrawal, substitution therapy and counselling.",
@@ -160,7 +160,7 @@ const PAGES: ConditionContent[] = [
     category: "addiction",
     group: "substance",
     name: b("Doda post (poppy husk) addiction", "डोडा पोस्त की लत"),
-    title: b("Doda Post Addiction – Doda Chhudane ka Ilaj & Withdrawal", "डोडा पोस्त छुड़ाने का इलाज – छोड़ने के लक्षण और उपचार"),
+    title: b("Doda Post (Poppy Husk) Addiction – Treatment & Withdrawal | Doda Chhudane ka Ilaj", "डोडा पोस्त की लत – इलाज और छोड़ने के लक्षण | डोडा छुड़ाने का इलाज"),
     h1: b("Doda post addiction: help for users and families", "डोडा पोस्त की लत: नशा करने वालों और परिवार के लिए मदद"),
     description: b(
       "Drinking doda post daily to work or drive long hours? Poppy husk dependence causes painful withdrawal but is treatable. Signs, risks and treatment options.",
@@ -222,7 +222,7 @@ const PAGES: ConditionContent[] = [
     category: "addiction",
     group: "substance",
     name: b("Smack (brown sugar) addiction", "स्मैक (ब्राउन शुगर) की लत"),
-    title: b("Smack (Brown Sugar) Addiction – Smack Chhudane ka Ilaj", "स्मैक (ब्राउन शुगर) छुड़ाने का इलाज – संकेत और उपचार"),
+    title: b("Smack (Brown Sugar) Addiction – Signs, Withdrawal & Treatment | Smack Chhudane ka Ilaj", "स्मैक (ब्राउन शुगर) की लत – संकेत, छोड़ने के लक्षण और इलाज | स्मैक छुड़ाने का इलाज"),
     h1: b("Smack (brown sugar) addiction in young people", "युवाओं में स्मैक (ब्राउन शुगर) की लत"),
     description: b(
       "Foil, lighters, missing money and mood swings? Smack is impure heroin that causes rapid dependence. Warning signs for parents and how treatment works.",
@@ -286,7 +286,7 @@ const PAGES: ConditionContent[] = [
     category: "addiction",
     group: "substance",
     name: b("Heroin addiction", "हेरोइन की लत"),
-    title: b("Heroin Addiction Treatment – Withdrawal & Overdose Risk", "हेरोइन छुड़ाने का इलाज – विड्रॉल और ओवरडोज़ का ख़तरा"),
+    title: b("Heroin Addiction – Overdose Risk, Withdrawal & Treatment | Heroin Chhudane ka Ilaj", "हेरोइन की लत – ओवरडोज़ का ख़तरा, छोड़ने के लक्षण और इलाज | हेरोइन छुड़ाने का इलाज"),
     h1: b("Heroin addiction: treatment that saves lives", "हेरोइन की लत: जान बचाने वाला इलाज"),
     description: b(
       "Heroin use by smoking or injection carries high overdose and infection risk. Learn about withdrawal, substitution therapy, overdose first aid and long-term recovery.",
@@ -356,7 +356,7 @@ const PAGES: ConditionContent[] = [
     category: "addiction",
     group: "substance",
     name: b("Ganja and bhang addiction", "गांजा और भांग की लत"),
-    title: b("Ganja & Bhang Addiction – Ganja Chhudane ka Ilaj", "गांजा और भांग छुड़ाने का इलाज – दिमाग़ पर असर"),
+    title: b("Ganja & Bhang Addiction – Effects on Mind & Treatment | Ganja Chhudane ka Ilaj", "गांजा और भांग की लत – दिमाग़ पर असर और इलाज | गांजा छुड़ाने का इलाज"),
     h1: b("Ganja and bhang: when occasional use becomes addiction", "गांजा और भांग: जब कभी-कभार का इस्तेमाल लत बन जाए"),
     description: b(
       "Smoking ganja daily or using bhang regularly? Cannabis can cause dependence, poor memory and psychosis. Learn signs, withdrawal and how to quit with help.",
@@ -417,7 +417,7 @@ const PAGES: ConditionContent[] = [
     category: "addiction",
     group: "substance",
     name: b("Charas (hashish) addiction", "चरस (हशीश) की लत"),
-    title: b("Charas (Hashish) Addiction – Charas Chhudane ka Ilaj", "चरस छुड़ाने का इलाज – साइकोसिस का ख़तरा"),
+    title: b("Charas (Hashish) Addiction – Psychosis Risk & Treatment | Charas Chhudane ka Ilaj", "चरस (हशीश) की लत – साइकोसिस का ख़तरा और इलाज | चरस छुड़ाने का इलाज"),
     h1: b("Charas addiction: a stronger form of cannabis", "चरस की लत: कैनाबिस का तेज़ रूप"),
     description: b(
       "Charas is concentrated cannabis resin with higher THC. Regular use raises the risk of dependence, paranoia and psychosis. Signs, withdrawal and treatment.",
@@ -473,7 +473,7 @@ const PAGES: ConditionContent[] = [
     category: "addiction",
     group: "substance",
     name: b("Nicotine dependence (cigarettes, vapes, pouches)", "निकोटीन की लत (सिगरेट, वेप, पाउच)"),
-    title: b("Nicotine Addiction – Cigarette, Bidi & Gutka Chhodne ka Ilaj", "निकोटीन की लत – सिगरेट, बीड़ी, गुटखा और वेप छोड़ने का इलाज"),
+    title: b("Nicotine Dependence – Quit Smoking, Vaping & Pouches | Cigarette, Bidi, Gutka", "निकोटीन की लत – सिगरेट, वेपिंग और पाउच छोड़ें | बीड़ी, गुटखा"),
     h1: b("Nicotine dependence: quitting with medical support", "निकोटीन की लत: डॉक्टर की मदद से छोड़ें"),
     description: b(
       "Can't quit cigarettes, bidis or vapes? Nicotine dependence is a medical condition. Nicotine replacement, medicines and counselling double quit rates.",
@@ -616,7 +616,7 @@ const PAGES: ConditionContent[] = [
     category: "addiction",
     group: "substance",
     name: b("Sleeping pill and sedative dependence", "नींद की गोलियों (सेडेटिव) की लत"),
-    title: b("Neend ki Goli (Sleeping Pill) Addiction – Safe Withdrawal", "नींद की गोलियों की लत – सुरक्षित तरीक़े से छोड़ना"),
+    title: b("Sleeping Pill (Neend ki Goli) & Sedative Dependence – Safe Withdrawal", "नींद की गोलियों की लत – सुरक्षित तरीक़े से छोड़ना"),
     h1: b("Dependence on sleeping pills and anti-anxiety tablets", "नींद और घबराहट की गोलियों पर निर्भरता"),
     description: b(
       "Taking sleeping pills or anti-anxiety tablets for months? Sudden stopping can cause seizures. Learn the signs of dependence and how to taper safely.",
