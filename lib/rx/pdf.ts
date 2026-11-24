@@ -327,7 +327,9 @@ export async function buildPrescriptionPdf(record: PrescriptionRecord, doctor: D
     ["Electronically signed", bold, 9],
     [doctor.name, bold, 10],
     [`${doctor.degrees} - Reg. No. ${doctor.registrationNo}`, font, 8.5],
-    [record.consultationDate ? `Signed: ${pdfSafe(record.signedAt)}` : pdfSafe(record.signedAt), font, 8.5],
+    // For a missed (past-date) prescription the printed copy shows only the consultation date;
+    // the real signing time stays in the signed record and on the QR verify page.
+    ...(record.consultationDate ? [] : [[pdfSafe(record.signedAt), font, 8.5] as [string, PDFFont, number]]),
     [`Prescription ID: ${pdfSafe(record.prescriptionId)}`, font, 8.5],
   ];
   sigLines.forEach(([t, f, s], i) => page.drawText(t, { x: sx, y: y - 10 - i * 12, size: s, font: f, color: INK }));

@@ -1620,7 +1620,7 @@ export default function PrescriptionPage() {
             <b>Electronically Signed</b><br />
             <b>Dr. Kuldeep Budania</b><br />
             MD Psychiatry · Reg. No. 30526<br />
-            {isBackdated ? `Signed: ${signedAt}` : signedAt}<br />
+            {!isBackdated && <>{signedAt}<br /></>}
             Prescription ID: {prescriptionId}
           </div>
         </div>
