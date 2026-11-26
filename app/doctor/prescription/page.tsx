@@ -7,6 +7,7 @@ import { complaintOptions, diagnosisOptions, diagnosisLabel, searchDiagnoses } f
 import { FREQUENCY_OPTIONS, TIMING_OPTIONS, timingForFrequency } from "../../../lib/rx/frequency";
 import { auth, db } from "../../../lib/firebase";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 import EpinResetButton from "../EpinResetButton";
 import PatientUhid from "../../../components/doctor/PatientUhid";
 import { getOrCreatePatient, getPatient, recordVisit } from "../../../lib/client/patients";
@@ -288,6 +289,20 @@ export default function PrescriptionPage() {
     return () => {
       active = false;
     };
+  }, []);
+
+  // Load saved patients automatically once the doctor is logged in, so typing a
+  // name or mobile number finds the patient straight away.
+  useEffect(() => {
+    let done = false;
+    const stop = onAuthStateChanged(auth, (user) => {
+      if (user && !done) {
+        done = true;
+        refreshSavedPatients();
+      }
+    });
+    return () => stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function refreshSavedPatients() {
@@ -936,9 +951,35 @@ export default function PrescriptionPage() {
   const filteredPatients = savedPatients.filter((r) => {
     const q = patientSearch.trim().toLowerCase();
     if (!q) return true;
-    return [r.patientName, r.mobile, r.prescriptionId, r.diagnosis]
+    const qDigits = q.replace(/\D/g, "");
+    if (qDigits.length >= 4 && String(r.mobile || "").replace(/\D/g, "").includes(qDigits)) return true;
+    return [r.patientName, r.mobile, r.prescriptionId, r.diagnosis, r.uhid]
       .some((v) => String(v || "").toLowerCase().includes(q));
   });
+
+  // All earlier visits of the patient now on screen (same UHID, or same mobile + first name).
+  const patientHistory = useMemo(() => {
+    const last10 = (v?: string) => String(v || "").replace(/\D/g, "").slice(-10);
+    const first = (v?: string) => String(v || "").trim().toLowerCase().split(/\s+/)[0] || "";
+    const m = last10(mobile);
+    const n = first(patientName);
+    if (!uhid && (m.length < 10 || !n)) return [] as SavedPrescription[];
+    return savedPatients
+      .filter((r) => (uhid && r.uhid === uhid) || (m.length === 10 && last10(r.mobile) === m && first(r.patientName) === n))
+      .sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+  }, [savedPatients, uhid, mobile, patientName]);
+
+  function medLabel(m: RxItem) {
+    return [m.brand || m.generic, m.strength, m.dose, m.frequency, m.timing, m.duration].filter(Boolean).join(" · ");
+  }
+
+  function addMedFromHistory(m: RxItem) {
+    setRx((old) =>
+      old.some((x) => (x.brand || x.generic) === (m.brand || m.generic) && x.strength === m.strength)
+        ? old
+        : [...old, { ...m }]
+    );
+  }
 
   return (
     <main style={s.page}>
@@ -970,8 +1011,9 @@ export default function PrescriptionPage() {
             name="nmb-patient-search"
             autoComplete="off"
             value={patientSearch}
+            onFocus={() => { if (!savedPatientsLoaded && !recordsBusy) refreshSavedPatients(); }}
             onChange={(e) => setPatientSearch(e.target.value)}
-            placeholder="Search by patient name, mobile, diagnosis or Prescription ID"
+            placeholder="Follow-up: type patient name or mobile number"
           />
           <button style={s.secondary} onClick={refreshSavedPatients}>
             {recordsBusy ? "Loading..." : "Load Saved Patients"}
@@ -1348,6 +1390,54 @@ export default function PrescriptionPage() {
           />
         </Field>
       </section>
+
+      {patientHistory.length > 0 && (
+        <section className="no-print" style={s.card}>
+          <h2 style={{ marginTop: 0 }}>Previous Visits / History ({patientHistory.length})</h2>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 8 }}>
+            Old medicines are shown here. Use &quot;+ Add&quot; to put one into today&apos;s Rx, or &quot;Use all&quot; to copy a visit&apos;s medicines; remove any from the Rx below with its Remove button.
+          </div>
+          <div style={{ display: "grid", gap: 10, maxHeight: 420, overflowY: "auto" }}>
+            {patientHistory.map((h) => (
+              <div key={h.id} style={{ border: "1px solid #dbe3ea", borderRadius: 9, padding: 10, background: h.supersededBy ? "#f1f5f9" : "#f8fafc" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                  <strong>
+                    {consultationDateText(h.consultationDate) || h.date}
+                    {h.prescriptionId ? ` · ${h.prescriptionId}` : ""}
+                    {h.supersededBy ? " · (Replaced)" : ""}
+                  </strong>
+                  {(h.rx || []).length > 0 && (
+                    <button type="button" style={s.secondary} onClick={() => setRx((h.rx || []).map((m) => ({ ...m })))}>
+                      Use all medicines
+                    </button>
+                  )}
+                </div>
+                {h.diagnosis && <div style={{ fontSize: 13 }}><b>Diagnosis:</b> {h.diagnosis}</div>}
+                {h.complaints && <div style={{ fontSize: 13 }}><b>Complaints:</b> {h.complaints}</div>}
+                {(h.rx || []).length > 0 ? (
+                  <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+                    {(h.rx || []).map((m, i) => (
+                      <li key={i} style={{ fontSize: 13, marginBottom: 3 }}>
+                        {medLabel(m)}{" "}
+                        <button type="button" style={{ ...s.secondary, padding: "2px 8px", fontSize: 12 }} onClick={() => addMedFromHistory(m)}>
+                          + Add
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div style={{ fontSize: 13, color: "#64748b" }}>No medicines.</div>
+                )}
+                {(h.advice || h.followUp) && (
+                  <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>
+                    {h.advice ? `Advice: ${h.advice}` : ""}{h.advice && h.followUp ? " · " : ""}{h.followUp ? `Follow-up: ${h.followUp}` : ""}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="no-print" style={s.card}>
         <h2>Medicine Search</h2>
