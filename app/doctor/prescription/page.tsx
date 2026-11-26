@@ -127,6 +127,7 @@ export default function PrescriptionPage() {
   const [savedPatients, setSavedPatients] = useState<SavedPrescription[]>([]);
   const [patientSearch, setPatientSearch] = useState("");
   const [recordsBusy, setRecordsBusy] = useState(false);
+  const [savedPatientsLoaded, setSavedPatientsLoaded] = useState(false);
 
   const prescriptionSnapshot = useMemo(
     () =>
@@ -291,6 +292,9 @@ export default function PrescriptionPage() {
 
   async function refreshSavedPatients() {
     setRecordsBusy(true);
+    setSavedPatientsLoaded(true);
+    // Chrome sometimes autofills the doctor's email into the search box, which hides every patient.
+    if (patientSearch.includes("@")) setPatientSearch("");
     let local: SavedPrescription[] = [];
     try {
       local = JSON.parse(localStorage.getItem("nmb_prescriptions") || "[]");
@@ -962,6 +966,9 @@ export default function PrescriptionPage() {
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <input
             style={{ ...s.input, flex: 1, minWidth: 240 }}
+            type="search"
+            name="nmb-patient-search"
+            autoComplete="off"
             value={patientSearch}
             onChange={(e) => setPatientSearch(e.target.value)}
             placeholder="Search by patient name, mobile, diagnosis or Prescription ID"
@@ -971,6 +978,15 @@ export default function PrescriptionPage() {
           </button>
           <button style={s.secondary} onClick={exportPatientRecordsExcel}>Export Patient Records (Excel)</button>
         </div>
+        {savedPatients.length > 0 && filteredPatients.length === 0 && (
+          <div style={{ marginTop: 10, color: "#b45309", fontWeight: 600 }}>
+            {savedPatients.length} saved patients, but none match the search box.{" "}
+            <button type="button" style={s.secondary} onClick={() => setPatientSearch("")}>Clear search</button>
+          </div>
+        )}
+        {!recordsBusy && savedPatientsLoaded && savedPatients.length === 0 && (
+          <div style={{ marginTop: 10, color: "#64748b" }}>No saved patients found.</div>
+        )}
         {savedPatients.length > 0 && (
           <div style={{ ...s.results, maxHeight: 280 }}>
             {filteredPatients.slice(0, 50).map((r) => (
