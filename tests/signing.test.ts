@@ -51,3 +51,13 @@ test("consultation date: only added when set, part of the hash, and range-checke
   assert.equal(consultationDateProblem("2026-11-25", now), "future");
   assert.equal(consultationDateProblem("2026-10-01", now), "too-old");
 });
+
+test("correction: original date may be older than 30 days; date read from Rx ID", async () => {
+  const { consultationDateProblem, dateFromPrescriptionId } = await import("../lib/rx/signing");
+  const now = new Date("2026-11-24T06:00:00Z");
+  assert.equal(dateFromPrescriptionId("NMB-20260915-12345678"), "2026-09-15");
+  assert.equal(dateFromPrescriptionId("bad"), "");
+  assert.equal(consultationDateProblem("2026-09-15", now), "too-old");
+  assert.equal(consultationDateProblem("2026-09-15", now, "2026-09-15"), null);
+  assert.equal(consultationDateProblem("2026-09-10", now, "2026-09-15"), "too-old");
+});

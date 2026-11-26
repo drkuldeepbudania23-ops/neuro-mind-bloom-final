@@ -46,6 +46,10 @@ export type PrescriptionRecord = {
   appointmentId?: string;
   /** Date the patient was actually seen (YYYY-MM-DD); may be earlier than the signing date. */
   consultationDate?: string;
+  /** This prescription corrects (replaces) an earlier one. */
+  revisesPrescriptionId?: string;
+  /** This prescription was replaced by a corrected one. */
+  supersededBy?: string;
 };
 
 export type DoctorInfo = {
@@ -219,6 +223,10 @@ export async function buildPrescriptionPdf(record: PrescriptionRecord, doctor: D
   const extraRow = Boolean(record.uhid && record.email);
   if (extraRow) cell("Email", record.email!, 0, 2);
   y -= extraRow ? 51 : 36;
+  if (record.revisesPrescriptionId) {
+    page.drawText(`Corrected prescription - replaces ${pdfSafe(record.revisesPrescriptionId)}`, { x: M, y: y - 4, size: 8.5, font: bold, color: INK });
+    y -= 14;
+  }
   hr();
   y -= 10;
 

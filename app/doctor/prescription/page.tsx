@@ -48,6 +48,10 @@ type SavedPrescription = {
   prescriptionId?: string;
   /** Date the patient was seen (YYYY-MM-DD) — can be a past day for a missed prescription. */
   consultationDate?: string;
+  /** This record corrects an earlier signed prescription. */
+  revisesPrescriptionId?: string;
+  /** Set on the old record once a corrected prescription replaces it. */
+  supersededBy?: string;
   isTeleconsultation?: boolean;
   consultationType?: "opd" | "teleconsultation";
   paymentClearance?: any;
@@ -117,6 +121,8 @@ export default function PrescriptionPage() {
   const [signedSnapshot, setSignedSnapshot] = useState("");
   const [isTeleconsultation, setIsTeleconsultation] = useState(false);
   const [consultationDate, setConsultationDate] = useState(() => istToday());
+  // Set while correcting an already-given prescription (add/change medicine, date, etc.).
+  const [revising, setRevising] = useState<{ recordId: string; prescriptionId: string; originalDate: string } | null>(null);
   const [appointmentId, setAppointmentId] = useState("");
   const [savedPatients, setSavedPatients] = useState<SavedPrescription[]>([]);
   const [patientSearch, setPatientSearch] = useState("");
@@ -191,7 +197,9 @@ export default function PrescriptionPage() {
     signedSnapshot !== "" && signedSnapshot === prescriptionSnapshot;
   // A missed prescription can be made for a past consultation date (up to 30 days back).
   const todayKey = istToday();
-  const oldestConsultationDate = istDaysAgo(30);
+  const normalOldest = istDaysAgo(30);
+  const oldestConsultationDate =
+    revising?.originalDate && revising.originalDate < normalOldest ? revising.originalDate : normalOldest;
   const isBackdated = Boolean(consultationDate) && consultationDate !== todayKey;
   const printedDate = consultationDateText(consultationDate) || consultationDateText(todayKey);
   const lastSavedRef = useRef<{ id: string; prescriptionId: string } | null>(null);
@@ -330,8 +338,38 @@ export default function PrescriptionPage() {
     setPrescriptionId("");
     setSignedSnapshot("");
     setNmbPinVerified(false);
+    setRevising(null);
     setSavedMessage("Patient loaded for a new follow-up visit. Payment clearance is fresh.");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /**
+   * Correct a prescription already given (same day or earlier): loads everything
+   * (medicines, date, payment) for editing. Signing again issues a new Prescription ID;
+   * the old one is marked "replaced" and its download link stops working.
+   */
+  function editSavedPrescription(record: SavedPrescription) {
+    if (record.supersededBy) {
+      alert(`This prescription was already corrected (${record.supersededBy}). Please edit the latest one.`);
+      return;
+    }
+    loadSavedPatient(record);
+    const idDate = /^NMB-(\d{4})(\d{2})(\d{2})-\d{8}$/.exec(record.prescriptionId || "");
+    const originalDate =
+      record.consultationDate || (idDate ? `${idDate[1]}-${idDate[2]}-${idDate[3]}` : "") || istToday();
+    setConsultationDate(originalDate);
+    setAppointmentId(record.appointmentId || "");
+    setNmbPaymentClearance(record.paymentClearance || { status: "Correction of earlier prescription", finalAmount: 0 });
+    setRevising(
+      record.prescriptionId
+        ? { recordId: record.id, prescriptionId: record.prescriptionId, originalDate }
+        : null
+    );
+    setSavedMessage(
+      record.prescriptionId
+        ? `Editing ${record.prescriptionId}. Make the changes, then e-sign again — the old prescription will be marked replaced.`
+        : "Unsigned prescription loaded for editing."
+    );
   }
 
   /** Real Excel (.xlsx) of ALL cloud data (records, appointments, payments, follow-ups). Falls back to CSV of this device. */
@@ -461,6 +499,7 @@ export default function PrescriptionPage() {
             investigations, advice, followUp, isTeleconsultation, uhid: patientUhid, appointmentId,
             consultationDate: isBackdated ? consultationDate : undefined,
           },
+          revisesPrescriptionId: revising?.prescriptionId,
         }),
       });
       const signed = await signResponse.json().catch(() => ({}));
@@ -819,6 +858,7 @@ export default function PrescriptionPage() {
       signedAt: isESigned ? signedAt : undefined,
       prescriptionId: isESigned ? prescriptionId : undefined,
       ...(isBackdated ? { consultationDate } : {}),
+      ...(revising && isESigned ? { revisesPrescriptionId: revising.prescriptionId } : {}),
       isTeleconsultation,
       consultationType: isTeleconsultation ? "teleconsultation" : "opd",
       paymentClearance: nmbPaymentClearance || undefined,
@@ -836,6 +876,14 @@ export default function PrescriptionPage() {
       await setDoc(doc(db, "patientRecords", record.id), record);
       cloud = true;
       if (patientUhid && !reuse) recordVisit(patientUhid, { age, sex, email }).catch(() => {});
+      if (revising && isESigned && prescriptionId) {
+        await setDoc(doc(db, "patientRecords", revising.recordId), { supersededBy: prescriptionId }, { merge: true });
+        try {
+          const list: SavedPrescription[] = JSON.parse(localStorage.getItem("nmb_prescriptions") || "[]");
+          localStorage.setItem("nmb_prescriptions", JSON.stringify(list.map((x) => (x.id === revising.recordId ? { ...x, supersededBy: prescriptionId } : x))));
+        } catch {}
+        setSavedPatients((prev) => prev.map((x) => (x.id === revising.recordId ? { ...x, supersededBy: prescriptionId } : x)));
+      }
       logAction(reuse ? "prescription.updated" : "prescription.saved", { recordId: record.id, uhid: patientUhid || null, signed: Boolean(record.signedAt) });
       setSavedMessage("Patient record saved on this device and cloud.");
     } catch (error) {
@@ -876,6 +924,7 @@ export default function PrescriptionPage() {
     setNmbPaymentClearance(null);
     setIsTeleconsultation(false);
     setConsultationDate(istToday());
+    setRevising(null);
     setAppointmentId("");
     window.history.replaceState({}, "", "/doctor/prescription");
   }
@@ -925,11 +974,22 @@ export default function PrescriptionPage() {
         {savedPatients.length > 0 && (
           <div style={{ ...s.results, maxHeight: 280 }}>
             {filteredPatients.slice(0, 50).map((r) => (
-              <button key={r.id} type="button" style={s.med} onClick={() => loadSavedPatient(r)}>
-                <strong>{r.patientName} {r.age ? `· ${r.age}` : ""} {r.sex ? `· ${r.sex}` : ""}</strong>
-                <span>{r.mobile || "No mobile"} · {r.consultationDate ? `Seen ${consultationDateText(r.consultationDate)} · ` : ""}{r.date}</span>
-                <small>{r.diagnosis || "No diagnosis"}{r.prescriptionId ? ` · ${r.prescriptionId}` : ""}</small>
-              </button>
+              <div key={r.id} style={{ display: "flex", gap: 6, alignItems: "stretch" }}>
+                <button type="button" style={{ ...s.med, flex: 1 }} onClick={() => loadSavedPatient(r)} title="New follow-up visit">
+                  <strong>{r.patientName} {r.age ? `· ${r.age}` : ""} {r.sex ? `· ${r.sex}` : ""}</strong>
+                  <span>{r.mobile || "No mobile"} · {r.consultationDate ? `Seen ${consultationDateText(r.consultationDate)} · ` : ""}{r.date}</span>
+                  <small>
+                    {r.diagnosis || "No diagnosis"}{r.prescriptionId ? ` · ${r.prescriptionId}` : ""}
+                    {r.supersededBy ? ` · Replaced by ${r.supersededBy}` : ""}
+                    {r.revisesPrescriptionId ? ` · Corrected (replaces ${r.revisesPrescriptionId})` : ""}
+                  </small>
+                </button>
+                {!r.supersededBy && (
+                  <button type="button" style={{ ...s.secondary, whiteSpace: "nowrap" }} onClick={() => editSavedPrescription(r)}>
+                    ✏️ Edit / Correct
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}
@@ -1081,6 +1141,15 @@ export default function PrescriptionPage() {
           />
           <span>Teleconsultation</span>
         </label>
+        {revising && (
+          <div className="no-print" style={{ ...s.warning, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 10 }}>
+            <span>
+              <b>Correcting {revising.prescriptionId}</b> — change medicines/date/anything, then e-sign again.
+              The old prescription will be marked replaced and its link will stop working.
+            </span>
+            <button type="button" style={s.secondary} onClick={clearForm}>Cancel</button>
+          </div>
+        )}
         <div className="no-print" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "6px 0 10px" }}>
           <b>Consultation date:</b>
           <input
@@ -1563,6 +1632,7 @@ export default function PrescriptionPage() {
           {email && <div><b>Email:</b> {email}</div>}
           <div><b>Prescription ID:</b> {prescriptionId || "-"}</div>
           {uhid && <div><b>UHID:</b> {uhid}</div>}
+          {revising && isESigned && <div><b>Corrected prescription — replaces:</b> {revising.prescriptionId}</div>}
         </div>
 
         {(complaints || diagnosis) && (

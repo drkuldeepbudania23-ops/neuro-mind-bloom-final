@@ -34,6 +34,12 @@ export async function GET(request: Request, context: { params: Promise<{ token: 
 
     const record = await loadPrescription(recordId);
     if (!record || !isSigned(record)) return notFound();
+    if (record.supersededBy) {
+      return new Response(`This prescription was corrected and replaced by ${record.supersededBy}. Please use the new prescription sent by the clinic, or contact WhatsApp +91 93763 15331.`, {
+        status: 410,
+        headers: { ...PRIVATE_HEADERS, "Content-Type": "text/plain; charset=utf-8" },
+      });
+    }
 
     const pdf = await prescriptionPdf(record);
     return new Response(Buffer.from(pdf), {

@@ -89,6 +89,19 @@ function ValidCard({ view }: { view: Extract<VerifyView, { status: "valid" }> })
         </div>
       </div>
 
+      {r.supersededBy && (
+        <p className="mt-4 rounded-xl bg-[#fde8e4] px-3 py-2 text-sm font-medium text-[#b23a1f]">
+          ⚠ This prescription was corrected by the doctor and replaced by {txt(r.supersededBy)}. Do not dispense on this copy — ask the patient for the new prescription.
+          <span className="block" lang="hi">यह पर्चा डॉक्टर द्वारा सुधारा गया है और {txt(r.supersededBy)} से बदल दिया गया है। इस पुराने पर्चे से दवा न दें — नया पर्चा माँगें।</span>
+        </p>
+      )}
+      {r.revisesPrescriptionId && (
+        <p className="mt-4 rounded-xl bg-forest-50 px-3 py-2 text-sm text-forest-800">
+          Corrected prescription — replaces {txt(r.revisesPrescriptionId)}.
+          <span className="block" lang="hi">सुधारा हुआ पर्चा — {txt(r.revisesPrescriptionId)} की जगह।</span>
+        </p>
+      )}
+
       {r.sealed && (
         <p className="mt-4 rounded-xl bg-forest-50 px-3 py-2 text-sm text-forest-800">
           🔒 Content locked at the time of signing — the details below are exactly what the doctor signed.

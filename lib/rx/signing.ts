@@ -55,12 +55,24 @@ export const MAX_BACKDATE_DAYS = 30;
  * A consultation date may be today or a past day (missed prescriptions),
  * never in the future and not more than MAX_BACKDATE_DAYS old.
  */
-export function consultationDateProblem(date: string | undefined, now: Date = new Date()): "future" | "too-old" | null {
+export function consultationDateProblem(
+  date: string | undefined,
+  now: Date = new Date(),
+  /** For a correction: the original prescription's date may be older than the normal limit. */
+  originalDate?: string
+): "future" | "too-old" | null {
   if (!date) return null;
   if (date > istToday(now)) return "future";
-  const oldest = istDaysAgo(MAX_BACKDATE_DAYS, now);
+  let oldest = istDaysAgo(MAX_BACKDATE_DAYS, now);
+  if (originalDate && /^\d{4}-\d{2}-\d{2}$/.test(originalDate) && originalDate < oldest) oldest = originalDate;
   if (date < oldest) return "too-old";
   return null;
+}
+
+/** "NMB-20261012-48213907" → "2026-10-12" (the day it was signed). */
+export function dateFromPrescriptionId(id: string | undefined): string {
+  const m = /^NMB-(\d{4})(\d{2})(\d{2})-\d{8}$/.exec(id || "");
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : "";
 }
 
 /** "NMB-20261012-48213907" with the date in India time. */

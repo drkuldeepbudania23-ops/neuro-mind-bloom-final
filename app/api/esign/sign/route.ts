@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { getDoctorUid, verifyPinForUid } from "../pin-store";
 import { adminDb, isAdminConfigured } from "../../../../lib/server/firebaseAdmin";
-import { canonicalPrescription, consultationDateProblem, hashPrescription, newPrescriptionId, signedAtText, validateForSigning } from "../../../../lib/rx/signing";
+import { canonicalPrescription, consultationDateProblem, dateFromPrescriptionId, hashPrescription, newPrescriptionId, signedAtText, validateForSigning } from "../../../../lib/rx/signing";
 import { audit } from "../../../../lib/server/audit";
 import { rateLimitByIp, tooMany } from "../../../../lib/server/rateLimit";
 
@@ -40,7 +40,21 @@ export async function POST(request: Request) {
       );
     }
 
-    const dateProblem = consultationDateProblem(content.consultationDate);
+    // Correction of an already-signed prescription: the old one is marked "replaced".
+    const revisesId = typeof body?.revisesPrescriptionId === "string" ? body.revisesPrescriptionId.trim() : "";
+    let originalDate = "";
+    if (revisesId) {
+      if (!/^NMB-\d{8}-\d{8}$/.test(revisesId)) return NextResponse.json({ ok: false, error: "Invalid original prescription." }, { status: 400 });
+      const original = await adminDb().collection("signedPrescriptions").doc(revisesId).get();
+      if (!original.exists) return NextResponse.json({ ok: false, error: "Original prescription not found." }, { status: 404 });
+      const od = original.data() || {};
+      if (od.supersededBy) {
+        return NextResponse.json({ ok: false, error: `This prescription was already corrected (${od.supersededBy}). Please edit the latest one.` }, { status: 409 });
+      }
+      originalDate = (od.content?.consultationDate as string) || dateFromPrescriptionId(revisesId);
+    }
+
+    const dateProblem = consultationDateProblem(content.consultationDate, new Date(), originalDate);
     if (dateProblem) {
       return NextResponse.json(
         { ok: false, error: dateProblem === "future" ? "Consultation date cannot be in the future." : "Consultation date can be at most 30 days old." },
@@ -66,9 +80,17 @@ export async function POST(request: Request) {
       signedAt,
       signedAtTs: FieldValue.serverTimestamp(),
       uid,
+      ...(revisesId ? { revisesPrescriptionId: revisesId } : {}),
     });
+    if (revisesId) {
+      await adminDb().collection("signedPrescriptions").doc(revisesId).update({
+        supersededBy: prescriptionId,
+        supersededAt: FieldValue.serverTimestamp(),
+      });
+      await audit(uid, "esign.corrected", { prescriptionId, revises: revisesId });
+    }
     await audit(uid, "esign.signed", { prescriptionId, patient: content.patientName, uhid: content.uhid });
-    return NextResponse.json({ ok: true, prescriptionId, signedAt, hash }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ ok: true, prescriptionId, signedAt, hash, revisesPrescriptionId: revisesId || undefined }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("esign/sign", error);
     return NextResponse.json({ ok: false, error: "E-sign failed. Please try again." }, { status: 500 });

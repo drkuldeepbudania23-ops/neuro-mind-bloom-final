@@ -64,6 +64,8 @@ export async function loadPrescription(recordId: string): Promise<LoadedPrescrip
         date: record.date,
         prescriptionId: pid,
         signedAt: String(s.signedAt || record.signedAt || ""),
+        revisesPrescriptionId: typeof s.revisesPrescriptionId === "string" ? s.revisesPrescriptionId : undefined,
+        supersededBy: typeof s.supersededBy === "string" ? s.supersededBy : undefined,
         sealed: true,
         // UHID / appointment link may be attached after signing — not clinical content.
         changedAfterSigning:
